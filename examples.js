@@ -3,6 +3,7 @@ var sum   = reduce( 'a+b' )
 ;
 
 var sum = reduce( 'a+b' );
+var sum = reduce( '+' );
 transfun.publish( 'sum', sum );  // name necessary because of IE. publish fails if name already known
 var sum2d = map( sum ).sum;
 var sum2d = map( sum ).sum();  // same because sum does not need any code argument (special case)
@@ -83,7 +84,7 @@ var arr = arr_storage
 
 // trying to write new code:
 
-arr_storage
+var arr = arr_storage
     .concat(
         filter( '!(a in this)' )
             .call( arr2o( arr_storage ) /* -> will be `this` */ , arr_backend )
@@ -208,6 +209,24 @@ var separateMerged =
     ( {}, attr_json )  // application call: may not be clear to everyone
 ;
 
+// or with extra paren
+
+var separateMerged =
+    (
+        // separate
+        reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
+        // merge consecutive segments for each
+            .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
+        // merge them again
+            .o2values()
+            .arrChain()
+            .sort( compareFrom )
+    )(
+        {}, attr_json  // application call: a bit clearer because of extra parens
+    )
+;
+
+
 // or clearer:
 
 var f =
@@ -228,14 +247,16 @@ var f =
 var separateMerged = transform(
     {}
     , attr_json
-    , // separate
-    reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
-// merge consecutive segments for each
-    .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
-// merge them again
-    .o2values()
-    .arrChain()
-    .sort( compareFrom )
+    , (               // extra parens for clarity
+        // separate
+        reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
+        // merge consecutive segments for each
+            .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
+        // merge them again
+            .o2values()
+            .arrChain()
+            .sort( compareFrom )
+    )
 );
 
 // or if we need to debug a bit
@@ -269,6 +290,12 @@ attr_json = f( attr_json );
 
 attr_json = transform( attr_json , slice( 0 ).sort( 'a.from-b.from' ) )  // for convenience
 
+// or with extra paren
+attr_json = (
+    slice( 0 ).sort( 'a.from-b.from' )
+)(
+    attr_json
+);
 
 // other example
 
@@ -304,3 +331,22 @@ var nextleg_change = !prev_one.nextleg
 var needed = orIn( next( 'this.nextleg = obj' ).next( 'true' ) )
     .call( one_out, nextleg_change )
 ;
+
+
+// other example
+
+that[ _ONE_FROMTO_LABEL ] = alp.filterIn(
+    alp.mapIn(
+        { today : 1, tomorrow : 1, weekend : 1, next14days : 1 }
+        , _oam_fs_try_to_extract_one_label
+    )
+    , ''
+);
+
+// try to rewrite
+
+that[ _ONE_FROMTO_LABEL ] = (
+    mapIn( _oam_fs_try_to_extract_one_label ).filterIn( '' )
+)(
+    { today : 1, tomorrow : 1, weekend : 1, next14days : 1 }    
+);
