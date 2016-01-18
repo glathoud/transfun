@@ -1,40 +1,36 @@
-var sum   = reduce( 'a+b' )
+var sum   = reduce( 'out+v' )
 ,   sum2d = map( sum ).next( sum )
 ;
 
-var sum = reduce( 'a+b' );
+var sum = reduce( 'out+v' );
 var sum = reduce( '+' );
 transfun.publish( 'sum', sum );  // name necessary because of IE. publish fails if name already known
 var sum2d = map( sum ).sum;
 var sum2d = map( sum ).sum();  // same because sum does not need any code argument (special case)
 
-map( 'a.prop' ).sum().next( 'a/n' );  // mean
 map( '.prop' ).sum().next( '/n' );  // mean
 
-map( 'a.prop' ).sum.next( 'a/n' );  // same because `sum` does need any code argument
-map( '.prop' ).sum.next( '/n' );  // same because `sum` does need any code argument
-
-map( 'a.prop' ).filter( 'a!=null' ).sum()
+map( 'v.prop' ).filter( 'v!=null' ).sum()
 map( '.prop' ).filter( '!=null' ).sum()
 
-map( 'a.prop' ).and()
+map( 'v.prop' ).and()
 map( '.prop' ).and()
 
-reduce0( 'a+b.prop' ).next( ... )  // fail! reduce0 needs 2 arguments
-reduce0( 'a+b.prop', 0 ).next( 'a/n' )   // mean
-reduce0( '+b.prop', 0 ).next( '/n' )   // mean
+redinit( 'out+v.prop' ).next( ... )  // fail! redinit needs 2 arguments
+redinit( 'out+v.prop', 0 ).next( '/n' )   // mean
+redinit( '+v.prop', 0 ).next( '/n' )   // mean
 
 // 2d
-map( filter( 'a!=null' ) ).map( sum )
-map( filter( 'a!=null' ).sum() )
-map( filter( 'a!=null' ).reduce( 'a+b' ) )
+map( filter( 'v!=null' ) ).map( sum )
+map( filter( 'v!=null' ).sum() )
+map( filter( 'v!=null' ).reduce( 'out+v' ) )
 map( filter( '!=null' ).reduce( '+' ) )
 
 // Usage on an actual array:
 
 sum( arr );
-reduce( 'a+b', arr );
-reduce( 'a+b' )( arr );
+reduce( 'out+v', arr );
+reduce( 'out+v' )( arr );
 reduce( '+' )( arr );
 sum2d( [ [ 1,2,3], [4,5,6,7 ] ] );
 
@@ -106,7 +102,7 @@ filter( '!alp.hasClass(a,"' + ... + '")', exit_arr )    // direct call with all 
    var raw = alp.or( alp.map(
                         [ 'highlights', 'travelAdvisoryComment', 'wxSynopsisComment', 'snowpackStructureComment' ]
                         , 'this[v]'
-                        , shortData.details
+                        , shortDatv.details
                     ))  ||  ''
                 
 
@@ -171,7 +167,7 @@ alp.mapIn(
 // Filter the cats
 filterIn( '!(b in this)' )
     // And also filter the list of children of each cat
-    .mapIn( 'oCreateMix( a, { children : a.children  &&  filter( a.children, "!(a in this)", this ) } )' )
+    .mapIn( 'oCreateMix( a, { children : v.children  &&  filter( v.children, "!(a in this)", this ) } )' )
     .call( all_to_remove, catid2info )
 ;
 
@@ -192,14 +188,20 @@ filterIn( '!(b in this)' )
 
 // trying to rewrite
 
-transfun.publish( 'arrChain', reduce( 'a.concat(b)' ) );
+transfun.publish( 'arrChain', reduce( 'out.concat(v)' ) );
 
-transfun.publish( 'sort', '#cmpfun', 'a.sort(#cmpfun)' );  // shortcut, probably better than the next line
-transfun.publish( 'sort', 'cmpfun', function ( cmpfun ) { return next( function ( arr ) { return arr.sort( cmpfun ); } ); }  );  //xxx  ooouuuf.. but once only
+transfun.publish( 'sort'
+                  , {
+                      arity : 1
+                      , specgen : function ( compareFun ) {
+                          return { append : { set : { 'current', { dotcall : [ 'current', 'sort', fullexpr( compareFun, 'a', 'b' ) ] } }} }; 
+                      }
+                  }
+                );
 
 var separateMerged =
     // separate
-    reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
+    redinit( '((out[ v.key ]  ||  (out[ v.key ] = [])).push( v )),out' )
     // merge consecutive segments for each
     .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
     // merge them again
@@ -214,7 +216,7 @@ var separateMerged =
 var separateMerged =
     (
         // separate
-        reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
+        redinit( '((out[ v.key ]  ||  (out[ v.key ] = [])).push( v )),out' )
         // merge consecutive segments for each
             .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
         // merge them again
@@ -231,7 +233,7 @@ var separateMerged =
 
 var f =
     // separate
-    reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
+    redinit( '((out[ v.key ]  ||  (out[ v.key ] = [])).push( v )),out' )
 // merge consecutive segments for each
     .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
 // merge them again
@@ -244,29 +246,25 @@ var f =
 
 // or for convenience (maybe?) use transform:
 
-var separateMerged = transform(
-    {}
-    , attr_json
-    , (               // extra parens for clarity
-        // separate
-        reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a' )
-        // merge consecutive segments for each
-            .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
-        // merge them again
-            .o2values()
-            .arrChain()
-            .sort( compareFrom )
-    )
+var separateMerged = tval( {}, attr_json )
+(
+    // separate
+    redinit( '((out[ v.key ]  ||  (out[ v.key ] = [])).push( v )),out' )
+    // merge consecutive segments for each
+        .mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); } )
+    // merge them again
+        .o2values()
+        .arrChain()
+        .sort( compareFrom )
 );
 
 // or if we need to debug a bit
 
-var separateKeys = reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a'
+var separateKeys = redinit( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a'
                           )( {}, attr_json )
 
 , separateFixed = mapIn( function (v) { return AGD_attr_copy_and_fix( v, nodeCount, /*singleKey:*/true ); }
-                         , separateKeys 
-                       )
+                       )( separateKeys )
 , separateMerged = o2values().arrChain().sort( compareFrom )( separateFixed )  // somewhat clear
 , separateMerged = (o2values().arrChain().sort( compareFrom ))( separateFixed )  // somewhat clear
 , separateMerged = o2values().arrChain().sort( compareFrom ).call( null, separateFixed )  // somewhat clearer, even if verbose
@@ -282,17 +280,17 @@ var separateKeys = reduce0( '((a[ b.key ]  ||  (a[ b.key ] = [])).push( b )),a'
 
         //     (1)    attr_json[a - 1].to <= attr_json[a].from
 
-attr_json = slice( 0 ).sort( 'a.from-b.from' )( attr_json );  // nicer
-attr_json = slice( 0 ).sort( 'a.from-b.from' ).call( null, attr_json );  // a bit verbose but maybe clearer
+attr_json = slice( 0 ).sort( 'v.from-b.from' )( attr_json );  // nicer
+attr_json = slice( 0 ).sort( 'v.from-b.from' ).call( null, attr_json );  // a bit verbose but maybe clearer
 // same as:
-var f = slice( 0 ).sort( 'a.from-b.from' );
+var f = slice( 0 ).sort( 'v.from-b.from' );
 attr_json = f( attr_json );
 
-attr_json = transform( attr_json , slice( 0 ).sort( 'a.from-b.from' ) )  // for convenience
+attr_json = transform( attr_json , slice( 0 ).sort( 'v.from-b.from' ) )  // for convenience
 
 // or with extra paren
 attr_json = (
-    slice( 0 ).sort( 'a.from-b.from' )
+    slice( 0 ).sort( 'v.from-b.from' )
 )(
     attr_json
 );
@@ -324,7 +322,7 @@ attr_json = (
 
 var nextleg_change = !prev_one.nextleg
     ?  one.nextleg
-    :  filterIn( '!(b in this  &&  a === this[ b ])' )
+    :  filterIn( '!(k in this  &&  v === this[ k ])' )
     .call( prev_one.nextleg, one.nextleg )
 ;
 
