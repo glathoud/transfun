@@ -194,7 +194,7 @@ transfun.publish( 'sort'
                   , {
                       arity : 1
                       , specgen : function ( compareFun ) {
-                          return { append : { set : { 'current', { dotcall : [ 'current', 'sort', fullexpr( compareFun, 'a', 'b' ) ] } }} }; 
+                          return { stepadd : { set : { 'current', { dotcall : [ 'current', 'sort', fullexpr( compareFun, 'a', 'b' ) ] } }} }; 
                       }
                   }
                 );
