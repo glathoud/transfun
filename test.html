@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset=utf-8/>
+    <title>transfun: tests</title>
+    <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
+    <script type="text/javascript" src="opinel.js"></script>
+    <script type="text/javascript" src="transfun.js"></script>
+    <script type="text/javascript" src="test.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+    document.write(
+        [
+            hh.h1( 'transfun: tests' )
+            , hh( 'p id="result"' )
+
+            , hh.hr()
+            , hh( 'h3 id="gen-code-expl"', 'Generated code: examples' )
+            , hh.pre( hh( 'code id="gen-code-expl-code" class="prettyprint lang-js"', ' ' ) )
+            
+            , hh.hr()
+            , hh( 'h3 id="test-detail"', 'Unit tests' )
+            , hh.pre( hh( 'code id="test-detail-code" class="prettyprint lang-js"', ' ' ) )
+        ].join( '\n' )
+    );
+    </script>
+    
+    <script type="text/javascript">
+    (function () {
+        var success = false
+        ,   printed = false
+        ;
+        setTimeout( print_result, 0 ); // in case of failure
+        test();
+        success = true;
+        print_result();
+        print_test_detail();
+        print_gen_code_expl();
+        
+        function print_result()
+        {
+            if (!printed)
+            {
+                printed = true;
+                gEBI( 'result' ).innerHTML = success  ?  'success (' + hh( 'a href="#test-detail"', 'unit tests' ) + ')' :  'failure';
+            }
+        }
+
+        function print_test_detail()
+        {
+            gEBI( 'test-detail-code' ).textContent = test;
+        }
+
+        function print_gen_code_expl()
+        {
+            var f = map( function (v) {
+                var dashes = split( '""' ).map( '"-"' ).join( '""' )( v );
+                return  dashes + "\n" + v + '\n' + dashes + '\n' +
+                    (new Function('return ' + v)()) + '\n'
+            })
+                .join( '"\\n\\n"' )
+            ;
+
+            gEBI( 'gen-code-expl-code' ).textContent = f(
+                [
+                    "map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
+                    , "decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' ).getBodyCode()"
+                ]
+            );
+        }
+    })();
+    </script>
+
+    <script type="text/javascript" src="prettify/prettify.js"></script>
+    <script type="text/javascript">setTimeout( prettyPrint );</script>
+  </body>
+</html>

@@ -3,7 +3,14 @@
   console
 */
 
-// Transfunctions.
+// transfun: merge loops for speed in JavaScript.
+//
+// Transformation functions generate code where:
+//
+// (1) loops do as few function calls as possible,
+//
+// (2) consecutive loops have been merged into a single loop, whenever
+// possible.
 //
 // Guillaume Lathoud
 // glat@glat.info
@@ -196,129 +203,10 @@ var fullexpr, tval, tpub, tfun, TR;
         }
     });
 
-    tpub( 'sum', reduce( '+' ) );
-    
-    test();
+    tpub( 'sum', redinit( '0', '+' ) );
 
-    function test()
-    {
-        console.time( 'transfun:test' );
-        
-        var sum_local = reduce( '+' )
-        ,  mean = sum_local.next( '/n' ) // after an array loop that conserves the length (e.g. no filtering), the value of `n` is available
-        ,  prod = reduce( '*' )
-        , geommean = map( 'Math.log(v)' ).next( sum_local ).next( 'Math.exp(current/n)' )  // Only for positive numbers
-        ;
-
-        10 === sum_local( [ 1, 2, 3, 4 ] )  ||  null.bug;
-        3*5*7 === prod( [ 1, 3, 5, 7 ] )  ||  null.bug;
-        
-        (1+3+10+20)/4 === mean( [ 1, 3, 10, 20 ] )  ||  null.bug;
-        1e-10 > Math.abs( Math.pow(1*3*5*11*17,1/5) - geommean( [ 1, 3, 5, 11, 17 ] ))  ||  null.bug;
-
-
-        // Using the publicly declared `sum`. Note the *transfun* `sum`
-        // has arity 0, so in the *appfun* is in global namespace.
-        
-        10 === sum( [ 1, 2, 3, 4 ] )  ||  null.bug;
-        
-        var geommean2 = map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' )  // Only for positive numbers
-
-        1e-10 > Math.abs( Math.pow(1*3*5*11*17,1/5) - geommean( [ 1, 3, 5, 11, 17 ] ))  ||  null.bug;
-
-
-        
-        
-
-        var corrupt_arr = [ { age : 12 }, { age: 91 }, null, { age : 43 }, undefined, { age : 23 }, { age : 32 }, undefined ]
-
-        ,   age_clean = corrupt_arr
-            .filter( function ( o ) { return o != null; } )
-            .map( function ( o ) { return o.age; } )
-
-        ,   age_sum   = age_clean.reduce( function ( a, b ) { return a+b; } )
-
-        ,   age_mean  = age_sum / age_clean.length
-        ;
-        (age_mean  ||  null).toPrecision.call.a;
-
-        age_clean.join( '#' ) === filter( '!=null' ).map( '.age' )( corrupt_arr ).join( '#' )  ||  null.bug;
-
-        age_mean === tval(
-            corrupt_arr
-        )(
-            // filter( '!=null' ) may change the length of the array so we need to count.
-            decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' )
-        )  ||  null.bug;
-
-
-
-        var mapsafe = filter( '!=null' ).map();  // Partial transformation: needs one more argument to be complete
-
-        age_clean.join( '#' ) === tval( corrupt_arr )( mapsafe( '.age' ) ).join( '#' )  ||  null.bug;
-
-        var age_mean_appfun = decl( 'count', '0' )
-            .next( mapsafe( '.age' ) )  // needs .next call because `mapsafe` has not been published
-            .redinit( '0', 'count++, out+v' )
-            .next( '/count' )
-        ;
-        
-        age_mean === tval( corrupt_arr )( age_mean_appfun )  ||  null.bug;
-
-        0 === age_mean_appfun._tf_chainspec.extern_arr.length  ||  null.bug;
-
-        
-
-        var mapsafe_not_called = filter( '!=null' ).map;  // Partial transformation: needs one more argument to be complete
-
-        age_clean.join( '#' ) === tval( corrupt_arr )( mapsafe_not_called( '.age' ) ).join( '#' )  ||  null.bug;
-
-        var age_mean_appfun_2 = decl( 'count', '0' )
-                .next( mapsafe_not_called( '.age' ) )  // needs .next call because `mapsafe_not_called` has not been published
-                .redinit( '0', 'count++, out+v' )
-            .next( '/count' )
-        ;
-        
-        age_mean === tval( corrupt_arr )( age_mean_appfun_2 )  ||  null.bug;
-        age_mean === age_mean_appfun_2( corrupt_arr )  ||  null.bug;
-
-        0 === age_mean_appfun_2._tf_chainspec.extern_arr.length  ||  null.bug;
-
-        
-
-        // shortcut variant
-
-        var join = tfun( '#c', '.join(#c)' );
-        age_clean.join( '$a$' ) === tval( age_clean )( join( '"$a$"' ) )
-            ||  null.bug
-        ;
-
-        // object equivalent to the shortcut variant
-
-        var join2 = tfun( {
-            arity : 1
-            , specgen : function ( c ) {
-                return { stepadd : { set : [ 'current', 'current.join(' + c + ')' ] } };
-            }
-        });
-
-        age_clean.join( '$a$' ) === tval( age_clean )( join2( '"$a$"' ) )
-            ||  null.bug
-        ;
-
-        // without tval
-
-        age_clean.join( '$a$' ) === join( '"$a$"' )( age_clean )
-            ||  null.bug
-        ;
-
-        age_clean.join( '$a$' ) === join2( '"$a$"' )( age_clean )
-            ||  null.bug
-        ;
-        
-        console.timeEnd( 'transfun:test' );
-        console.log( 'transfun:test: all tests passed.' );
-    }
+    tpub( 'join', '#c',  '.join(#c)' );
+    tpub( 'split', '#c', '.split(#c)' );
     
     // ---------- Public API implementation
 
@@ -364,7 +252,7 @@ var fullexpr, tval, tpub, tfun, TR;
 
 
     var _tpub_cache;
-    function tpub_( name, spec_or_fun_str /*... more strings in the shortcut variant...*/ )
+    function tpub_( name, spec_or_fun_or_str /*... more strings in the shortcut variant...*/ )
     {
         (name  ||  null).substring.call.a;
 
@@ -372,7 +260,10 @@ var fullexpr, tval, tpub, tfun, TR;
         if (name in _tpub_cache)
             throw new Error( '"' + name + '" already published!' );
 
-        var tf = _tpub_cache[ name ] = tfun.apply( null, Array.prototype.slice.call( arguments, 1 ) );
+        var tf = _tpub_cache[ name ] = tfun_.apply(
+            null
+            , with_default_loopname( Array.prototype.slice.call( arguments, 1 ) )
+        );
         
         // Also publish the function to the global namespace
         // 
@@ -386,6 +277,51 @@ var fullexpr, tval, tpub, tfun, TR;
                     )( tf );
 
         return tf;
+
+        function with_default_loopname( arg )
+        {
+            var x = arg[ 0 ];
+            if ('object' === typeof x)
+            {
+                if (x.spec)
+                {
+                    x = Object.create( x );
+                    x.spec = try_to_add_default_loopname( x.spec );
+                    arg[ 0 ] = x;
+                }
+                else if (x.specgen)
+                {
+                    x = Object.create( x );
+                    x.specgen = get_default_loopname_wrapper( x.specgen );
+                    arg[ 0 ] = x;
+                }
+            }
+            return arg;
+            
+            function try_to_add_default_loopname( spec, opt )
+            {
+                var looptype = get_looptype( spec );
+                if (looptype)
+                {
+                    var loop = spec[ looptype ];
+                    if (!loop.loopname)
+                        loop.loopname = '-- ' + name + '(' + (opt  ?  ' ' + Array.apply( null, opt )
+                                                              .map( function ( s ) { return '`' + (s.externcall  ||  s) + '`' ; })
+                                                              .join( ', ' ) + ' '  :  ''
+                                                             ) + ') --'
+                }
+                return spec;
+            }
+
+            function get_default_loopname_wrapper( specgen )
+            {
+                return default_loopname_wrapper;
+                function default_loopname_wrapper( /*...*/ )
+                {
+                    return try_to_add_default_loopname( specgen.apply( this, arguments ), arguments );
+                }
+            }
+        }
     }
 
     function fullexpr_( /*string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar )
@@ -524,12 +460,15 @@ var fullexpr, tval, tpub, tfun, TR;
                 ;
 
                 // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
-                transfun._tf_chainspec = appfun._tf_chainspec = chainspec;
+                appfun._tf_chainspec = chainspec;
 
                 // Necessary to support `tfun( <appfun> )`
                 var _tf_bound_arg = arguments;
                 appfun._tf_bound = function () { return transfun.apply( this, _tf_bound_arg ); }
                 appfun._tf_bound._is_transfun = true;
+
+                // For convenience: give access
+                appfun.getBodyCode = appfun_getBodyCode;
                 
                 return mix_published_tfun_methods_into_appfun( chainspec, appfun );
                 
@@ -550,6 +489,23 @@ var fullexpr, tval, tpub, tfun, TR;
                 function appfun( /*an actual value, e.g. an array of numbers*/current )
                 {
                     if (!impl)  // Generated only on-demand, i.e. when calling the application function
+                        ensure_appimpl();
+
+                    return has_extern
+                        ?  impl.apply( this, extern_arr.concat( [ current ] ) )
+                        :  impl.call( this, current )
+                    ;
+                }
+
+                function appfun_getBodyCode()
+                {
+                    ensure_appimpl();
+                    return code_body;
+                }
+
+                function ensure_appimpl()
+                {
+                    if (!impl)
                     {
                         extern_arr    = chainspec.extern_arr;
                         has_extern    = extern_arr.length > 0;
@@ -575,10 +531,6 @@ var fullexpr, tval, tpub, tfun, TR;
                             , chainspec : chainspec
                         };
                     }
-                    return has_extern
-                        ?  impl.apply( this, extern_arr.concat( [ current ] ) )
-                        :  impl.call( this, current )
-                    ;
                 }
                 
             } // function transfun
@@ -681,12 +633,35 @@ var fullexpr, tval, tpub, tfun, TR;
                         i2en[ e_i ]    = e_name;
                         en2e[ e_name ] = one;
                         
-                        spec_s_arg.push( e_name )
+                        spec_s_arg.push( { externcall : e_name } )
                     }
                 }
                 spec = spec_or_specgen.apply( null, spec_s_arg );
             }
 
+            // Optional: add some loopname comment (useful if looking
+            // at the code produced for merged loops, to trace back).
+            
+            var looptype = get_looptype( spec );
+            if (looptype)
+            {
+                var loop     = spec[ looptype ]
+                ,   loopname = loop.loopname
+                ;
+                if (loopname)
+                {
+                    var tmp = {};
+                    for (var k in loop) { if (!(k in _emptyObj)  &&  k !== 'loopname') {
+                        tmp[ k ] = loop[ k ];
+                    }}
+                    tmp.bodyadd = [ {}  // empty line to breathe a bit
+                                    , { comment : loopname } ].concat( tmp.bodyadd );
+                    
+                    spec = {};
+                    spec[ looptype ] = tmp;
+                }
+            }
+            
             // Checks
             
             var looptype = get_looptype( spec );
@@ -872,7 +847,7 @@ var fullexpr, tval, tpub, tfun, TR;
             }
             new_body.push( morph === OBJECT  ||  conserve_array_length
                            
-                           ?  { set : [ 'out', 'k', to_store ] }
+                           ?  { set_at : [ 'out', 'k', to_store ] }
                            
                            :  { push : [ 'out', to_store ] }
                          );
@@ -894,11 +869,20 @@ var fullexpr, tval, tpub, tfun, TR;
         spec_arr_optim_solved.forEach( one_spec_push_code );
 
         if (needs_emptyObj)
-            code.unshift(  'var _emptyObj = {}' );
+            code.unshift(  'var _emptyObj = {};' );
 
-        code.push( 'return current;' );
+        var last = /^\s*current\s*=\s*([^=][\s\S]*)$/.exec( code[ code.length - 1 ] );
+        if (last)
+        {
+            code.pop();
+            code.push( 'return ' + last[ 1 ] );
+        }
+        else
+        {
+            code.push( 'return current;' );
+        }
         
-        return code.join( ';\n' );
+        return code.map( indent_and_terminate_code_line, { indent : 0 } ).join( '\n' );
 
         // --- Details
 
@@ -912,7 +896,7 @@ var fullexpr, tval, tpub, tfun, TR;
                 var loop       = spec[ looptype ];
                 
                 check_exactly_has_properties( loop, { beforeloop : 1, bodyadd : 1, afterloop : 1 } );
-                
+
                 var is_l_left  = L_LEFT  === looptype
                 ,   is_l_right = L_RIGHT === looptype
                 ,   is_l_in    = L_IN    === looptype
@@ -921,7 +905,7 @@ var fullexpr, tval, tpub, tfun, TR;
                 ,   bodyadd    = solve_restwrap( arrify( loop.bodyadd ) )
                 ,   afterloop  = solve_restwrap( arrify( loop.afterloop ) )
                 ;
-
+                
                 if (is_l_left  ||  is_l_right)
                     code.push( 'var n = current.length' );
                 
@@ -938,7 +922,7 @@ var fullexpr, tval, tpub, tfun, TR;
                 );
 
                 code.push( 'var v = current[ k ]' );
-                
+
                 bodyadd.forEach( push_codestep );
 
                 code.push
@@ -961,10 +945,37 @@ var fullexpr, tval, tpub, tfun, TR;
 
             function push_codestep( step )
             {
-                code.push( one_step_2_code( step ) );
+                var a = one_step_2_code( step ); // string | array
+                push_codestep2( a );
+                function push_codestep2( a )
+                {
+                    if ('string' === typeof a)
+                        code.push( a );
+                    else
+                        a.forEach( push_codestep2 );
+                }
             }
             
         }  // function one_spec_push_code
+
+        function indent_and_terminate_code_line( s )
+        {
+            var is_closing = /^\s*\}/.test( s )
+            ,   is_opening = /\{\s*$/.test( s )
+            ,   is_comment = /^\s*\/\/.*$/.test( s )  ||  /^\s*\/\*.*\*\/\s*$/.test( s )
+            ,   is_empty   = /^\s*$/.test( s )
+            
+            ,   indent = this.indent + (is_closing  ?  -1  :  0);
+            ;
+            this.indent = indent + (is_opening  ?  +1  :  0);
+
+            return Array.apply( null, Array( indent << 2) )
+                .map( function () { return ' '; })
+                .join('') +
+                s +
+                (is_empty  ||  is_opening  ||  is_closing  ||  is_comment  ?  ''  :  ';')
+            ;
+        }
         
     }  // function generate_code_body
 
@@ -1061,7 +1072,7 @@ var fullexpr, tval, tpub, tfun, TR;
 
     function one_step_2_code( /*object*/step )
     {
-        return step  ?  one_expr_2_code( step ) + ';'  :  '';
+        return step  ?  one_expr_2_code( step )  :  '';
     }
 
     function one_expr_2_code( /*string | object*/expr )
@@ -1075,12 +1086,12 @@ var fullexpr, tval, tpub, tfun, TR;
         // many expression objects
         
             :  expr instanceof Array
-            ?  expr.map( oe2c ).join( ';\n' )
+            ?  expr.map( oe2c )
 
         // single expression object
         
             :  (x = expr.decl )
-            ?  'var ' + x[ 0 ] + '=' + oe2c( x[ 1 ] )
+            ?  'var ' + x[ 0 ] + ' = ' + oe2c( x[ 1 ] )
 
             :  (x = expr.dotcall)
             ?   x[ 0 ] + '.' + x[ 1 ] + '(' + oe2c( x[ 2 ] ) + ')'
@@ -1089,22 +1100,34 @@ var fullexpr, tval, tpub, tfun, TR;
             ?  x[ 0 ] + '.push(' + oe2c( x[ 1 ] ) + ')'
         
             :  (x = expr.set)
-            ?  x[ 0 ] + '=' + oe2c( x[ 1 ] )
+            ?  x[ 0 ] + ' = ' + oe2c( x[ 1 ] )
 
             :  (x = expr.set_at)
-            ?  x[ 0 ] + '[' + oe2c( x[ 1 ] ) + ']=' + oe2c( x[ 2 ] )
+            ?  x[ 0 ] + '[' + oe2c( x[ 1 ] ) + '] = ' + oe2c( x[ 2 ] )
         
             :  ((x = expr['if'])  &&
                 (y = expr[ 'then' ], z = expr[ 'else' ], true)
                )
-            ?  'if (' + oe2c( x ) + '){' + oe2c( y ) + '}' + (
-                z  ?  'else{' + oe2c( z ) + '}'  :  ''
-            )
-        
+            ?  [ 'if (' + oe2c( x ) + ') {'
+                 , oe2c( y )
+               ].concat( z  ?  [ '} else {', oe2c( z ), '}' ]  :  [ '}' ] )
+            
         :  (x = expr.not)  ?  '!(' + oe2c( x ) + ')'
         
-        :  null.unsupported_or_bug
+
+            :  (x = expr.comment)  ?  '/* ' + x + ' */'
+
+            :  hasNoKey( x )  ?  ''
+
+            :  null.unsupported_or_bug
         ;
+        function hasNoKey( x )
+        {
+            for (var k in x) { if (!(k in _emptyObj)) {
+                return false;
+            }}
+            return true;
+        }
     }
     
     function solve_restwrap( /*object*/step_arr )
