@@ -4,28 +4,131 @@
     <meta charset=utf-8/>
     <title>transfun: tests</title>
     <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
+    <style type="text/css">.section-anchor { font-size : 90%; font-decoration: none; }</style>
     <script type="text/javascript" src="opinel.js"></script>
     <script type="text/javascript" src="transfun.js"></script>
     <script type="text/javascript" src="test.js"></script>
   </head>
   <body>
     <script type="text/javascript">
+(function () {
+
+    var st_arr = [];
+    
     document.write(
         [
             hh.h1( 'transfun: tests' )
-            , hh( 'p id="result"' )
 
-            , hh.hr()
-            , hh( 'h3 id="gen-code-expl"', 'Generated code: examples' )
-            , hh.pre( hh( 'code id="gen-code-expl-code" class="prettyprint lang-js"', ' ' ) )
+            , section_title_with_anchor( '', 'Contents' )
+            , hh( 'p id="contents"' )
             
             , hh.hr()
-            , hh( 'h3 id="test-detail"', 'Unit tests' )
-            , hh.pre( hh( 'code id="test-detail-code" class="prettyprint lang-js"', ' ' ) )
+            , section_title_with_anchor( 'gen-code-expl', 'Generated code: examples' )
+            , hh.pre( hh( 'code id="gen-code-expl-code" class="prettyprint lang-js"', ' ' ) )
+
+            , hh.hr()
+            , section_title_with_anchor( 'speed-test', 'Speed test: Run it!' )
+            , hh.p( 'Similar to: ' +
+                    hh( 'a target="_blank" href="http://jsperf.com/arr-map-filter-reduce/4"'
+                        , 'http://jsperf.com/arr-map-filter-reduce/4'
+                      )
+                  )
+            , hh.p( 'with additionally:' )
+            , hh.pre( hh.ul(
+                hh.li( hh.code( "transfun_redinit = map( '.p' ).filter( '!=null' ).redinit( '0', '+' )" ) ) +
+                hh.li( hh.code( "transfun_reduce  = map( '.p' ).filter( '!=null' ).reduce( '+' )" ) )
+            ))
+
+            , hh( 'button id="speed-test-start" style="display: none"', 'Start!' )
+            , hh( 'div id="spt-out-cont" style="display: none;"'
+                  , hh.pre( hh( 'code id="speed-test-useragent"', navigator.userAgent ) ) + 
+                  hh.pre( hh( 'code id="speed-test-result"', ' ' ) )
+                )
+
+            , hh.hr()
+            , section_title_with_anchor( 'example-speed-test-result', 'Speed test: Example results' )
+            , hh( 'div id="estr-data-cont"' )
+            
+            , hh( 'hr id="unit-test-hr"' )
+            , section_title_with_anchor( 'unit-test', 'Unit tests' )
+            , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
+
         ].join( '\n' )
     );
+
+    gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
+        return hh.li( hh( 'a href="#' + o.id + '"', o.text ) +
+                      (o.id === 'unit-test'  ?  ' (' + hh( 'span id="result"' ) + ')'  :  '')
+                    );
+    }).join( '\n' ) );
+
+    function section_title_with_anchor( id, text )
+    {
+        if (id)
+            st_arr.push( { id : id, text : text } );
+        
+        return hh( 'h3 id="' + id + '"'
+                   , text + '&nbsp;' +
+                   (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
+                 )
+    }
+})();
     </script>
     
+    <pre id="estr-data" style="display: none"><code>-----
+Chrome 47:  Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36
+
+[transfun_redinit] speed:  31480 ops/sec  -------------------------------
+[transfun_reduce]  speed:  30591 ops/sec  -------------------------------
+[1loop]            speed:  31225 ops/sec  -------------------------------
+[3loops]           speed:  11155 ops/sec  -----------
+[native]           speed:    410 ops/sec  -
+
+[transfun_redinit] speed:  31167 ops/sec  -------------------------------
+[transfun_reduce]  speed:  30647 ops/sec  -------------------------------
+[1loop]            speed:  31485 ops/sec  -------------------------------
+[3loops]           speed:  10874 ops/sec  -----------
+[native]           speed:    410 ops/sec  -
+
+-----
+Firefox 43:  Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0
+
+[transfun_redinit] speed:  51274 ops/sec  ---------------------------------------------------
+[transfun_reduce]  speed:  39471 ops/sec  ---------------------------------------
+[1loop]            speed:  53757 ops/sec  ------------------------------------------------------
+[3loops]           speed:   6674 ops/sec  -------
+[native]           speed:   2655 ops/sec  ---
+
+[transfun_redinit] speed:  44043 ops/sec  --------------------------------------------
+[transfun_reduce]  speed:  33099 ops/sec  ---------------------------------
+[1loop]            speed:  42010 ops/sec  ------------------------------------------
+[3loops]           speed:   7066 ops/sec  -------
+[native]           speed:   2323 ops/sec  --
+
+-----
+Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; InfoPath.3; .NET4.0E; rv:11.0) like Gecko
+
+[transfun_redinit] speed:  35656 ops/sec  ------------------------------------
+[transfun_reduce]  speed:  26930 ops/sec  ---------------------------
+[1loop]            speed:  33166 ops/sec  ---------------------------------
+[3loops]           speed:   4716 ops/sec  -----
+[native]           speed:   1651 ops/sec  --
+
+[transfun_redinit] speed:  35234 ops/sec  -----------------------------------
+[transfun_reduce]  speed:  26764 ops/sec  ---------------------------
+[1loop]            speed:  32703 ops/sec  ---------------------------------
+[3loops]           speed:   4733 ops/sec  -----
+[native]           speed:   1649 ops/sec  --
+
+</code></pre>
+    <script type="text/javascript">
+(function () {
+    var dataNode = gEBI( 'estr-data' );
+    gEBI( 'estr-data-cont' ).appendChild( dataNode );
+    dataNode.style.display = '';
+})();
+    </script>
+
     <script type="text/javascript">
     (function () {
         var success = false
@@ -37,19 +140,20 @@
         print_result();
         print_test_detail();
         print_gen_code_expl();
+        setup_speed_test();
         
         function print_result()
         {
             if (!printed)
             {
                 printed = true;
-                gEBI( 'result' ).innerHTML = success  ?  'success (' + hh( 'a href="#test-detail"', 'unit tests' ) + ')' :  'failure';
+                gEBI( 'result' ).innerHTML = success  ?  'success' :  'failure';
             }
         }
 
         function print_test_detail()
         {
-            gEBI( 'test-detail-code' ).textContent = test;
+            gEBI( 'unit-test-code' ).textContent = test;
         }
 
         function print_gen_code_expl()
@@ -64,11 +168,217 @@
 
             gEBI( 'gen-code-expl-code' ).textContent = f(
                 [
-                    "map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
+                    "map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
+                    , "map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
                     , "decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' ).getBodyCode()"
                 ]
             );
         }
+
+        function setup_speed_test()
+        {
+            var sst_btn = gEBI( 'speed-test-start' )
+            , orig_text = sst_btn.textContent
+
+            , test_data
+            , impl_transfun_reduce  = map( '.p' ).filter( '!=null' ).reduce( '+' )
+            , impl_transfun_redinit = map( '.p' ).filter( '!=null' ).redinit( '0', '+' )
+            ;
+            
+            aEL( sst_btn, 'click', speed_test_start );
+            sst_btn.style.display = '';
+
+            function speed_test_start()
+            {
+                sA( sst_btn, 'disabled', 'disabled' );
+                sst_btn.textContent = 'Running...';
+
+                var node = gEBI( 'speed-test-result' );
+                node.textContent = '\n' + node.textContent;
+
+                gEBI( 'spt-out-cont' ).style.display = '';
+                
+                async_run( [
+                    function ( notifyDone ) { test_data = create_pseudo_random_arr(); notifyDone(); } 
+                    , function ( notifyDone ) { run_test( test_data, '[native]          ', impl_native, notifyDone ); }
+                    , function ( notifyDone ) { run_test( test_data, '[3loops]          ', impl_3loops, notifyDone ); }
+                    , function ( notifyDone ) { run_test( test_data, '[1loop]           ',  impl_1loop, notifyDone ); }
+                    , function ( notifyDone ) { run_test( test_data, '[transfun_reduce] ',  impl_transfun_reduce, notifyDone ); }
+                    , function ( notifyDone ) { run_test( test_data, '[transfun_redinit]', impl_transfun_redinit, notifyDone ); }
+                    , speed_test_done
+                ] );
+            }
+
+            function speed_test_done()
+            {
+                var node = gEBI( 'speed-test-result' );
+                node.textContent = node.textContent.replace( /speed:\s*(\d+)[^\(]*(\([^\)]*\))/g, replace_sanity_check_with_speed_bar );
+                
+                sst_btn.textContent = orig_text;
+                sst_btn.removeAttribute( 'disabled' );
+
+                function replace_sanity_check_with_speed_bar( s, s_n, s_paren )
+                {
+                    var n = Math.max( 1, Math.round( parseFloat( s_n ) / 1000 ) );
+                    return s.replace( s_paren, map( '"-"' ).join( '""' )( Array.apply( null, new Array( n ) ) ) );
+                }
+            }
+
+            // --- Speed test details
+
+            function impl_native( arr )
+            {
+                return arr.map(function(x) { return x.p; })
+                    .filter(function(x) { return x != null; })
+                    .reduce(function(a, b) { return a + b; })
+                ;
+            }
+
+            function impl_3loops( arr )
+            {
+                var n = arr.length;
+                
+                // .map(".p")
+                var tmp_1 = new Array(n);
+                for (var i = 0; i < n; i++)
+                    tmp_1[i] = arr[i].p;
+
+                // .filter("!=null")
+                var tmp_2 = [];
+                for (var i = 0; i < n; i++) {
+                    var v = tmp_1[i];
+                    if (v != null)
+                        tmp_2.push(v);
+                }
+
+                // .reduce("+")
+                var sum = 0;
+                for (var n2 = tmp_2.length, i = 0; i < n2; i++)
+                    sum = sum + tmp_2[i];
+
+                return sum;
+            }
+
+            function impl_1loop( arr )
+            {
+                var sum = 0,
+                    n = arr.length;
+                for (var i = 0; i < n; i++) {
+                    var v = arr[i];
+                    v = v.p; // .map(".p")
+                    if (v != null) // .filter("!=null")
+                        sum = sum + v; // .reduce("+")
+                }
+                return sum;
+            }
+            
+        }
+
+        // --- Tool functions
+
+        function async_run( funarr )
+        {
+            if (funarr.length > 0)
+                setTimeout( async_next, 1234 );  // 1234: pause to let the browser breathe
+            
+            function async_next()
+            {
+                funarr[ 0 ]( notifyDone );  // funarr[ 0 ] might be itself async -> pass it a callback
+            }
+            
+            function notifyDone()
+            {
+                async_run( funarr.slice( 1 ) );
+            }
+        }
+        
+        function create_pseudo_random_arr()
+        {
+            var n  = 10000
+            , arr  = new Array(n)
+            , drop = 0.1 // Proportion of numbers to drop
+            ;
+            
+            // Deterministic pseudo-random numbers to make sure
+            // arr is always generated the same way.
+            // http://stackoverflow.com/questions/521295/javascript-random-seeds
+            var seed = 1;
+            
+            for (var i = n; i--;)
+                arr[i] = { p: random() < drop ? null : i };
+            
+            return arr;
+
+            function random()
+            {
+                var x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            }
+        }
+
+        function run_test( test_data, name, impl, notifyDone )
+        {
+            var current_n     = 1
+            ,   real_duration = null
+            , target_duration = 1000
+            ;
+
+            var out = impl( test_data );
+
+            run_and_adjust();
+
+            function run_and_adjust()
+            {
+                var begin = Date.now();
+
+                for (var i = current_n; i--;)
+                    impl( test_data );
+
+                real_duration = Date.now() - begin;
+
+                var ratio = real_duration / target_duration;
+
+                if (0.9 < ratio  &&  ratio < 1.1)
+                {
+                    run_test_done();
+                }
+                else if (ratio < 0.5)
+                {
+                    // rough adjustment (typically at the beginnin)
+                    current_n *= 2;
+                    run_and_adjust();
+                }
+                else
+                {
+                    // fine adjustment (typically at the end)
+                    current_n = Math.round( current_n / ratio );
+                    setTimeout( run_and_adjust, 357 );
+                }
+            }
+            
+            function run_test_done()
+            {
+                var node  = gEBI( 'speed-test-result' );
+
+                var speed = Math.round(1000 * current_n / real_duration)
+                ,   s_str = '' + speed
+                ;
+                
+                while (s_str.length < 6)
+                    s_str = ' ' + s_str;
+                
+                node.textContent = [
+                    , name + ' speed: ' + s_str + ' ops/sec  (sanity check: output value: ' + out + ')'
+                ]
+                    .join( '\n' )
+                    + node.textContent  // reverse chronological order
+                ;
+
+                notifyDone();
+            }
+            
+        }
+        
     })();
     </script>
 

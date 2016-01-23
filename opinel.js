@@ -57,9 +57,16 @@ function qSA( sel, /*?*/node )
 
 function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string?*/html ) 
 {
-    return html
-	?  '<' + tname + '>' + html + '</' + tname.replace( /\s[\S\s].*$/, '' ) + '>'
-	:  '<' + tname + '/>'
+    var tag = tname.replace( /\s[\S\s].*$/, '' ).replace( /^\s*|\s*$/g, '' );
+    
+    // detect HTML5 void elements: 
+    // http://www.w3.org/TR/html5/syntax.html#void-elements
+    // http://stackoverflow.com/a/7854998
+
+    return tag in { area:1, base:1, br:1, col:1, embed:1, hr:1, img:1, input:1, 
+                    keygen:1, link:1, meta:1, param:1, source:1, track:1, wbr:1 }
+        ?  '<' + tname + '>'
+	:  '<' + tname + '>' + (html  ||  '') + '</' + tag + '>'
     ;
 }
 
