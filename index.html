@@ -3,9 +3,244 @@
   <head>
     <meta charset=utf-8/>
     <title>transfun</title>
+    <style type="text/css">
+    body { font-family: helvetica; max-width: 600px; margin: auto;
+
+line-height: 1.5em;
+    text-align: justify;
+    font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
+         }
+code { font-size: 1.1em; }
+    .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
+#title {margin-bottom: 3em; }
+#by { float: right; }
+    .section-title {margin-top: 2.5em; }
+    </style>
+    <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
     <script type="text/javascript" src="transfun.js"></script>
+    <script type="text/javascript" src="opinel.js"></script>
   </head>
   <body>
-    <h1>transfun</h1>
-  </body>
+    <script type="text/javascript">
+(function () {
+    
+    var c_transfun = hh.code( 'transfun' )
+    ,   c_mfr      = hh.code( 'map/filter/reduce' )
+    ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
+    ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
+        
+    ,   st_arr = [];
+    ;
+    
+    document.write([
+
+        hh( 'p id="by"', 'by ' + hh( 'a href="http://glat.info"', 'G. Lathoud' ) + ', February 2016' )
+        , hh( 'h1 id="title"'
+            , [ hh.code( 'transfun' )
+                
+              ]
+          )
+
+        , highlight( 'Merging loops for speed in JavaScript' )
+        
+        , hh.p([
+            , c_transfun + ' is a library that'
+            , ' lets you write ' + c_mfr + ' code that runs much faster than the corresponding '
+            , '  native ' + c_mfr + ' code:'
+        ] )
+
+        , hh.p([
+            hh( 'img src="img/jsperf_safari.png"' )
+        ])
+        
+        , highlight( 'How it works' )
+        
+        , hh.p([
+
+            , c_transfun + ' automatically merges consecutive loops'
+            , ' into a single loop (&agrave; la '
+            , hh( 'a href="' + haskell_ref + '"', 'Haskell' ) + '), '
+            ,  ' then generates fast code for the remaining loop.'
+        ])
+
+        , highlight( 'Extensibility' )
+        
+        , hh.p([
+            , 'A domain-specific language is used to define ' + c_mfr + '. With this language, library&nbsp;users can  '
+            , '  define other transformations: '
+            , hh.code( 'sum' ) + ', ' + hh.code( 'and' ) + ', ' + hh.code( 'or' ) + '...'
+        ])
+        
+        , section_title_with_anchor( '', 'Contents' )
+        , hh( 'p id="contents"' )
+
+        , section_title_with_anchor( 'motivation', 'Motivation' )
+
+        , hh.p( 'Consider an array of objects provided by an unreliable data source:' )
+
+        , js_pre_code([
+            'arr = [ { p : 18, ... }, { p : null, ... }, { p : 47, ... }, ... ]',
+            '                               ^^^^',
+            '                 missing data (null or undefined)'
+        ])
+
+        , hh.p([
+            'where we want to compute the sum of of the '
+            , hh.code( 'p' )
+            , ' values, ignoring the missing data.'
+        ])
+
+        , hh.p([
+            'The native ' + c_mfr + ' array methods permit to write this '
+            , 'in a way that clearly separates the 3 steps (ES6 notation):'
+        ])
+
+        , js_pre_code([
+            'arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b)',
+            '',
+            '1. take the p values',
+            '                    2. ignore missing data.',
+            '                                             3. sum...............'
+        ])
+        , legend( 'Native code' )
+        
+        , hh.p([
+            'The code structure is concise ' + hh.em( 'and' ) + ' close to that of a  human language description. '
+            , 'This leads to very maintainable code - in particular '
+            , 'it can be changed with less chance to introduce a bug, as when we would write a for loop. ' 
+        ])
+
+        , hh.p([
+            'BUT in performance-critical parts of a program, two issues arise: '
+        ])
+
+        , hh.ul([
+            hh.li( '(1) one function call per array element,' )
+            , hh.li( '(2) several intermediary arrays created.' )
+        ])
+
+        , js_pre_code([
+            'arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b)',
+            '            ^^     ^           ^^           ^             ^^',
+            '            (1)   (2)          (1)         (2)            (1)',
+        ])
+
+        , hh.p( 'To solve problem (1), one ends up writing ' + hh.code( 'for' ) + ' loops by hand:' )
+
+        , js_pre_code([
+
+            '// .map(".p")',
+            'var tmp_1 = new Array(n);    // intermediary array (problem 2)', 
+            'for (var i = 0; i < n; i++)',
+            '  tmp_1[i] = arr[i].p;',
+            '',
+            '// .filter("!=null")',
+            'var tmp_2 = [];    // intermediary array (problem 2)',
+            'for (var i = 0; i < n; i++) {',
+            '  var v = tmp_1[i];',
+            '  if (v != null)',
+            '    tmp_2.push(v);',
+            '}',
+            '',
+            '// .reduce("+")',
+            'var sum = 0;',
+            'for (var n2 = tmp_2.length, i = 0; i < n2; i++)',
+            '  sum = sum + tmp_2[i];',
+        ])
+
+        , legend( '3-loop code' )
+        
+        , hh.p( '...then, to solve problem (2), one merges the 3 loops into a single loop: ')
+
+        , js_pre_code([
+            
+            'var sum = 0,',
+            'n = arr.length;',
+            'for (var i = 0; i < n; i++) {',
+            '  var v = arr[i];',
+            '  v = v.p; // .map(".p")',
+            '  if (v != null) // .filter("!=null")',
+            '    sum = sum + v; // .reduce("+")',
+            '}',
+
+        ])
+        , legend( '1-loop code' )
+        
+        , hh.p([
+            'This leads indeed to a huge speedup (full results on '
+            , hh( 'a href="' + jsperf_motivation + '"', 'jsPerf' )
+            , '):'
+        ])
+
+        , hh.p([
+            hh( 'a href="' + jsperf_motivation + '"', hh( 'img src="img/jsperf_motivation.png" title="click for full results on jsPerf"' ))
+        ])
+
+        , hh.p([
+            '...but the 1-loop code can be difficult to read, maintain and change without introducing bugs.'
+        ])
+
+        , hh.p([
+            'Ideally, we would like to write code ' + hh.em( 'similar' ) + ' to this:'
+            , js_pre_code([
+                'arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b)',
+            ])
+
+            , '...and have it run as fast as the 1-loop code:'
+            , js_pre_code([
+                
+                'var sum = 0,',
+                'n = arr.length;',
+                'for (var i = 0; i < n; i++) {',
+                '  var v = arr[i];',
+                '  v = v.p; // .map(".p")',
+                '  if (v != null) // .filter("!=null")',
+                '    sum = sum + v; // .reduce("+")',
+                '}',
+                
+            ])
+
+            , ' This is the goal of ' + c_transfun + '.'
+            
+        ])
+
+    ].join( '\n' ));  
+
+    gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
+        return hh.li( hh( 'a href="#' + o.id + '"', o.text ) +
+                      (o.id === 'unit-test'  ?  ' (' + hh( 'span id="result"' ) + ')'  :  '')
+                    );
+    }).join( '\n' ) );
+
+    // Tool functions
+    
+    function highlight( s ) { return hh.p( hh.em( s ) ); }
+
+    function js_pre_code( s )
+    {
+        return hh( 'pre class="prettyprint lang-js"', hh.code( s.join ? s.join( '\n' ) : s ) );
+    }
+
+    function legend( s ) { return hh( 'p class="legend"', s ); }
+    
+    function section_title_with_anchor( id, text )
+    {
+        if (id)
+            st_arr.push( { id : id, text : text } );
+        
+        return hh( 'h3 id="' + id + '" class="section-title"'
+                   , text + '&nbsp;' +
+                   (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
+                 )
+    }
+
+})();
+
+
+    </script>
+
+    <script type="text/javascript" src="prettify/prettify.js"></script>
+    <script type="text/javascript">setTimeout( prettyPrint );</script>
+
+</body>
 </html>

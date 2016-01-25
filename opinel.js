@@ -55,8 +55,10 @@ function qSA( sel, /*?*/node )
 
 /* html getters */
 
-function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string?*/html ) 
+function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string | array of string?*/html ) 
 {
+    html = array_2_string( html );
+
     var tag = tname.replace( /\s[\S\s].*$/, '' ).replace( /^\s*|\s*$/g, '' );
     
     // detect HTML5 void elements: 
@@ -68,6 +70,14 @@ function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string?*/h
         ?  '<' + tname + '>'
 	:  '<' + tname + '>' + (html  ||  '') + '</' + tag + '>'
     ;
+
+    function array_2_string( x )
+    {
+        return x  &&  'string' !== typeof x
+            ?  x.map( array_2_string ).join( '' )
+            :  x
+        ;
+    }
 }
 
 /* Note: functions are objects, so we can define convenient shortcuts
