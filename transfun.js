@@ -88,7 +88,25 @@ var fullexpr, tval, tpub, tfun, TR;
         }
     });
 
-    // xxx filterRight, filterIn
+    tpub( 'filterRight', {
+        arity     : 1
+        , specgen : function ( /*string | externcall object*/test ) {
+            return { looprightleft : {
+                morph     : 'array'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
+                , bodyadd : { restwrap : function ( rest ) { return { 'if' : fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+            }};
+        }
+    });
+    
+    tpub( 'filterIn', {
+        arity     : 1
+        , specgen : function ( /*string | externcall object*/test ) {
+            return { loopin : {
+                morph     : 'object'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
+                , bodyadd : { restwrap : function ( rest ) { return { 'if' : fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+            }};
+        }
+    });
     
     tpub( 'reduce', {
         arity : 1
@@ -108,7 +126,43 @@ var fullexpr, tval, tpub, tfun, TR;
         }
     });
 
-    // xxx reduceRight, reduceIn
+    tpub( 'reduceRight', {
+        arity : 1
+        , specgen : function ( /*string | externcall object*/combine ) {
+            return { looprightleft : {
+                beforeloop  : [ { decl : [ 'out', 'null' ] }
+                                , { decl : [ 'redinit', 'false' ] }
+                              ]
+                , bodyadd   : { 'if'     : 'redinit'
+                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                                , 'else' : [ {   set : [ 'out', 'v' ] }
+                                             , { set : [ 'redinit', 'true' ] }
+                                           ]
+                              }
+                , afterloop : { set : [ 'current', 'out' ] }
+            }};
+        }
+    });
+
+    tpub( 'reduceIn', {
+        arity : 1
+        , specgen : function ( /*string | externcall object*/combine ) {
+            return { loopin : {
+                beforeloop  : [ { decl : [ 'out', 'null' ] }
+                                , { decl : [ 'redinit', 'false' ] }
+                              ]
+                , bodyadd   : { 'if'     : 'redinit'
+                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                                , 'else' : [ {   set : [ 'out', 'v' ] }
+                                             , { set : [ 'redinit', 'true' ] }
+                                           ]
+                              }
+                , afterloop : { set : [ 'current', 'out' ] }
+            }};
+        }
+    });
+
+
     
     tpub( 'redinit', {
         arity : 2
@@ -121,7 +175,28 @@ var fullexpr, tval, tpub, tfun, TR;
         }
     });
 
-    // xxx redinitRight, redinitIn
+    tpub( 'redinitRight', {
+        arity : 2
+        , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
+            return { looprightleft : {
+                beforeloop  : { decl : [ 'out', fullexpr( redinit, 'current' ) ] }
+                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                , afterloop : { set : [ 'current', 'out' ] }
+            }};
+        }
+    });
+
+    tpub( 'redinitIn', {
+        arity : 2
+        , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
+            return { loopin : {
+                beforeloop  : { decl : [ 'out', fullexpr( redinit, 'current' ) ] }
+                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                , afterloop : { set : [ 'current', 'out' ] }
+            }};
+        }
+    });
+    
 
     tpub( 'breakWhen', {
         arity     : 1
@@ -150,35 +225,82 @@ var fullexpr, tval, tpub, tfun, TR;
         }
     });
 
+    // -- and
+    
     tpub( 'and', {
         arity : 0
         , spec : { loopleftright : {
             beforeloop : { decl : [ 'out', 'true' ] }
-            , bodyadd  : { 'if' : { not : 'v' }
-                           , 'then' : [ { set : [ 'out', 'v' ] }
-                                        , 'break'
-                                      ]
-                         }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : { not : 'out' } , 'then' : 'break' }
+                ]
             , afterloop : { set : [ 'current', 'out' ] }
         }}
     });
 
-    // xxx andRight andIn
+    tpub( 'andRight', {
+        arity : 0
+        , spec : { looprightleft : {
+            beforeloop : { decl : [ 'out', 'true' ] }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : { not : 'out' } , 'then' : 'break' }
+                ]
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
+    tpub( 'andIn', {
+        arity : 0
+        , spec : { loopin : {
+            beforeloop : { decl : [ 'out', 'true' ] }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : { not : 'out' } , 'then' : 'break' }
+                ]
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
+    // -- or
     
     tpub( 'or', {
         arity : 0
         , spec : { loopleftright : {
-            beforeloop : { decl : [ 'out', 'true' ] }
-            , bodyadd  : { 'if' : 'v'
-                           , 'then' : [ { set : [ 'out', 'v' ] }
-                                        , 'break'
-                                      ]
-                         }
+            beforeloop : { decl : [ 'out', 'false' ] }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : 'out' , 'then' : 'break' }
+            ]
             , afterloop : { set : [ 'current', 'out' ] }
         }}
     });
 
-    // xxx orRight orIn
+    tpub( 'orRight', {
+        arity : 0
+        , spec : { looprightleft : {
+            beforeloop : { decl : [ 'out', 'false' ] }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : 'out' , 'then' : 'break' }
+            ]
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
+    tpub( 'orIn', {
+        arity : 0
+        , spec : { loopin : {
+            beforeloop : { decl : [ 'out', 'false' ] }
+            , bodyadd  : [
+                { set : [ 'out', 'v' ] }
+                , { 'if' : 'out' , 'then' : 'break' }
+            ]
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
     
     tpub( 'o2values', {
         arity : 0
@@ -431,10 +553,6 @@ var fullexpr, tval, tpub, tfun, TR;
             return { stepadd : { set : [ 'current', fullexpr( ret, 'current' ) ] } };
         }
 
-        // --- Details for the appfun shortcut variant
-
-        // xxx not supported yet
-        
         // --- Details for the object definition variant
 
         function tfun_from_objectdef( definition )

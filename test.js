@@ -142,7 +142,89 @@ function test()
     tmp( corrupt_arr );
     console.log( tmp._tf_dbg.code_body );        
     
+    // other
+
+    var    arr = [ 1, 4, 7, 10, 13, 16, 18 ]
+    , obtained = filterRight( '%2' )( arr )
+    , expected = [ 13, 7, 1 ]
+    ;
+    expected.join( '#' ) === obtained.join( '#' )  ||  null.bug;
+
     //
+    
+    var    obj = { a: 1, b : 4, c : 7, d : 10, e : 13, f : 16, g : 18 }
+    , obtained = filterIn( '%2' )( obj )
+    , expected = { a : 1, c : 7, e : 13 }
+    ;
+    JSON.stringify( expected ) === JSON.stringify( obtained )  ||  null.bug;
+
+    //
+
+    var    arr = [ 1, 4, 7, 10, 13, 16, 18 ]
+    , obtained = reduceRight( '/' )( arr )
+    , expected = 18 / 16 / 13 / 10 / 7 / 4 / 1
+    ;
+    1e-10 > Math.abs( expected - obtained )  ||  null.bug;
+
+    //
+    
+    var    obj = { a: 1, b : 4, c : 7, d : 10, e : 13, f : 16, g : 18 }
+    , obtained = reduceIn( '+' )( obj )
+    , expected = 1+4+7+10+13+16+18
+    ;
+    1e-10 > Math.abs( expected - obtained )  ||  null.bug;
+
+    //
+
+    var    arr = [ 1, 4, 7, 10, 13, 16, 18 ]
+    , obtained = redinitRight( '1', '/' )( arr )
+    , expected = 1 / 18 / 16 / 13 / 10 / 7 / 4 / 1
+    ;
+    1e-10 > Math.abs( expected - obtained )  ||  null.bug;
+
+    //
+    
+    var    obj = { a: 1, b : 4, c : 7, d : 10, e : 13, f : 16, g : 18 }
+    , obtained = redinitIn( '-100', '+' )( obj )
+    , expected = -100+1+4+7+10+13+16+18
+    ;
+    1e-10 > Math.abs( expected - obtained )  ||  null.bug;
+
+    //
+
+    true  === and( [] )  ||  null.bug;
+    false === or( [] )   ||  null.bug;
+
+    //
+
+    'great' === and( [ 1, true, 2, 'great' ] )  ||  null.bug;
+    1 === andRight( [ 1, true, 2, 'great' ] )  ||  null.bug;
+    true  === !!andIn( { a: 1, b : 'great', c : true })  ||  null.bug;
+    null  === andIn( { a: 1, b : 'great', d : null, c : true })  ||  null.bug;
+    
+    null === and( [ 1, true, 2, null, 'great' ] )  ||  null.bug;
+    null === and( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
+    0 === andRight( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
+   
+    true  === tval( [ 1, 4, 7, 10, 13, 16, 18 ] )( map( '>0' ).and() )  ||  null.bug;
+    false === tval( [ 1, 4, -7, 10, 13, -16, 18 ] )( map( '>0' ).and() )  ||  null.bug;
+
+    true  === tval( [ 1, 4, 7, 10, 13, 16, 18 ] )( map( '>0' ).andRight() )  ||  null.bug;
+    false === tval( [ 1, 4, -7, 10, 13, -16, 18 ] )( map( '>0' ).andRight() )  ||  null.bug;
+
+    true  === tval( { a: 1, b : 4, c : 7, d : 10, e : 13, f : 16, g : 18 } )( mapIn( '>0' ).andIn() )  ||  null.bug;
+    false === tval( { a: 1, b : 4, c : -7, d : 10, e : -13, f : 16, g : 18 })( mapIn( '>0' ).andIn() )  ||  null.bug;
+    
+    //
+
+    'great' === or( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
+    2 === orRight( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
+    111   === orIn( { a: null, b : false, c : 111 })  ||  null.bug;
+    false === !!orIn( { a: null, b : false, c : 0 })  ||  null.bug;
+    null  === orIn( { a: null, b : null, d : null, c : null })  ||  null.bug;
+    
+
+    // 
     
     console.timeEnd( 'transfun:test' );
     console.log( 'transfun:test: all tests passed.' );
