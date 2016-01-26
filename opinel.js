@@ -80,12 +80,25 @@ function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string | a
     }
 }
 
+hh.esc = function (s) 
+// If this is used too often, then it is probably better to switch
+// over to js.yak
+{
+    return s
+        .replace( /&/g, '&amp;' )            
+        .replace( /</g, '&lt;' )
+        .replace( />/g, '&gt;' )            
+        .replace( /"/g, '&quot;' )
+        .replace( /'/g, '&apos;' );
+};
+
+
 /* Note: functions are objects, so we can define convenient shortcuts
  * e.g. `hh.div( <html> )`, `hh.span( <html> )` etc.
  */
 [ 'a', 'blockquote', 'button', 'cite', 'code', 'dd', 'div', 'dl', 'dt'
   , 'em', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
-  , 'hr', 'iframe', 'img', 'input', 'li', 'ol', 'option', 'p', 'pre', 
+  , 'hr', 'iframe', 'img', 'input', 'li', 'ol', 'option', 'p', 'pre'
   , 'select', 'span', 'strong'
   , 'table', 'td', 'th', 'tr', 'ul' 
 ]

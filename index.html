@@ -10,6 +10,7 @@ line-height: 1.5em;
     text-align: justify;
     font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
          }
+    .highlight { margin-top: 2em }
 code { font-size: 1.1em; }
     .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
 #title {margin-bottom: 3em; }
@@ -27,6 +28,7 @@ code { font-size: 1.1em; }
     var c_transfun = hh.code( 'transfun' )
     ,   c_appfun   = hh.code( 'appfun' )
     ,   c_arr      = hh.code( 'arr' )
+    ,   c_m        = hh.code( 'map' )
     ,   c_mfr      = hh.code( 'map/filter/reduce' )
     ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
     ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
@@ -148,7 +150,7 @@ code { font-size: 1.1em; }
             '  sum = sum + tmp_2[i];',
         ])
 
-        , legend( '3-loop code' )
+        , legend( '3-loop code (written by hand)' )
         
         , hh.p( '...then, to solve problem (2), one merges the 3 loops into a single loop: ')
 
@@ -164,7 +166,7 @@ code { font-size: 1.1em; }
             '}',
 
         ])
-        , legend( '1-loop code' )
+        , legend( '1-loop code (written by hand)' )
         
         , hh.p([
             'This leads to a huge speedup (full results on '
@@ -271,8 +273,10 @@ code { font-size: 1.1em; }
         , js_pre_code([
             '// -- [transfun] --',
             "var appfun = map( '.p' ).filter( '!=null' ).redinit( '0', '+' );",
-            "var result = appfun( arr );",
-            '',
+            "var result = appfun( arr );"
+        ])
+        
+        , js_pre_code([
             '// -- [1 loop (by hand)] --',
             'var result = 0, n = arr.length;',
             'for (var i = 0; i < n; i++) {',
@@ -280,8 +284,10 @@ code { font-size: 1.1em; }
             '  v = v.p; // .map(".p")',
             '  if (v != null) // .filter("!=null")',
             '    result = result + v; // .reduce("+")',
-            '}',
-            '',
+            '}'
+        ])
+        
+        , js_pre_code([
             '// -- [3 loops (by hand)] --',
             '// .map(".p")',
             'var tmp_1 = new Array(n);    // intermediary array (problem 2)', 
@@ -291,12 +297,14 @@ code { font-size: 1.1em; }
             'for ...',
             '// .reduce("+")',
             'var result = 0;',
-            'for ...',
-            '',
+            'for ...'
+        ])
+
+        , js_pre_code([
             '// -- [native] (problems 1 and 2) --',
             'var result = arr.map((x) => x.p)',
             '  .filter((x) => x != null)',
-            '  .reduce((a,b) => a + b);',
+            '  .reduce((a,b) => a + b);'
         ])
 
 
@@ -333,8 +341,28 @@ code { font-size: 1.1em; }
 
         , section_title_with_anchor( 'defining', 'Defining transformations' )
 
+        , hh.p([
+            'Global or private transformations can be defined:'
+        ])
+        , js_pre_code([
+            '// In global namespace',
+            'tpub( <name:string>, <definition:object> );',
+            '',
+            '// In local namespace',
+            'var myTransfun = tfun( <definition:object> );'
+        ])
+/*        , hh.p('Where:')
+        , js_pre_code( '<definition:object> = { arity: 0, spec : <object> }' ),
+        , hh.p('...or ' + hh.code( 'arity > 0' ) + ':')
+        , js_pre_code([ 
+            '<definition:object> = { arity: <number>,  // >0',
+            '                        specgen : <function => object>}',
+            '// (arity is the number of parameters of specgen)'
+        ])
+*/        
+        
         , hh.p([ 
-            'Using ' + c_transfun + ', the ' + c_mfr + ' transformations are defined as follows:' 
+            'For example, using ' + c_transfun + ', the global ' + c_m + ' is defined as follows:' 
         ])
 
         , js_pre_code([
@@ -349,8 +377,35 @@ code { font-size: 1.1em; }
             "                                fullexpr( transform, 'v', 'k' ) ] }",
             "        }};",
             "    }",
-            "});",
-            "",
+            "});"
+        ])
+
+        , hh.p([
+            '...which describes the characteristics of ' + c_m + ' ' +
+                hh.em( 'without' ) + ' writing a ' + hh.code( 'for' ) + ' loop:'
+        ])
+
+        , hh.ul([
+            hh.li( hh.code( 'arity' ) + ' is the number of parameters of ' + hh.code( 'specgen' ) + ',' )
+            , hh.li( hh.code( 'loopleftright' ) + ' &ndash; "loop through an array from 1st to last element",' )
+            , hh.li( hh.code( "morph: 'array'" ) + ' &ndash; "transform an array into another array",' )
+            , hh.li( hh.code( 'conserve_array_length: true' ) + ' &ndash; (what it says!),' )
+            , hh.li( hh.code( 'bodyadd' ) + ' &ndash; what to do inside the loop.' )
+        ])
+
+        , hh.p([
+            '...and ' + hh.code( "fullexpr( transform, 'v', 'k' )" ) + ' completes the expression ' +
+                hh.code( 'transform' ) + ' if needed, using ' + hh.code( 'v' ) + ' on the left, and ' + hh.code( 'k' ) + ' on the right. ' +
+                'So writing:'
+        ])
+        , js_pre_code( "map('.p')")
+        , hh.p('is equivalent to write:')
+        , js_pre_code( "map('v.p')" )
+
+        , hh.p([
+            'The definition of ' + hh.code( 'filter' ) + ' has a similar structure, except that it does not ' + hh.code( 'conserve_array_length' ) + ':'
+        ])
+        , js_pre_code([
             "tpub( 'filter', {",
             "    arity    : 1",
             "    , specgen: function ( /*string | externcall object*/test ) {",
@@ -361,8 +416,29 @@ code { font-size: 1.1em; }
             "                           'then': rest }; } }",
             "        }};",
             "    }",
-            "});",
-            "",
+            "});"
+        ])
+        , hh.p([
+            'The construct ' + js_code( '{ restwrap : function ( rest ) { ... } }' ) +
+                ' wraps ' + hh.em( 'whatever' ) + ' future steps the body of the loop will have,' +
+                ' inside an if/then branch.'
+        ])
+        , hh.p([
+            hh.code( "fullexpr( test, 'v', 'k' )" ) + ' completes the expression ' +
+                hh.code( 'test' ) + ' if needed, using ' + hh.code( 'v' ) + ' on the left, and ' + hh.code( 'k' ) + ' on the right. ' +
+                'So writing:'
+        ])
+        , js_pre_code( "filter('!=null')")
+        , hh.p('is equivalent to write:')
+        , js_pre_code( "filter('v!=null')" )            
+
+        , hh.p([
+            hh.code( 'redinit' ) + ' is also a '
+            , hh.code( 'loopleftright' ) + ', but does *not* morph into an array: it&nbsp;produces a value '
+            , hh.code( 'out' ) + ' of unknown type, which thus must be explicited:'
+        ])
+
+        , js_pre_code([
             "tpub( 'redinit', {",
             "    arity: 2",
             "    , specgen: function ( /*string*/redinit, ",
@@ -376,9 +452,85 @@ code { font-size: 1.1em; }
             "        }};",
             "    }",
             "});",
-
-
         ])
+        , hh.p( 'When called with parameters, the transformations ' + c_mfr + 
+                ' are resolved and merged whenever possible, as described in the next section.' 
+              )
+
+        , section_title_with_anchor( 'motor', 'Under the hood: merging loops' )
+        , hh.p( 'The call:' )
+        , js_pre_code( "map( '.p' ).filter( '!=null' ).redinit( '0', '+' )" )
+        , hh.p( 'is implemented with: (1)&nbsp;resolution, (2)&nbsp;merging and (3)&nbsp;JavaScript code generation.' )
+
+        , highlight( '(1) resolution' )
+        , hh.p( 'An array of three specification objects is constructed:')
+        , js_pre_code([
+            '[',
+            "    { loopleftright: {",
+            "        morph: 'array'",
+            "        , conserve_array_length: true",
+            "        , bodyadd: { set: [ 'v', 'v.p' ] }",
+            "    }},",
+            "    ",
+            "    { loopleftright: {",
+            "        morph    : 'array'",
+            "        , bodyadd: { restwrap: function ( rest ) {",
+            "                         return { 'if': 'v!=null',",
+            "                                  'then': rest }; } }",
+            "    }},",
+            "    ",
+            "    { loopleftright: {",
+            "        beforeloop : { decl: [ 'out', '0' ] }",
+            "        , bodyadd  : { set: [ 'out', 'out+v' }",
+            "        , afterloop: { set: [ 'current', 'out' ] }",
+            "    }}",
+            "",
+            "]"
+        ])
+
+        , highlight( '(2) merging' )
+        , hh.p( 'Whenever we have:' )
+        , hh.ul([
+            hh.li( 'N consecutive objects describing loops of the same type, here&nbsp;' + hh.code( 'loopleftright' ) + ',' )
+            , hh.li( 'AND at least the first N-1 loops are morph loops of the same type, here&nbsp;' + hh.code( 'morph: array' ) + ',' )
+        ])
+        , hh.p( '...then we merge them into a single specification object, describing a single loop:' )
+        , js_pre_code([
+            '[',
+            "    { loopleftright: {",
+            "        beforeloop : { decl: [ 'out', '0' ]",
+            "        , bodyadd: [ { set: [ 'v', 'v.p' ] },",
+            "                     { restwrap: function ( rest ) {",
+            "                         return { 'if': 'v!=null',",
+            "                                  'then': rest }; } },",
+            "                     { set: [ 'out', 'out+v' ] }",
+            "                   ]",
+            "        , afterloop: { set: [ 'current', 'out' ] }",
+            "    }},",
+            "]"
+        ])
+
+        , highlight( '(3) JavaScript code generation' )
+
+        , hh.p( '...is done after unwrapping:' )
+        , js_pre_code([
+            "        , bodyadd: [ { set: [ 'v', 'v.p' ] },",
+            "                     { restwrap: function ( rest ) {",
+            "                         return { 'if': 'v!=null',",
+            "                                  'then': rest }; } },",
+            "                     { set: [ 'out', 'out+v' ] }",
+            "                   ]",
+        ])
+        , hh.p( '...into:' )
+        , js_pre_code([
+            "        , bodyadd: [ { set: [ 'v', 'v.p' ] },",
+            "                     { 'if': 'v!=null',",
+            "                       'then': { set: [ 'out', 'out+v' ] } }",
+            "                   ]",
+        ])
+        , hh.p( 'Now ' + c_transfun + ' generates the JavaScript code:' )
+        , js_pre_code( map('.p').filter('!=null').redinit('0','+').getBodyCode())
+       
 
     ].join( '\n' ));  
 
@@ -390,11 +542,16 @@ code { font-size: 1.1em; }
 
     // Tool functions
     
-    function highlight( s ) { return hh.p( hh.em( s ) ); }
+    function highlight( s ) { return hh( 'p class="highlight"', hh.em( s ) ); }
 
     function js_pre_code( s )
     {
-        return hh( 'pre class="prettyprint lang-js"', hh.code( s.join ? s.join( '\n' ) : s ) );
+        return hh( 'pre class="prettyprint lang-js"', hh.code( (s.join ? s : [s]).map( hh.esc ).join( '\n' ) ) );
+    }
+
+    function js_code( s )
+    {
+        return hh( 'code class="prettyprint lang-js"', (s.join ? s : [s]).map( hh.esc ).join( '\n' ) );
     }
 
     function legend( s ) { return hh( 'p class="legend"', s ); }
