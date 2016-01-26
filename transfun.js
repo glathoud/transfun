@@ -327,8 +327,8 @@ var fullexpr, tval, tpub, tfun, TR;
 
     tpub( 'sum', redinit( '0', '+' ) );
 
-    tpub( 'join', '#c',  '.join(#c)' );
-    tpub( 'split', '#c', '.split(#c)' );
+    tpub( 'join', '#s',  '.join(#s)' );
+    tpub( 'split', '#s', '.split(#s)' );
     
     // ---------- Public API implementation
 
