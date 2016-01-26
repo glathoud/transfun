@@ -322,9 +322,62 @@ code { font-size: 1.1em; }
         ])
 
         , hh.p([
-            c_transfun + ' runs very roughly 100 times faster than the equivalent native code.'
-            , ' You can check this in your browser on the ' 
+            c_transfun + ' runs about 100 times faster than the equivalent native code.'
+        ])
+        
+        , hh.p([
+            'You can run the speed test in your browser on the ' 
             , hh( 'a href="' + test_run_it_ref + '"', 'test page' ) + '.'
+        ])
+
+
+        , section_title_with_anchor( 'defining', 'Defining transformations' )
+
+        , hh.p([ 
+            'Using ' + c_transfun + ', the ' + c_mfr + ' transformations are defined as follows:' 
+        ])
+
+        , js_pre_code([
+            
+            "tpub( 'map', {",
+            "    arity    : 1",
+            "    , specgen: function ( /*string | externcall object*/transform ) {",
+            "        return { loopleftright: {",
+            "            morph: 'array'",
+            "            , conserve_array_length: true",
+            "            , bodyadd: { set: [ 'v',",
+            "                                fullexpr( transform, 'v', 'k' ) ] }",
+            "        }};",
+            "    }",
+            "});",
+            "",
+            "tpub( 'filter', {",
+            "    arity    : 1",
+            "    , specgen: function ( /*string | externcall object*/test ) {",
+            "        return { loopleftright: {",
+            "            morph    : 'array'",
+            "            , bodyadd: { restwrap: function ( rest ) {",
+            "                  return { 'if': fullexpr( test, 'v', 'k' ),",
+            "                           'then': rest }; } }",
+            "        }};",
+            "    }",
+            "});",
+            "",
+            "tpub( 'redinit', {",
+            "    arity: 2",
+            "    , specgen: function ( /*string*/redinit, ",
+            "                           /*string | externcall object*/combine ) {",
+            "        return { loopleftright: {",
+            "            beforeloop : { decl: [ 'out', ",
+            "                                   fullexpr( redinit, 'current' ) ] }",
+            "            , bodyadd  : { set: [ 'out', ",
+            "                                  fullexpr( combine, 'out', 'v' ) ] }",
+            "            , afterloop: { set: [ 'current', 'out' ] }",
+            "        }};",
+            "    }",
+            "});",
+
+
         ])
 
     ].join( '\n' ));  
