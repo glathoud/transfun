@@ -14,7 +14,7 @@ code { font-size: 1.1em; }
     .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
 #title {margin-bottom: 3em; }
 #by { float: right; }
-    .section-title {margin-top: 2.5em; }
+    .section-hr, .section-title {margin-top: 2.5em; }
     </style>
     <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
     <script type="text/javascript" src="transfun.js"></script>
@@ -25,10 +25,12 @@ code { font-size: 1.1em; }
 (function () {
     
     var c_transfun = hh.code( 'transfun' )
+    ,   c_appfun   = hh.code( 'appfun' )
+    ,   c_arr      = hh.code( 'arr' )
     ,   c_mfr      = hh.code( 'map/filter/reduce' )
     ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
     ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
-        
+    ,   test_run_it_ref = 'test.html#speed-test'
     ,   st_arr = [];
     ;
     
@@ -40,12 +42,10 @@ code { font-size: 1.1em; }
                 
               ]
           )
-
-        , highlight( 'Merging loops for speed in JavaScript' )
-        
+       
         , hh.p([
-            , c_transfun + ' is a library that'
-            , ' lets you write ' + c_mfr + ' code that runs much faster than the corresponding '
+            , c_transfun + ' is a JavaScript library that'
+            , ' lets you write ' + c_mfr + ' code that runs much faster than the equivalent '
             , '  native ' + c_mfr + ' code:'
         ] )
 
@@ -53,7 +53,7 @@ code { font-size: 1.1em; }
             hh( 'img src="img/jsperf_safari.png"' )
         ])
         
-        , highlight( 'How it works' )
+        , highlight( 'Merging loops for speed' )
         
         , hh.p([
 
@@ -74,7 +74,7 @@ code { font-size: 1.1em; }
         , section_title_with_anchor( '', 'Contents' )
         , hh( 'p id="contents"' )
 
-        , section_title_with_anchor( 'motivation', 'Motivation' )
+        , section_title_with_anchor( 'motivation', 'Motivation: Performance issue' )
 
         , hh.p( 'Consider an array of objects provided by an unreliable data source:' )
 
@@ -167,7 +167,7 @@ code { font-size: 1.1em; }
         , legend( '1-loop code' )
         
         , hh.p([
-            'This leads indeed to a huge speedup (full results on '
+            'This leads to a huge speedup (full results on '
             , hh( 'a href="' + jsperf_motivation + '"', 'jsPerf' )
             , '):'
         ])
@@ -182,26 +182,149 @@ code { font-size: 1.1em; }
 
         , hh.p([
             'Ideally, we would like to write code ' + hh.em( 'similar' ) + ' to this:'
-            , js_pre_code([
-                'arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b)',
-            ])
+        ])
+        , js_pre_code([
+            'arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b)',
+        ])
 
-            , '...and have it run as fast as the 1-loop code:'
-            , js_pre_code([
-                
-                'var sum = 0,',
-                'n = arr.length;',
-                'for (var i = 0; i < n; i++) {',
-                '  var v = arr[i];',
-                '  v = v.p; // .map(".p")',
-                '  if (v != null) // .filter("!=null")',
-                '    sum = sum + v; // .reduce("+")',
-                '}',
-                
-            ])
-
-            , ' This is the goal of ' + c_transfun + '.'
+        , '...and have it run as fast as the 1-loop code:'
+        , js_pre_code([
             
+            'var sum = 0,',
+            'n = arr.length;',
+            'for (var i = 0; i < n; i++) {',
+            '  var v = arr[i];',
+            '  v = v.p; // .map(".p")',
+            '  if (v != null) // .filter("!=null")',
+            '    sum = sum + v; // .reduce("+")',
+            '}',
+            
+        ])
+
+        , ' This is the goal of ' + c_transfun + '.'
+
+        
+        , section_title_with_anchor( 'solution', 'The ' + c_transfun + ' solution' )
+        
+        , hh.p([
+            c_transfun + ' uses a slightly different syntax: instead of '
+            , 'passing function arguments to ' + c_mfr + ' to produce a result value in 1&nbsp;step: '
+        ])
+
+        , js_pre_code([
+            'var result = arr.map((x) => x.p)',
+            '  .filter((x) => x != null)',
+            '  .reduce((a,b) => a + b);',
+        ])
+        , legend( 'Native code' )
+
+        , hh.p([
+            '...one first passes ' + hh.em( 'code expressions' ) + ' to produce an ' + hh.em( 'application function' ) + ': '
+        ])
+
+        , js_pre_code([
+            "var appfun = map( '.p' ).filter( '!=null' ).reduce( '+' );",
+        ])
+        , legend( c_transfun + ' code' )
+
+        , hh.p([
+            '...then in a 2nd&nbsp;step, calls ' + c_appfun + ' on some data ' + c_arr + ' to produce a result:'
+        ])
+        
+        , js_pre_code([
+            "var result = appfun( arr ); // very fast!"
+        ])
+
+        , hh.p([
+            'This runs very fast, because, behind the scenes, ' + c_transfun + ' generates single-loop code whenever possible:'
+        ])
+        , js_pre_code(
+            hh( 'script type="text/javascript"'
+                , "document.write(map( '.p' ).filter( '!=null' ).reduce( '+' ).getBodyCode())"
+              )
+        )
+        , legend(
+            'Internal code generated by ' + c_transfun
+                + hh('br') + '(generated while this article loaded)'
+        )
+        
+
+        , section_title_with_anchor( 'speed-test', 'Speed test' )
+
+        , hh.p( 'We create an array of 10000 objects, each with a ' + hh.code( 'p' ) + 
+                ' property, that is either a number, or ' + hh.code( 'null' ) + ':'
+              )
+        , js_pre_code([
+            'arr = [ { p : 18, ... }, { p : null, ... }, { p : 47, ... }, ... ]',
+            '                               ^^^^',
+            '                 missing data (null or undefined)'
+        ])
+        
+        , hh.p([ 'The task is to compute the sum of the available ' + hh.code( 'p' ) + ' numbers,'
+                 , ' ignoring the ' + hh.code( 'null' ) + ' values.' 
+               ])
+
+        , hh.p([ 
+            'Below are the various implementation tested (see above for details): '
+        ])
+        
+        , js_pre_code([
+            '// -- [transfun] --',
+            "var appfun = map( '.p' ).filter( '!=null' ).redinit( '0', '+' );",
+            "var result = appfun( arr );",
+            '',
+            '// -- [1 loop (by hand)] --',
+            'var result = 0, n = arr.length;',
+            'for (var i = 0; i < n; i++) {',
+            '  var v = arr[i];',
+            '  v = v.p; // .map(".p")',
+            '  if (v != null) // .filter("!=null")',
+            '    result = result + v; // .reduce("+")',
+            '}',
+            '',
+            '// -- [3 loops (by hand)] --',
+            '// .map(".p")',
+            'var tmp_1 = new Array(n);    // intermediary array (problem 2)', 
+            'for ...',
+            '// .filter("!=null")',
+            'var tmp_2 = [];    // intermediary array (problem 2)',
+            'for ...',
+            '// .reduce("+")',
+            'var result = 0;',
+            'for ...',
+            '',
+            '// -- [native] (problems 1 and 2) --',
+            'var result = arr.map((x) => x.p)',
+            '  .filter((x) => x != null)',
+            '  .reduce((a,b) => a + b);',
+        ])
+
+
+        , section_title_with_anchor( 'speed-result', 'Speed results' )
+        , hh.p([
+            'Below are the summarized speed results (details on the '
+            , hh( 'a href="' + test_run_it_ref + '"', 'test page' )
+            , '):'
+        ])
+        , hh.pre( hh.code([
+            'Chrome 47 on a Win7 machine',
+            '',
+            '[transfun]         speed:  31480 ops/sec  &ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;',
+            '[1loop (by hand)]  speed:  31225 ops/sec  &ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;',
+            '[3loops (by hand)] speed:  11155 ops/sec  &ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;&ndash;',
+            '[native]           speed:    410 ops/sec  &ndash;'
+        ].join( '\n' )))
+        , legend( 'Speed results' )
+
+        , hh.p([
+            'The goal has been reached: ' + c_transfun + ' lets us write clean and concise code '
+            , 'AND provides the same speed as a single for loop written by hand.'
+        ])
+
+        , hh.p([
+            c_transfun + ' runs very roughly 100 times faster than the equivalent native code.'
+            , ' You can check this in your browser on the ' 
+            , hh( 'a href="' + test_run_it_ref + '"', 'test page' ) + '.'
         ])
 
     ].join( '\n' ));  
@@ -228,10 +351,11 @@ code { font-size: 1.1em; }
         if (id)
             st_arr.push( { id : id, text : text } );
         
-        return hh( 'h3 id="' + id + '" class="section-title"'
-                   , text + '&nbsp;' +
-                   (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
-                 )
+        return hh( 'hr class="section-hr"' ) + hh.hr() +
+            hh( 'h3 id="' + id + '" class="section-title"'
+                , text + '&nbsp;' +
+                (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
+              )
     }
 
 })();
