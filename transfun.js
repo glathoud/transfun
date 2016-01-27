@@ -1,4 +1,4 @@
-/*global tval tpub tfun fullexpr TR
+/*global tval tpub tfun fullexpr TF
   map filter reduce sum prod decl
   console
 */
@@ -15,7 +15,7 @@
 // Guillaume Lathoud
 // glat@glat.info
 
-var fullexpr, tval, tpub, tfun, TR;
+var fullexpr, tval, tpub, tfun, TF;
 (function () {
 
     var L_LEFT  = 'loopleftright'
@@ -35,9 +35,9 @@ var fullexpr, tval, tpub, tfun, TR;
     tpub     = tpub_;
     tfun     = tfun_;
 
-    // ---------- Public API: TR namespace access
+    // ---------- Public API: TF namespace access
 
-    TR = { fullexpr : fullexpr_
+    TF = { fullexpr : fullexpr_
            , tval   : tval_
            , tpub   : tpub_
            , tfun   : tfun_
@@ -393,7 +393,7 @@ var fullexpr, tval, tpub, tfun, TR;
         //
         // if arity > 0 -> publish the transfun
         new Function( 'tf'
-                      , 'TR["' + name + '"]=' + name + '=tf' + (
+                      , 'TF["' + name + '"]=' + name + '=tf' + (
                           tf._tf_arity > 0  ?  ''  :  '()'
                       )
                     )( tf );

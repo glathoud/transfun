@@ -16,6 +16,8 @@ line-height: 1.5em;
     .clear { clear: both; }
 code { font-size: 1.1em; }
     .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
+    .centered-pic { text-align: center; margin-top: 3em; margin-bottom: 2em; }
+
 #title { margin-bottom: 6em; }
     .section-hr, .section-title {margin-top: 2.5em; }
     </style>
@@ -32,6 +34,9 @@ code { font-size: 1.1em; }
     ,   c_arr      = hh.code( 'arr' )
     ,   c_m        = hh.code( 'map' )
     ,   c_mfr      = hh.code( 'map/filter/reduce' )
+    ,   c_next     = hh.code( 'next' )
+    ,   c_tval     = hh.code( 'tval' )
+    ,   github_ref  = 'http://github.com/glathoud/transfun'
     ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
     ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
     ,   test_ref = 'test.html'
@@ -43,6 +48,8 @@ code { font-size: 1.1em; }
 
         hh.p([
             hh( 'span class="right"', '&rarr;&nbsp;' + hh( 'a href="./test.html"', 'Test page' ) )
+            , hh( 'div class="clear"' )
+            , hh( 'span class="right"', '&rarr;&nbsp;' + hh( 'a href="' + github_ref + '"', 'GitHub' ) )
             , hh( 'div class="clear"' )
             , hh( 'span class="right"', '&rarr;&nbsp;' + hh( 'a href=".."', 'Home' ) )
         ])
@@ -86,7 +93,15 @@ code { font-size: 1.1em; }
             , '  define other transformations: '
             , hh.code( 'sum' ) + ', ' + hh.code( 'and' ) + ', ' + hh.code( 'or' ) + '...'
         ])
-        
+
+        , highlight( 'For the hurried ones' )
+
+        , hh.p([
+            '...you can jump directly to the '
+            , hh( 'a href="#speed-result"', 'speed results' )
+            , '.'
+        ])
+
         , section_title_with_anchor( '', 'Contents' )
         , hh( 'p id="contents"' )
 
@@ -219,6 +234,44 @@ code { font-size: 1.1em; }
 
         , ' This is the goal of ' + c_transfun + '.'
 
+        , centered_pic( 'castlekids' )
+
+        , highlight( 'Interlude: Personal story' )
+
+        , hh.p([
+            'In frontend production code, I have been using for years '
+            , ' tools inspired from '
+            , hh( 'a href="http://bill.dojotoolkit.org/api/1.9/dojox/lang/functional"', hh.code( 'dojox.lang.functional' )) 
+            , ', that solve problem 1, but not problem 2 (intermediary arrays). '
+        ])
+
+        , hh.p([
+            'Concretely: After repeatedly writing things like this:'
+        ])
+
+        , js_pre_code([
+            'var p_values = lib.map( lib.filter( arr, "!=null" ), ".p" );',
+            '//                  4          2     1       3         5'
+        ])
+        
+        , hh.p([
+            '...I had two thoughts:'
+        ])
+
+        , hh.ul([
+            hh.li( 'Can we improve the "read order" of the code (1,2,3,4,5)?' )
+            , hh.li( ' Can we get rid of the temporary array created between 3 and 4?' )
+        ])
+
+        , centered_pic( 'alchemyequipment' )
+
+
+
+
+
+
+
+
         
         , section_title_with_anchor( 'solution', 'The ' + c_transfun + ' solution' )
         
@@ -259,6 +312,20 @@ code { font-size: 1.1em; }
                 + hh('br') + '(generated while this article loaded)'
         )
         
+        , hh.p([
+            'If you want, you can jump directly to the '
+            , hh( 'a href="#speed-result"', 'speed results' )
+            , '.'
+        ])
+
+
+
+
+
+        , centered_pic( 'mccreadygossamer' )
+
+
+
 
         , section_title_with_anchor( 'speed-test', 'Speed test' )
 
@@ -317,6 +384,11 @@ code { font-size: 1.1em; }
         ])
 
 
+
+
+
+
+
         , section_title_with_anchor( 'speed-result', 'Speed results' )
         , hh.p([
             'Below are the summarized speed results (full results on the &rarr;&nbsp;'
@@ -348,14 +420,135 @@ code { font-size: 1.1em; }
             , hh( 'a href="' + test_run_it_ref + '"', 'test page' ) + '.'
         ])
 
+        , centered_pic( 'sun' )
 
-        , section_title_with_anchor( 'defining', 'Defining transformations' )
+
+
+
+
+        , section_title_with_anchor( 'conclusion', 'Conclusion' )
+
+        , hh.p([
+            c_transfun + ' combines the best of two worlds: clarity and conciseness of functional syntax:'
+        ])
+        , js_pre_code([
+            "var appfun = map( '.p' ).filter( '!=null' ).redinit( '0', '+' );",
+            "var result = appfun( arr );"
+        ])
+        
+        , hh.p([
+            '...with, ' + hh( 'a href="#motor"', 'under the hood' ) 
+            , ', high speed imperative code, automatically generated:'
+        ])
+        , js_pre_code( map( '.p' ).filter( '!=null' ).reduce( '+' ).getBodyCode() )
+
+        , highlight( 'Future work' )
+
+        , hh.p([
+            'At the moment, I see two interesting directions: parallelism and tail calls.'
+            , ' If you have other suggestions, feel free to drop me a note:&nbsp;'
+            , hh( 'a href="../email.jpg" title="email" alt="email"'
+                  , hh( 'img src="../email_icon.png"' )
+                )
+            , '.'
+        ])
+
+
+       
+
+
+        , section_hr()
+
+
+
+
+
+
+
+
+
+
+        , centered_pic( 'naming' )
+
+
+        , section_title_with_anchor( 'naming', next_annex_name() + ': Transformations vs. applications' )
+
+        , hh.p([
+            , c_transfun + ' involves 2 sorts of functions: "transformation" and "application".'
+        ])
+
+        , highlight( 'Transformation function' )
+        , js_pre_code( "map  // transfun( <string> ) => <appfun>")
+        , hh.p([ c_m + ' takes an expression string,'
+                 , ' and returns an application ' + hh.em( 'function' )
+                 , '.'
+               ])
+
+        , highlight( 'Application function' )
+        , js_pre_code( "var appfun = map( '.p' );  // appfun( <array> ) => <array>" )
+        , hh.p([ hh.code( "appfun" )
+                 , ' is a function that takes an array ' + hh.em( 'value' )
+                 , ' &amp; returns another array '
+                 , hh.em( 'value' ) + '.'
+               ])
+
+
+
+
+
+
+        , centered_pic( 'chaining' )
+
+        , section_title_with_anchor( 'chaining', next_annex_name() + ': Chaining' )
+
+        , hh.p([
+            'JavaScript functions are also objects. '
+            , c_transfun + ' uses that to offer chaining methods '
+            , 'on application functions: '
+        ])
+
+        , js_pre_code([
+            'map                            // transfun: <string> => <appfun>',
+            "map( '.p' )                    // appfun:   <array>  => <array>",
+            "map( '.p' ).filter             // transfun (chaining)",
+            "map( '.p' ).filter( '!=null' ) // appfun",
+            "etc."
+        ])
+        
+        , hh.p([
+            'Application functions methods are (a)&nbsp;'
+            , hh( 'a href="#defining"', 'globally' )
+            , ' declared transfuns and (b)&nbsp;one special method called ' + c_next + ': '
+        ])
+
+        , hh.p( [
+            js_code( 'appfun.next(...)' ) + ' chains with existing appfuns:' 
+        ])
+        
+        , js_pre_code([
+            "var sumAppfun = reduce( '+' );",
+            "// ...",
+            "var otherAppfun = map( '.p' ).filter( '!=null' ).next( sumAppfun );",
+            "// ...",
+            "var result = otherAppfun([{p:123},{p:null},{p:1000}]);",
+            "// result === 1123"
+        ])
+        
+
+
+
+
+        , centered_pic( 'dryingthewalls' )
+
+        , section_title_with_anchor( 'defining', next_annex_name() + ': Defining transformations' )
 
         , hh.p([
             'Global or private transformations can be defined:'
         ])
         , js_pre_code([
-            '// In global namespace',
+            '// In global namespace: <name> and TF.<name>',
+            '//   TF.<name> good to prevent name collisions',
+            '//   with other libraries',
             'tpub( <name:string>, <definition:object> );',
             '',
             '// In local namespace',
@@ -372,7 +565,7 @@ code { font-size: 1.1em; }
 */        
         
         , hh.p([ 
-            'For example, using ' + c_transfun + ', the global ' + c_m + ' is defined as follows:' 
+            'For example, using ' + c_transfun + ', the global ' + c_m + ' (and ' + hh.code( 'TF.map' ) + ') are defined as follows:' 
         ])
 
         , js_pre_code([
@@ -467,7 +660,14 @@ code { font-size: 1.1em; }
                 ' are resolved and merged whenever possible, as described in the next section.' 
               )
 
-        , section_title_with_anchor( 'motor', 'Under the hood: merging loops' )
+
+
+
+
+        , centered_pic( 'underthehood' )
+
+
+        , section_title_with_anchor( 'motor', next_annex_name() + ': Under the hood: merging loops' )
         , hh.p( 'The call:' )
         , js_pre_code( "map( '.p' ).filter( '!=null' ).redinit( '0', '+' )" )
         , hh.p( 'is implemented with: (1)&nbsp;resolution, (2)&nbsp;merging and (3)&nbsp;JavaScript code generation.' )
@@ -548,7 +748,10 @@ code { font-size: 1.1em; }
         
 
 
-        , section_title_with_anchor( 'other-expl', 'Other examples' )
+
+        , centered_pic( 'tim1bitadder' )
+
+        , section_title_with_anchor( 'other-expl', next_annex_name() + ': Other examples' )
         
         , hh.p( 'Existing transformations can be combined to define application functions:' )
         , js_pre_code([
@@ -556,9 +759,9 @@ code { font-size: 1.1em; }
             "tpub( 'sum', redinit( '0', '+' ) );",
             "",
             "// In local namespace",
-            "var mySumAppfun = tfun( redinit( '0', '+' ) );",
+            "var sumAppfun = tfun( redinit( '0', '+' ) );",
             "// or simply:",
-            "var mySumAppfun = redinit( '0', '+' );"
+            "var sumAppfun = redinit( '0', '+' );"
         ])
         
 
@@ -573,7 +776,7 @@ code { font-size: 1.1em; }
             "});",
             "",
             "// In local namespace",
-            "var myJoinAppfun = tfun( { arity : 1, ... } );"
+            "var joinAppfun = tfun( { arity : 1, ... } );"
         ])
         , hh.p( 'For such cases, a shortcut syntax is available:')
         , js_pre_code([
@@ -582,11 +785,50 @@ code { font-size: 1.1em; }
             "tpub( 'join', '#s',  '.join(#s)' );",
             "",
             "// In local namespace",
-            "var myJoinAppfun = tfun( '#s', '.join(#s)' );"
+            "var joinAppfun = tfun( '#s', '.join(#s)' );"
         ])
         , hh.p([ 'There are more examples on the &rarr;&nbsp;'
                  , hh( 'a href="' + test_ref + '"', 'test page' ) + '.'
                ])
+
+
+
+
+
+        , centered_pic( 'pipechair' )
+        , section_title_with_anchor( 'tval', 'Convenience: pipe-like order using ' + c_tval )
+
+        , hh.p([
+            'If you write things in a "single step":'
+        ])
+        , js_pre_code([
+            "var result = map( '.p' ).filter( '!=null' ).reduce( '+' )( arr )",
+            "//              2              3                  4         1"
+        ])
+        , hh.p([
+            '...the reading order might be a bit confusing, because the input value '
+            , hh.code( 'arr' ) 
+            , ' is at the end&nbsp;(1), while the rest&nbsp;(2,3,4) follows a pipe-like order.'
+        ])
+        , hh.p([
+            'In such cases you can use ' + c_tval + ' to improve the reading order, putting the data ' 
+            , c_arr
+            , ' first:'
+        ])
+        , js_pre_code([
+            "var result = tval( arr )( map('.p').filter('!=null').reduce('+') );",
+            "//                  1        2            3                4"
+        ])
+        , hh.p([
+            "There is no magic here: "
+            , c_tval
+            , ' simply applies the appfun&nbsp;(2,3,4) on its data parameter&nbsp;(1). '
+        ])
+        , hh.p([ ' Generally:' ])
+        , js_pre_code([
+            'tval( <data> )( <appfun> ) === <appfun>( <data> )'
+        ])
+
     ].join( '\n' ));  
 
     gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
@@ -611,16 +853,120 @@ code { font-size: 1.1em; }
 
     function legend( s ) { return hh( 'p class="legend"', s ); }
     
+    function section_hr() { return hh( 'hr class="section-hr"' ) + hh.hr(); }
+
     function section_title_with_anchor( id, text )
     {
         if (id)
             st_arr.push( { id : id, text : text } );
         
-        return hh( 'hr class="section-hr"' ) + hh.hr() +
-            hh( 'h3 id="' + id + '" class="section-title"'
+        return hh( 'h3 id="' + id + '" class="section-title"'
                 , text + '&nbsp;' +
                 (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
               )
+    }
+
+    
+    function next_annex_name()
+    {
+        var c = next_annex_name.c;
+
+        c = next_annex_name.c = c == null
+            ?  'A'
+            :  String.fromCharCode( 1 + c.charCodeAt( 0 ) )
+        ;
+
+        return 'Annex ' + c;
+    }
+
+    function centered_pic( name )
+    {
+        var x = ({
+
+            alchemyequipment : {
+                src     : 'img/pic_alchemyequipment.gif'
+                , title : 'alchemy equipment'
+                , href  : 'http://www.levity.com/alchemy/images_s.html'
+                , attr  : 'height="200px"'
+            }
+
+            , castlekids : {
+                src     : 'img/pic_castlekids.jpg'
+                , title : 'kids building a castle'
+                , href  : 'http://entertainmentdesigner.com/news/experiences/see-a-13th-century-castle-being-built-with-medieval-technology-in-treigny-france/'
+            }
+
+            , chaining : {
+                src     : 'img/pic_chaining.png'
+                , title : 'chaining'
+                , href  : 'http://freestyle.sourceforge.net/GALLERY/CHAINING/toruskno-t3d.php'
+                , attr : 'width="200px"'
+            }
+            
+
+            , dryingthewalls : {
+                src     : 'img/pic_dryingthewalls.gif'
+                , title : 'Drying the walls - shot by Alexander Cohn'
+                , href  : 'http://cohnphoto.photoshelter.com/gallery-image/Pilgrimage-to-Kawagarbo/G00006usB1sEBjXo/I00005w8Qih4U.ik'
+            }
+            
+
+            , mccreadygossamer : {
+                src     : 'img/pic_mccreadygossamer.jpg'
+                , title : 'McCready\'s Gossamer Albatros - solving the right problem'
+                , href  : 'http://www.afr.com/leadership/innovation/being-willing-to-fail-solved-the-problem-of-humanpowered-flight-20151016-gkb658'
+                , attr  : 'width="333px"'
+            }
+            
+            , naming : {
+                src     : 'img/pic_naming.jpg'
+                , title : 'Naming is often hard...'
+                , href  : 'http://www.nambos.de/en/naming-product-name-company-name.php'
+                , attr  : 'width="250px"'
+            }
+            
+            , pipechair : {
+                src     : 'img/pic_pipechair.jpg'
+                , title : 'Sewer pipe chair'
+                , href  : 'https://www.google.com/search?site=&tbm=isch&source=hp&biw=1280&bih=929&q=pipe+order&oq=pipe+order&gs_l=img.3..0i8i30.547.1986.0.2069.10.10.0.0.0.0.111.875.9j1.10.0....0...1ac.1.64.img..0.10.873._USxC-CA36c#tbm=isch&q=pipe+sofa+&imgrc=mxR23v7hgEeSbM%3A'
+                , attr  : 'width="250px"'
+            }
+                        
+            , sun : {
+                src     : 'img/pic_sun.jpg'
+                , title : 'sun pic'
+                , href  : 'http://thegraphicsfairy.com/vintage-clip-art-old-fashioned-sun-with-face/'
+            }
+
+
+            , tim1bitadder : {
+                src     : 'img/pic_tim1bitadder.png'
+                , title : '1-bit adder with The Incredible Machine'
+                , href  : 'https://www.youtube.com/watch?v=Vnke34fJr8k'
+            }
+            
+
+
+            , underthehood : {
+                src     : 'img/pic_underthehood.jpg'
+                , title : 'Corvette 1972'
+                , href  : 'http://www.autotraderclassics.com/car-article/The+Big+Bang+Theory-80648.xhtml'
+            }
+            
+        })[ name ]
+        , tmp = x  &&  (x.title + (x.href  ?  ' (click: source)'  :  ''))
+        ;
+
+        return x
+            ?  hh( 'p class="centered-pic"'
+                   , (tmp = hh( 'img src="' + x.src + '" title="' + tmp + '" alt="' + tmp + '"' + (x.attr  ?  ' ' + x.attr :  '') )
+                      , x.href  
+                      ?  hh( 'a href="' + x.href + '" target="_blank"', tmp )  
+                      :  tmp
+                     )
+                 )
+        :  ''
+        ;
     }
 
 })();
