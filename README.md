@@ -7,7 +7,7 @@ transfun is a JavaScript library that lets you write `map/filter/reduce` code th
 
 Merging loops for speed
 
-transfun automatically merges consecutive loops into one loop, then generates fast code for that loop (similar to stream fusion in → Haskell).
+transfun automatically merges consecutive loops into one loop, then generates fast code for that loop (similar to stream fusion in → Haskell: http://chrisdone.com/posts/stream-composability ).
 
 Extensibility
 
@@ -15,7 +15,7 @@ A domain-specific language is used to define map/filter/reduce. With this langua
 
 For the hurried ones
 
-...you can jump directly to the speed results.
+...you can jump directly to the speed results: http://glat.info/transfun/index.html#speed-result
 
 # More about this
 
