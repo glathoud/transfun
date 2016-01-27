@@ -17,6 +17,18 @@ var appfun = map( '.p' ).filter( '!=null' ).reduce( '+' );
 var result = appfun( arr ); // very fast!
 ```
 
+*Usage with functions*
+
+`transfun` also supports normal function arguments:
+```javascript
+var appfun = map((x) => x.p ).filter((x) => x!=null ).reduce((out,v) => out+v );
+var result = appfun( arr ); // fast!
+```
+...but there is a performance cost. 
+However, this is still much faster than the native array methods.
+
+For more about this topic, see an article about [transducers in JavaScript](https://medium.com/@roman01la/understanding-transducers-in-javascript-3500d3bd9624#.9mto6edg3)
+
 *Merging loops for speed*
 
 `transfun` automatically merges consecutive loops into one loop, then generates fast code for that loop (similar to stream fusion in [Haskell](http://chrisdone.com/posts/stream-composability)).
