@@ -19,11 +19,11 @@ var result = appfun( arr ); // very fast!
 
 *Merging loops for speed*
 
-transfun automatically merges consecutive loops into one loop, then generates fast code for that loop (similar to stream fusion in [Haskell](http://chrisdone.com/posts/stream-composability)).
+`transfun` automatically merges consecutive loops into one loop, then generates fast code for that loop (similar to stream fusion in [Haskell](http://chrisdone.com/posts/stream-composability)).
 
 *Extensibility*
 
-A domain-specific language is used to define map/filter/reduce. With this language, library users can define other transformations: sum, and, or...
+A domain-specific language is used to define `map/filter/reduce`. With this language, library users can define other transformations: `sum, and, or`...
 
 *For the hurried ones*
 
