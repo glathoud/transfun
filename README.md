@@ -1,6 +1,6 @@
 # transfun
 
-`transfun` is a JavaScript library that lets you write `map/filter/reduce` code that runs much faster than the equivalent native `map/filter/reduce code`.
+`transfun` is a JavaScript library that lets you write `map/filter/reduce` code that runs much faster than the equivalent native `map/filter/reduce code`:
 
 ![speedup](img/jsperf_safari.png)
 
