@@ -7,12 +7,12 @@
 *Usage*
 
 Instead of passing function arguments to the native array methods `map/filter/reduce` to produce a result value in 1 step: 
-```
+```javascript
 var result = arr.map((x) => x.p).filter((x) => x != null).reduce((a,b) => a + b);
   ```
   
 ...`transfun` uses a 2-step approach: first generate very fast code, then call it:
-```
+```javascript
 var appfun = map( '.p' ).filter( '!=null' ).reduce( '+' );
 var result = appfun( arr ); // very fast!
 ```
