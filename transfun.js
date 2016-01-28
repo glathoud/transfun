@@ -1446,18 +1446,19 @@ var global, exports; // NPM support [github#1]
                     'function' === typeof tmp.has
             );
         }
+
+        if (is_Map_supported)
+            return new Map;
         
         var basic_store = {}
-
-        ,     map_store = is_Map_supported   &&  new Map
-        ,   other_store = !is_Map_supported  &&  []
+        ,   other_store = []
         ;
         
-        return { get   : _MapWrap_get
-                 , set : _MapWrap_set 
+        return { get   : _MapWrap_fallback_get
+                 , set : _MapWrap_fallback_set 
                };
 
-        function _MapWrap_get( k )
+        function _MapWrap_fallback_get( k )
         {
             var tk = typeof k;
             if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
@@ -1472,13 +1473,11 @@ var global, exports; // NPM support [github#1]
                         return x[ 1 ];  // value
                 }
             }
-            else
-            {
-                return map_store.get( k );
-            }
+
+            null.bug;
         }
 
-        function _MapWrap_set( k, v )
+        function _MapWrap_fallback_set( k, v )
         {
             var tk = typeof k;
             if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
@@ -1505,10 +1504,8 @@ var global, exports; // NPM support [github#1]
                 else
                     other_store.push( [ k, v ] );
             }
-            else
-            {
-                map_store.set( k, v );
-            }
+
+            null.bug;
         }
     }
 
