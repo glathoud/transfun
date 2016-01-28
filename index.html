@@ -11,6 +11,8 @@ line-height: 1.5em;
     font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
          }
     .highlight { margin-top: 2em }
+    .highlight-anchor { visibility: hidden; }
+    .highlight:hover .highlight-anchor { visibility: visible; }
     .left { float : left; }
     .right { float : right; }
     .clear { clear: both; }
@@ -1102,7 +1104,23 @@ dd { margin-bottom: 1em; }
         ];
     }
 
-    function highlight( s ) { return hh( 'p class="highlight"', hh.em( s ) ); }
+    function highlight( s ) 
+    {
+        if ('string' !== typeof s)
+            s = s.join( '' );
+
+        var id = tval( s )(
+            split( '""' ).map( 'v.match(/\\w/) ? v : "-"' ).join( '""' )
+        );
+
+        return hh( 'p class="highlight" id="' + id + '"' , [
+            hh.em( s ) 
+            , '&nbsp;&nbsp;'
+            , hh( 'a href="#' + id + '" class="highlight-anchor"'
+                  , '#'
+                )
+        ] ); 
+    }
 
     function js_pre_code( s )
     {
