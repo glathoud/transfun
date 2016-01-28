@@ -1350,12 +1350,7 @@ var global, exports; // NPM support [github#1]
     function _create_CS_cache()
     {
         var tmp = 'undefined' !== typeof Map  &&  Map.prototype
-        , is_Map_supported = /*xxx Map case to investigate*/false  &&  tmp  &&
-            'function' === typeof tmp.get  &&
-            'function' === typeof tmp.set  &&
-            'function' === typeof tmp.has
-        
-        , base = { cs : null, map : is_Map_supported  ?  new Map  :  _create_Map_fallback() }
+        ,  base = { cs : null, map : _create_Map_fallback() }
         ;
         return { get : _CS_cache_get, set : _CS_cache_set };
 
@@ -1407,7 +1402,7 @@ var global, exports; // NPM support [github#1]
                     if (cs)
                     {
                         // set: one step deeper
-                        var tmp_cm = { cs : null, map : is_Map_supported  ?  new Map  :  _create_Map_fallback() };
+                        var tmp_cm = { cs : null, map : _create_Map_fallback() };
                         map.set( x, tmp_cm );
                         cs_map = tmp_cm;
                     }
@@ -1431,11 +1426,24 @@ var global, exports; // NPM support [github#1]
         }
 
     } // _create_CS_cache
-    
+
+    var is_Map_supported;
     function _create_Map_fallback()
     {
+        if (null == is_Map_supported)
+        {
+            tmp = 'undefined' !== typeof Map  &&  Map.prototype;
+            is_Map_supported = tmp  &&
+                'function' === typeof tmp.get  &&
+                'function' === typeof tmp.set  &&
+                'function' === typeof tmp.has
+            ;
+        }
+        
         var basic_store = {}
-        ,   other_store = []
+
+        ,     map_store = is_Map_supported   &&  new Map
+        ,   other_store = !is_Map_supported  &&  []
         ;
         
         return { get   : _Map_fallback_get
@@ -1448,12 +1456,18 @@ var global, exports; // NPM support [github#1]
             if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
                 return basic_store[ k ];
 
-            
-            for (var i = other_store.length; i--;)
+            if (other_store)
             {
-                var x = other_store[ i ];
-                if (x[ 0 ] === k)
-                    return x[ 1 ];  // value
+                for (var i = other_store.length; i--;)
+                {
+                    var x = other_store[ i ];
+                    if (x[ 0 ] === k)
+                        return x[ 1 ];  // value
+                }
+            }
+            else
+            {
+                return map_store.get( k );
             }
         }
 
@@ -1466,22 +1480,28 @@ var global, exports; // NPM support [github#1]
                 return;
             }
 
-            
-            var x_found;
-            for (var n = other_store.length, i = 0; i < n; i++)
+            if (other_store)
             {
-                var x = other_store[ i ];
-                if (x[ 0 ] === k)
+                var x_found;
+                for (var n = other_store.length, i = 0; i < n; i++)
                 {
-                    x_found = x;
-                    break;
+                    var x = other_store[ i ];
+                    if (x[ 0 ] === k)
+                    {
+                        x_found = x;
+                        break;
+                    }
                 }
+                
+                if (x_found)
+                    x_found[ 1 ] = v;
+                else
+                    other_store.push( [ k, v ] );
             }
-            
-            if (x_found)
-                x_found[ 1 ] = v;
             else
-                other_store.push( [ k, v ] );
+            {
+                map_store.set( k, v );
+            }
         }
     }
 
