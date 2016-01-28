@@ -301,17 +301,47 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
+
+    // "Values" extraction:
     
     tpub( 'o2values', {
         arity : 0
         , spec : { stepadd : { set : [ 'current', { 'Object.values' : 'current' } ] } }
     });
 
-    tpub( 'arr2o', {
+    // "Key" conversions:
+
+    tpub( 'o2keys', {
+        arity : 0
+        , spec : { stepadd : { set : [ 'current', { 'Object.keys' : 'current' } ] } }
+    });
+
+    tpub( 'keys2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }
-            , bodyadd   : { set_at : [ 'out', 'k', 'true' ] }
+            , bodyadd   : { set_at : [ 'out', 'v', 'true' ] }
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
+
+    // "Key-values" conversions:
+
+    tpub( 'o2kvs', {
+        arity  : 0
+        , spec : { loopin : {
+            beforeloop  : { decl : [ 'out', '[]' ] }
+            , bodyadd   : { push : [ 'out', '[k, v]' ] }
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
+    });
+
+    tpub( 'kvs2o', {
+        arity  : 0
+        , spec : { loopleftright : {
+            beforeloop  : { decl : [ 'out', '{}' ] }
+            , bodyadd   : { set_at : [ 'out', 'v[0]', 'v[1]' ] }
             , afterloop : { set : [ 'current', 'out' ] }
         }}
     });

@@ -224,6 +224,10 @@ function test()
     null  === orIn( { a: null, b : null, d : null, c : null })  ||  null.bug;
     
 
+    // "Key" conversions
+
+    
+
     // 
     
     console.timeEnd( 'transfun:test' );

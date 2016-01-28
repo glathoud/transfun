@@ -15,6 +15,7 @@ line-height: 1.5em;
     .right { float : right; }
     .clear { clear: both; }
 code { font-size: 1.1em; }
+dd { margin-bottom: 1em; }
     .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
     .centered-pic { text-align: center; margin-top: 3em; margin-bottom: 2em; }
 
@@ -30,16 +31,25 @@ code { font-size: 1.1em; }
     <script type="text/javascript">
 (function () {
     
-    var c_transfun = hh.code( 'transfun' )
-    ,   c_appfun   = hh.code( 'appfun' )
-    ,   c_arr      = hh.code( 'arr' )
-    ,   c_m        = hh.code( 'map' )
-    ,   c_mfr      = hh.code( 'map/filter/reduce' )
-    ,   c_next     = hh.code( 'next' )
-    ,   c_tval     = hh.code( 'tval' )
+    var c_transfun  = hh.code( 'transfun' )
+    ,   c_appfun    = hh.code( 'appfun' )
+    ,   c_arr       = hh.code( 'arr' )
+    ,   c_m         = hh.code( 'map' )
+    ,   c_mfr       = hh.code( 'map/filter/reduce' )
+
+    ,   c_mfr_etc       = hh.code( 'map, filter, reduce, redinit, and, or' )
+    ,   c_mfr_etc_in    = hh.code( 'mapIn, filterIn, reduceIn, redinitIn, andIn, orIn ' )
+    ,   c_mfr_etc_right = hh.code( 'mapRight, filterRight, reduceRight, redinitRight, andRight, orRight' )
+
+    ,   c_o2arr_conv    = hh.code( 'o2values, o2keys, keys2o' ) + ' and ' + hh.code( 'o2kvs, kvs2o' )
+
+    ,   c_next      = hh.code( 'next' )
+    ,   c_tval      = hh.code( 'tval' )
     ,   github_ref  = 'http://github.com/glathoud/transfun'
     ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
+    ,   nokeyorder_ref     = 'http://stackoverflow.com/questions/30076219/does-es6-introduce-a-well-defined-order-of-enumeration-for-object-properties'
     ,   transducers_js_ref = 'https://www.reddit.com/r/javascript/comments/42sxfb/understanding_transducers_in_javascript/'
+
     ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
     ,   test_ref = 'test.html'
     ,   test_run_it_ref = test_ref + '#speed-test'
@@ -375,7 +385,7 @@ code { font-size: 1.1em; }
              "var appfun = map(someFunction).filter('!=null').reduce('+');"
         ])
         , hh.p([
-            'If you like this type of topic, have a look at this article: <br> &rarr;'
+            'If you like this type of topic, have a look at that article: <br> &rarr;'
             , hh( 'a href="' + transducers_js_ref + '" target="_blank"'
                   , 'Understanding Transducers in JavaScript' 
                 )
@@ -396,10 +406,162 @@ code { font-size: 1.1em; }
 
 
 
+        , centered_pic( 'toolbox' )
+
+        , section_title_with_anchor( 'toolbox', 'Also predefined: ' + hh.code( 'mapIn' ) + ', ' + hh.code( 'and' ) + ', ' + hh.code( 'or' ) + '...' )
+
+        , hh.p([
+            'Beside ' + c_mfr + ', other transformations are also predefined:'
+        ])
+        , hh.dl([
+            
+            dl_describe(
+                c_mfr_etc
+                , 'take array input and loop left-to-right.'
+            )
+            
+            , dl_describe(
+                c_mfr_etc_right
+                , 'take array input and loop ' + hh.em( 'right-to-left' ) + '.'
+            )
+            
+            , dl_describe(
+                c_mfr_etc_in
+                , [ 'take ' + hh.em( 'object input' ) + ' and loop through keys: they are not array-specific. '
+                    , 'Moreover,&nbsp;the key order is '
+                    , hh( 'a href="' + nokeyorder_ref + '"'
+                        , 'not guaranteed'
+                      )
+                    , '.'
+                  ]
+            )
+
+            , dl_describe(
+                c_o2arr_conv
+                , [ 
+                    'convert objects to arrays and vice-versa (examples further below).' 
+                ]
+            )
+        ])
+
+        , highlight([
+            'Examples with ' + hh.code( 'and/or' ) + ':'
+        ])
+        , js_pre_code([
+            "and     ([])          // >>> true",
+            "and     ([ 1, 'a' ])  // >>> 'a'",
+            "andRight([ 1, 'a' ])  // >>> 1",
+            "and     ([ 1, 'a', false, 33, null, 17 ])  // >>> false",
+            "andRight([ 1, 'a', false, 33, null, 17 ])  // >>> null",
+            "",
+            "andIn({ p:1, q:'aa', r:'xyz' })  // >>> <one of: 1, 'aa' or 'xyz'>",
+            "andIn({ p:1, q:null, r:'xyz' })  // >>> null",
+        ])
+        , js_pre_code([
+            "or     ([])          // >>> false",
+            "or     ([ 1, 'a' ])  // >>> 1",
+            "orRight([ 1, 'a' ])  // >>> 'a'",
+            "or     ([ false, 0, null ])  // >>> null",
+            "orRight([ false, 0, null ])  // >>> false",
+            "",
+            "orIn({ p:1, q:'aa', r:'' })  // >>> <one of: 1 or 'aa'>",
+            "orIn({ p:1, q:null, r:'' })  // >>> 1",
+            "",
+        ])
+        
+
+        , highlight([
+            '"Values" extraction:'
+        ])
+
+        , hh.dl([
+
+
+            dl_describe(
+                hh.code( 'o2values' )
+                , [
+                    'converts an object to the array of its values. It wraps ' + hh.code( 'Object.values' ) + ': '
+                    , js_pre_code( "o2values({ a:1, b:'xyz', c:null })" )
+                    , 'may return:'
+                    , js_pre_code( "[ 'xyz', 1, null ]" )
+                    , 'The array order is '
+                    , hh( 'a href="' + nokeyorder_ref + '"'
+                        , 'not guaranteed'
+                        )
+                    , '.'
+                ]
+            )
+        ])
+        
+
+        , highlight([
+            '"Key" conversions:'
+        ])
+
+        , hh.dl([
+
+            dl_describe(
+                hh.code( 'o2keys' )
+                , [
+                    'converts an object to the array of its ' + hh.em( 'keys' ) + '. It wraps ' + hh.code( 'Object.keys' ) + ': '
+                    , js_pre_code( "o2keys({ a:1, b:'xyz', c:null })" )
+                    , 'may return:'
+                    , js_pre_code( "[ 'b', 'a', 'c' ]" )
+                    , 'The array order is '
+                    , hh( 'a href="' + nokeyorder_ref + '"'
+                        , 'not guaranteed'
+                        )
+                    , '.'
+                ]
+            )
+
+            , dl_describe(
+                hh.code( 'keys2o' )
+                , [
+                    'converts an array to an object. For example:'
+                    , js_pre_code( "keys2o([ 'a', 'b', 'c' ])" )
+                    , 'returns:'
+                    , js_pre_code( "{ a:true, b:true, c:true }" )
+                ]
+            )
+        ])
+
+        , highlight([
+            '"Key-value" conversions:'
+        ])
+
+        , hh.dl([
+            dl_describe(
+                hh.code( 'o2kvs' )
+                , [
+                    'converts an object to the array of its key-value pairs:'
+                    , js_pre_code( "o2kvs({ a:1, b:'xyz', c:null })" )
+                    , 'may return:'
+                    , js_pre_code( "[ ['c', null], ['a', 1], ['b', 'xyz'] ]" )
+                    , 'The array order is '
+                    , hh( 'a href="' + nokeyorder_ref + '"'
+                        , 'not guaranteed'
+                        )
+                    , '.'
+                ]
+            )
+
+            , dl_describe(
+                hh.code( 'kvs2o' )
+                , [
+                    'converts an array of key-value pairs to an object:'
+                    , js_pre_code( "kvs2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])" )
+                    , 'returns:'
+                    , js_pre_code( "{ a:1, b:'xyz', c:null }" )
+                ]
+            )
+             
+        ])
+
+
+
+
         , centered_pic( 'mccreadygossamer' )
-
-
-
 
         , section_title_with_anchor( 'speed-test', 'Speed test' )
 
@@ -885,7 +1047,7 @@ code { font-size: 1.1em; }
 
 
         , centered_pic( 'pipechair' )
-        , section_title_with_anchor( 'tval', 'Convenience: pipe-like order using ' + c_tval )
+        , section_title_with_anchor( 'tval', next_annex_name() + ': Convenient pipe-like order using ' + c_tval )
 
         , hh.p([
             'If you write things in a "single step":'
@@ -928,6 +1090,14 @@ code { font-size: 1.1em; }
 
     // Tool functions
     
+    function dl_describe( dt, dd )
+    {
+        return [
+            hh.dt( dt )
+            , hh.dd( dd )
+        ];
+    }
+
     function highlight( s ) { return hh( 'p class="highlight"', hh.em( s ) ); }
 
     function js_pre_code( s )
@@ -1040,6 +1210,15 @@ code { font-size: 1.1em; }
                 , href  : 'https://www.youtube.com/watch?v=Vnke34fJr8k'
             }
             
+
+            , toolbox : {
+                src     : 'img/pic_toolbox.jpg'
+                , title : 'toolbox'
+                , href  : 'http://westsideinternalmed.com/healthy-toolbox/'
+                , attr  : 'width="250px"'
+            }
+            
+
 
 
             , underthehood : {
