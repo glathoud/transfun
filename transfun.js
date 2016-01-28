@@ -1,6 +1,6 @@
-/*global tval tpub tfun fullexpr TF
+/*global tval tpub tfun fullexpr 
   map filter reduce sum prod decl
-  console
+  console global exports
 */
 
 // transfun: merge loops for speed in JavaScript.
@@ -15,8 +15,10 @@
 // Guillaume Lathoud
 // glat@glat.info
 
-var fullexpr, tval, tpub, tfun, TF;
-(function () {
+
+
+var global, exports; // NPM support [github#1]
+(function (global) {
 
     var L_LEFT  = 'loopleftright'
     ,   L_RIGHT = 'looprightleft'
@@ -30,23 +32,23 @@ var fullexpr, tval, tpub, tfun, TF;
     
     // ---------- Public API: global namespace access
 
-    fullexpr = fullexpr_;
-    tval     = tval_;
-    tpub     = tpub_;
-    tfun     = tfun_;
+    global.fullexpr = fullexpr_;
+    global.tval     = tval_;
+    global.tpub     = tpub_;
+    global.tfun     = tfun_;
 
     // ---------- Public API: TF namespace access
 
-    TF = { fullexpr : fullexpr_
-           , tval   : tval_
-           , tpub   : tpub_
-           , tfun   : tfun_
-         };
+    global.TF = { fullexpr : fullexpr_
+                  , tval   : tval_
+                  , tpub   : tpub_
+                  , tfun   : tfun_
+                };
     
     // --- Publish a few common transfunctions, specifying an
     // internally imperative implementation for a functional.
 
-    tpub( 'map', {
+    tpub_( 'map', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { loopleftright : {
@@ -57,7 +59,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'mapRight', {
+    tpub_( 'mapRight', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { looprightleft : {
@@ -68,7 +70,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'mapIn', {
+    tpub_( 'mapIn', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { loopin : {
@@ -78,7 +80,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'filter', {
+    tpub_( 'filter', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : {
@@ -88,7 +90,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'filterRight', {
+    tpub_( 'filterRight', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { looprightleft : {
@@ -98,7 +100,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
     
-    tpub( 'filterIn', {
+    tpub_( 'filterIn', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopin : {
@@ -108,7 +110,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
     
-    tpub( 'reduce', {
+    tpub_( 'reduce', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { loopleftright : {
@@ -126,7 +128,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'reduceRight', {
+    tpub_( 'reduceRight', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { looprightleft : {
@@ -144,7 +146,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'reduceIn', {
+    tpub_( 'reduceIn', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { loopin : {
@@ -164,7 +166,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
 
     
-    tpub( 'redinit', {
+    tpub_( 'redinit', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopleftright : {
@@ -175,7 +177,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'redinitRight', {
+    tpub_( 'redinitRight', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { looprightleft : {
@@ -186,7 +188,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'redinitIn', {
+    tpub_( 'redinitIn', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopin : {
@@ -198,14 +200,14 @@ var fullexpr, tval, tpub, tfun, TF;
     });
     
 
-    tpub( 'breakWhen', {
+    tpub_( 'breakWhen', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : { bodyadd : { 'if' : fullexpr( test, 'v', 'k' ), 'then' : 'break' } }};
         }
     });
 
-    tpub( 'takeWhile', {
+    tpub_( 'takeWhile', {
         arity : 1
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopleftright : {
@@ -215,7 +217,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'takeWhileIn', {
+    tpub_( 'takeWhileIn', {
         arity : 1
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopin : {
@@ -227,7 +229,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // -- and
     
-    tpub( 'and', {
+    tpub_( 'and', {
         arity : 0
         , spec : { loopleftright : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -239,7 +241,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'andRight', {
+    tpub_( 'andRight', {
         arity : 0
         , spec : { looprightleft : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -251,7 +253,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'andIn', {
+    tpub_( 'andIn', {
         arity : 0
         , spec : { loopin : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -265,7 +267,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // -- or
     
-    tpub( 'or', {
+    tpub_( 'or', {
         arity : 0
         , spec : { loopleftright : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -277,7 +279,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'orRight', {
+    tpub_( 'orRight', {
         arity : 0
         , spec : { looprightleft : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -289,7 +291,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'orIn', {
+    tpub_( 'orIn', {
         arity : 0
         , spec : { loopin : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -304,7 +306,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // "Values" extraction:
     
-    tpub( 'o2values', {
+    tpub_( 'o2values', {
         arity  : 0
         , spec : { loopin : {
             beforeloop  : { decl : [ 'out', '[]' ] }
@@ -315,12 +317,12 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // "Key" conversions:
 
-    tpub( 'o2keys', {
+    tpub_( 'o2keys', {
         arity : 0
         , spec : { stepadd : { set : [ 'current', 'Object.keys(current)' ] } }
     });
 
-    tpub( 'keys2o', {
+    tpub_( 'keys2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }
@@ -332,7 +334,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // "Key-values" conversions:
 
-    tpub( 'o2kv', {
+    tpub_( 'o2kv', {
         arity  : 0
         , spec : { loopin : {
             beforeloop  : { decl : [ 'out', '[]' ] }
@@ -341,7 +343,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'kv2o', {
+    tpub_( 'kv2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }
@@ -350,7 +352,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'decl', {
+    tpub_( 'decl', {
         arity : 2
         , specgen : function ( /*string*/name, /*string | externcall object*/expr ) {
             return {
@@ -359,10 +361,10 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     });
 
-    tpub( 'sum', redinit( '0', '+' ) );
+    tpub_( 'sum', redinit( '0', '+' ) );
 
-    tpub( 'join', '#s',  '.join(#s)' );
-    tpub( 'split', '#s', '.split(#s)' );
+    tpub_( 'join', '#s',  '.join(#s)' );
+    tpub_( 'split', '#s', '.split(#s)' );
     
     // ---------- Public API implementation
 
@@ -1314,4 +1316,4 @@ var fullexpr, tval, tpub, tfun, TF;
         }
     }
     
-})();
+})(global  ||  exports  ||  this); // NPM support [github#1]
