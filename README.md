@@ -25,9 +25,7 @@ var appfun = map((x) => x.p ).filter((x) => x!=null ).reduce((out,v) => out+v );
 var result = appfun( arr ); // fast!
 ```
 ...but there is a performance cost. 
-However, this is still much faster than the native array methods.
-
-For more about this topic, see an article about [transducers in JavaScript](https://medium.com/@roman01la/understanding-transducers-in-javascript-3500d3bd9624#.9mto6edg3)
+However, this is still much faster than the native array methods. For more about this topic, see an article about [transducers in JavaScript](https://medium.com/@roman01la/understanding-transducers-in-javascript-3500d3bd9624#.9mto6edg3)
 
 *Merging loops for speed*
 
