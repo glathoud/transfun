@@ -1,6 +1,7 @@
 /*global tval tpub tfun fullexpr 
-  map filter reduce sum prod decl
+  map filter reduce redinit sum prod decl
   console global exports
+  Map
 */
 
 // transfun: merge loops for speed in JavaScript.
@@ -14,7 +15,6 @@
 //
 // Guillaume Lathoud
 // glat@glat.info
-
 
 
 var global, exports; // NPM support [github#1]
@@ -361,6 +361,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
+    
     tpub_( 'sum', redinit( '0', '+' ) );
 
     tpub_( 'join', '#s',  '.join(#s)' );
@@ -514,6 +515,7 @@ var global, exports; // NPM support [github#1]
         return '(' + code + ')';
     }
     
+    var _transfun_id;  // for caching [github#2], to speedup the code generation
     function tfun_( def_or_fun_or_str /*... more strings in the string shortcut variant...*/ )
     {
         var tof = typeof def_or_fun_or_str;
@@ -596,9 +598,12 @@ var global, exports; // NPM support [github#1]
             var arity = definition.arity
             ,   spec  = arity === 0  &&  definition.spec
             ,   specgen = arity > 0  &&  definition.specgen
+
+            ,   tf_id = _transfun_id = 1 + ~~_transfun_id; // [github#2]
             ;
             transfun._is_transfun = true;
             transfun._tf_arity    = arity;
+            transfun._tf_id       = tf_id;
             
             return transfun;
             
@@ -610,7 +615,7 @@ var global, exports; // NPM support [github#1]
                 var chainspec = (
                     this instanceof _ChainSpec  ?  this  :  new _ChainSpec
                 )
-                    .add_step( arity, spec  ||  specgen, transfun, arguments )
+                    .add_step( arity, tf_id, spec  ||  specgen, transfun, arguments )
                 ;
 
                 // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
@@ -715,6 +720,8 @@ var global, exports; // NPM support [github#1]
 
     // ---------- Private implementation
 
+    var _CS_cache; // [github#2]
+
     function _ChainSpec( /*?object (all or nothing)?*/opt )
     {        
         var TFARG_ARR            = 'tfarg_arr'
@@ -723,7 +730,12 @@ var global, exports; // NPM support [github#1]
         ,   EXTERNNAME_ARR       = 'externname_arr'
         ,   I_2_EXTERN_NAME      = 'i2externname'
         ,   EXTERN_NAME_2_EXTERN = 'externname2extern'
+
+        ,   CACHE_KEY = '_cache_key'
         ;
+
+        // [github#2] to speedup the code generation
+        this[ CACHE_KEY ]   = opt  ?  opt[ CACHE_KEY ]  :  [];
 
         // arrays
         this[ TFARG_ARR ]            = opt  ?  opt[ TFARG_ARR ]             :  [];
@@ -739,10 +751,21 @@ var global, exports; // NPM support [github#1]
         this.call_tf        = _CS_call_tf;
         this.concat_call_tf = _CS_concat_call_tf;
         
-        function _CS_add_step( arity, spec_or_specgen, transfun, args )
+        function _CS_add_step( arity, tf_id, spec_or_specgen, transfun, args )
         // Returns a new _ChainSpec instance that includes the new step.
         {
             arity === args.length  ||  null.bug;
+
+            // [github#2] to speedup the code generation
+            var _CS_cache_key = this[ CACHE_KEY ]
+                .concat( [ tf_id ] )
+                .concat( Array.apply( null, args ) )
+            ;
+            _CS_cache  ||  (_CS_cache = _create_CS_cache());
+            var already = _CS_cache.get( _CS_cache_key );
+            if (already)
+                return already;
+            
 
             // shallow copies
             var tfarg_arr = this[ TFARG_ARR ].slice()
@@ -848,6 +871,7 @@ var global, exports; // NPM support [github#1]
             
             var opt = {};
 
+            opt[ CACHE_KEY ]            = _CS_cache_key;
             opt[ TFARG_ARR ]            = tfarg_arr;
             opt[ SPEC_ARR ]             = spec_arr;
             opt[ EXTERN_ARR ]           = e_arr;
@@ -855,7 +879,11 @@ var global, exports; // NPM support [github#1]
             opt[ I_2_EXTERN_NAME ]      = i2en;
             opt[ EXTERN_NAME_2_EXTERN ] = en2e;
 
-            return new _ChainSpec( opt );
+            var ret = new _ChainSpec( opt );
+
+            _CS_cache.set( _CS_cache_key, ret );  // [github#2]
+
+            return ret;
         }
 
         function _CS_call_tf( tf, arg )
@@ -1315,5 +1343,147 @@ var global, exports; // NPM support [github#1]
             }}
         }
     }
+
+    // --- Support for caching to speedup the code generation
+    // --- [github#2]
+
+    function _create_CS_cache()
+    {
+        var tmp = 'undefined' !== typeof Map  &&  Map.prototype
+        , is_Map_supported = /*xxx Map case to investigate*/false  &&  tmp  &&
+            'function' === typeof tmp.get  &&
+            'function' === typeof tmp.set  &&
+            'function' === typeof tmp.has
+        
+        , base = { cs : null, map : is_Map_supported  ?  new Map  :  _create_Map_fallback() }
+        ;
+        return { get : _CS_cache_get, set : _CS_cache_set };
+
+        function _CS_cache_get( /*array of { param : <array>, args : <array> }*/arr )
+        {
+            return _CS_cache_getset( arr, null );
+        }
+
+        function _CS_cache_set( /*array of { param : <array>, args : <array> }*/arr, /*_ChainSpec*/cs )
+        {
+            return _CS_cache_getset( arr, cs );
+        }
+            
+        function _CS_cache_getset( arr, /*?*/cs )
+        {
+            cs  ||  (cs = null);
+            
+            var cs_map = _CS_cache_getset_descent( base, arr, cs );
+
+            var cs = cs_map  &&  cs_map.cs;
+
+            if (cs)
+                cs instanceof _ChainSpec  ||  null.bug;
+
+            return cs   ||  null;
+        }
+        
+
+        function _CS_cache_getset_descent( cs_map, arr, /*?*/cs )
+        {
+            var  n = arr.length
+            , last = n - 1
+            ;
+            for (var i = 0; i < n; i++)
+            {
+                var    x = arr[ i ]
+                ,    map = cs_map.map
+                , tmp_cm = map.get( x )
+                ;
+                
+                if (tmp_cm)
+                {
+                    // found: one step deeper
+                    cs_map = tmp_cm;
+                }
+                else
+                {
+                    // not found
+                    if (cs)
+                    {
+                        // set: one step deeper
+                        var tmp_cm = { cs : null, map : is_Map_supported  ?  new Map  :  _create_Map_fallback() };
+                        map.set( x, tmp_cm );
+                        cs_map = tmp_cm;
+                    }
+                    else
+                    {
+                        // get: done
+                        return null;
+                    }
+                }
+            }
+            
+            cs_map  ||  null.bug;
+
+            if (cs)
+            {
+                cs_map.cs  &&  null.bug;
+                cs_map.cs = cs;
+            }
+            
+            return cs_map;
+        }
+
+    } // _create_CS_cache
+    
+    function _create_Map_fallback()
+    {
+        var basic_store = {}
+        ,   other_store = []
+        ;
+        
+        return { get   : _Map_fallback_get
+                 , set : _Map_fallback_set 
+               };
+
+        function _Map_fallback_get( k )
+        {
+            var tk = typeof k;
+            if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
+                return basic_store[ k ];
+
+            
+            for (var i = other_store.length; i--;)
+            {
+                var x = other_store[ i ];
+                if (x[ 0 ] === k)
+                    return x[ 1 ];  // value
+            }
+        }
+
+        function _Map_fallback_set( k, v )
+        {
+            var tk = typeof k;
+            if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
+            {
+                basic_store[ k ] = v;
+                return;
+            }
+
+            
+            var x_found;
+            for (var n = other_store.length, i = 0; i < n; i++)
+            {
+                var x = other_store[ i ];
+                if (x[ 0 ] === k)
+                {
+                    x_found = x;
+                    break;
+                }
+            }
+            
+            if (x_found)
+                x_found[ 1 ] = v;
+            else
+                other_store.push( [ k, v ] );
+        }
+    }
+
     
 })(global  ||  exports  ||  this); // NPM support [github#1]
