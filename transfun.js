@@ -754,7 +754,6 @@ var global, exports; // NPM support [github#1]
         this[ EXTERN_NAME_2_EXTERN ] = opt  ?  opt[ EXTERN_NAME_2_EXTERN ]  :  {};
 
         this.add_step       = _CS_add_step;
-        this.call_tf        = _CS_call_tf;
         this.concat_call_tf = _CS_concat_call_tf;
         
         function _CS_add_step( arity, tf_id, spec_or_specgen, transfun, args )
@@ -892,11 +891,6 @@ var global, exports; // NPM support [github#1]
             return ret;
         }
 
-        function _CS_call_tf( tf, arg )
-        {
-            return tf.apply( this, arg );
-        }
-
         function _CS_concat_call_tf( other )
         {
             if (!(other instanceof _ChainSpec))
@@ -912,7 +906,7 @@ var global, exports; // NPM support [github#1]
             for (var n = tfarg_arr.length, i = 0; i < n; i++)
             {
                 var tfarg = tfarg_arr[ i ];
-                ret       = chainspec.call_tf( tfarg.tf, tfarg.arg );
+                ret       = tfarg.tf.apply( chainspec, tfarg.arg );
                 chainspec = ret._tf_chainspec;
             }
             return ret;
@@ -1227,7 +1221,7 @@ var global, exports; // NPM support [github#1]
             return wrapped_chain_method;
             function wrapped_chain_method( /*... arguments for `tf`...*/ )
             {
-                return chainspec.call_tf( tf, arguments );
+                return tf.apply( chainspec, arguments );
             }
         }
 
@@ -1244,7 +1238,7 @@ var global, exports; // NPM support [github#1]
                     }
                 });
                 arg = [ s_f ];
-                return chainspec.call_tf( tf, arg );
+                return tf.apply( chainspec, arg );
             }
             else
             {
