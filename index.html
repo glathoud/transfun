@@ -41,7 +41,7 @@ dd { margin-bottom: 1em; }
     ,   c_mfr_etc_in    = hh.code( 'mapIn, filterIn, reduceIn, redinitIn, andIn, orIn ' )
     ,   c_mfr_etc_right = hh.code( 'mapRight, filterRight, reduceRight, redinitRight, andRight, orRight' )
 
-    ,   c_o2arr_conv    = hh.code( 'o2values, o2keys, keys2o' ) + ' and ' + hh.code( 'o2kvs, kvs2o' )
+    ,   c_o2arr_conv    = hh.code( 'o2values, o2keys, keys2o' ) + ' and ' + hh.code( 'o2kv, kv2o' )
 
     ,   c_next      = hh.code( 'next' )
     ,   c_tval      = hh.code( 'tval' )
@@ -480,7 +480,7 @@ dd { margin-bottom: 1em; }
             dl_describe(
                 hh.code( 'o2values' )
                 , [
-                    'converts an object to the array of its values. It wraps ' + hh.code( 'Object.values' ) + ': '
+                    'converts an object to the array of its values:'
                     , js_pre_code( "o2values({ a:1, b:'xyz', c:null })" )
                     , 'may return:'
                     , js_pre_code( "[ 'xyz', 1, null ]" )
@@ -503,7 +503,7 @@ dd { margin-bottom: 1em; }
             dl_describe(
                 hh.code( 'o2keys' )
                 , [
-                    'converts an object to the array of its ' + hh.em( 'keys' ) + '. It wraps ' + hh.code( 'Object.keys' ) + ': '
+                    'converts an object to the array of its ' + hh.em( 'keys' ) + ' (it wraps ' + hh.code( 'Object.keys' ) + '): '
                     , js_pre_code( "o2keys({ a:1, b:'xyz', c:null })" )
                     , 'may return:'
                     , js_pre_code( "[ 'b', 'a', 'c' ]" )
@@ -532,10 +532,10 @@ dd { margin-bottom: 1em; }
 
         , hh.dl([
             dl_describe(
-                hh.code( 'o2kvs' )
+                hh.code( 'o2kv' )
                 , [
                     'converts an object to the array of its key-value pairs:'
-                    , js_pre_code( "o2kvs({ a:1, b:'xyz', c:null })" )
+                    , js_pre_code( "o2kv({ a:1, b:'xyz', c:null })" )
                     , 'may return:'
                     , js_pre_code( "[ ['c', null], ['a', 1], ['b', 'xyz'] ]" )
                     , 'The array order is '
@@ -547,10 +547,10 @@ dd { margin-bottom: 1em; }
             )
 
             , dl_describe(
-                hh.code( 'kvs2o' )
+                hh.code( 'kv2o' )
                 , [
                     'converts an array of key-value pairs to an object:'
-                    , js_pre_code( "kvs2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])" )
+                    , js_pre_code( "kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])" )
                     , 'returns:'
                     , js_pre_code( "{ a:1, b:'xyz', c:null }" )
                 ]

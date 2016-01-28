@@ -126,6 +126,12 @@ function aEL( node, ename, clientfun, /*?*/capture )
     (node  ||  document).addEventListener( ename, clientfun, capture );
 }
 
+function rA( node, aname, value )
+{
+    node.removeAttribute( aname, value );
+    return node;
+}
+
 function sA( node, aname, value )
 {
     node.setAttribute( aname, value );
@@ -162,6 +168,47 @@ function or( arr )
             break;
     }
     return a;
+}
+
+function oEquals( a, b )
+{
+    if (a === b) return true;
+
+    var ta = typeof a
+    ,   tb = typeof b
+    ;
+    if (ta !== tb) return false;
+
+    // Basic types 
+
+    if ('number' === ta  && isNaN( a )) return isNaN( b );
+
+    if (ta !== 'object') return a === b;
+    
+    // null objects
+
+    if (a === null  ||  b === null)  return a === b;
+
+    // non-null objects
+
+    var a_is_arr = a instanceof Array
+    ,   b_is_arr = b instanceof Array
+    ;
+    if (a_is_arr !== b_is_arr) return false;
+    
+    if (a_is_arr)
+    {
+        if (a.length !== b.length)  return false;
+        for (var i = a.length; i--;) 
+            if (!oEquals( a[ i ], b[ i ] ))  return false;
+    }
+    else
+    {
+        for (var k in a)  if (!(k in b))  return false;
+        for (var k in b)  if (!(k in a  &&  oEquals( a[ k ], b[ k ] )))  return false;
+    }
+    
+    return true;
 }
 
 function pad( s, n, c )

@@ -305,15 +305,19 @@ var fullexpr, tval, tpub, tfun, TF;
     // "Values" extraction:
     
     tpub( 'o2values', {
-        arity : 0
-        , spec : { stepadd : { set : [ 'current', { 'Object.values' : 'current' } ] } }
+        arity  : 0
+        , spec : { loopin : {
+            beforeloop  : { decl : [ 'out', '[]' ] }
+            , bodyadd   : { push : [ 'out', 'v' ] }
+            , afterloop : { set : [ 'current', 'out' ] }
+        }}
     });
 
     // "Key" conversions:
 
     tpub( 'o2keys', {
         arity : 0
-        , spec : { stepadd : { set : [ 'current', { 'Object.keys' : 'current' } ] } }
+        , spec : { stepadd : { set : [ 'current', 'Object.keys(current)' ] } }
     });
 
     tpub( 'keys2o', {
@@ -328,7 +332,7 @@ var fullexpr, tval, tpub, tfun, TF;
 
     // "Key-values" conversions:
 
-    tpub( 'o2kvs', {
+    tpub( 'o2kv', {
         arity  : 0
         , spec : { loopin : {
             beforeloop  : { decl : [ 'out', '[]' ] }
@@ -337,7 +341,7 @@ var fullexpr, tval, tpub, tfun, TF;
         }}
     });
 
-    tpub( 'kvs2o', {
+    tpub( 'kv2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }

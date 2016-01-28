@@ -224,9 +224,15 @@ function test()
     null  === orIn( { a: null, b : null, d : null, c : null })  ||  null.bug;
     
 
-    // "Key" conversions
+    // Conversions
 
+    oEquals( [ 1, 'xyz', null ], o2values({ a:1, b:'xyz', c:null }) )  ||  null.bug;
     
+    oEquals( [ 'a', 'b', 'c'  ],         o2keys({ a:1, b:'xyz', c:null }) )  ||  null.bug;
+    oEquals( { a:true, b:true, c:true }, keys2o([ 'a', 'b', 'c' ]) )  ||  null.bug;
+
+    oEquals( [ ['c', null], ['a', 1], ['b', 'xyz'] ].sort(), o2kv({ a:1, b:'xyz', c:null }).sort() )  ||  null.bug
+    oEquals( { a:1, b:'xyz', c:null }, kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ]) )   ||  null.bug;
 
     // 
     
