@@ -490,10 +490,12 @@ dd { margin-bottom: 1em; }
                 hh.code( 'o2values' )
                 , [
                     'converts an object to the array of its values:'
-                    , js_pre_code( "o2values({ a:1, b:'xyz', c:null })" )
-                    , 'may return:'
-                    , js_pre_code( "[ 'xyz', 1, null ]" )
-                    , 'The array order is '
+                    , js_pre_code([
+                        "o2values({ a:1, b:'xyz', c:null })",
+                        "// *may* return:",
+                        "[ 'xyz', 1, null ]"
+                    ])
+                    , '"' + js_code( '*may*' ) + '": The array order is '
                     , hh( 'a href="' + nokeyorder_ref + '"'
                         , 'not guaranteed'
                         )
@@ -513,10 +515,12 @@ dd { margin-bottom: 1em; }
                 hh.code( 'o2keys' )
                 , [
                     'converts an object to the array of its ' + hh.em( 'keys' ) + ' (it wraps ' + hh.code( 'Object.keys' ) + '): '
-                    , js_pre_code( "o2keys({ a:1, b:'xyz', c:null })" )
-                    , 'may return:'
-                    , js_pre_code( "[ 'b', 'a', 'c' ]" )
-                    , 'The array order is '
+                    , js_pre_code([
+                        "o2keys({ a:1, b:'xyz', c:null })",
+                        "// *may* return:",
+                        "[ 'b', 'a', 'c' ]"
+                    ])
+                    , '"' + js_code( '*may*' ) + '": The array order is '
                     , hh( 'a href="' + nokeyorder_ref + '"'
                         , 'not guaranteed'
                         )
@@ -528,9 +532,11 @@ dd { margin-bottom: 1em; }
                 hh.code( 'keys2o' )
                 , [
                     'converts an array to an object. For example:'
-                    , js_pre_code( "keys2o([ 'a', 'b', 'c' ])" )
-                    , 'returns:'
-                    , js_pre_code( "{ a:true, b:true, c:true }" )
+                    , js_pre_code([
+                        "keys2o([ 'a', 'b', 'c' ])",
+                        '// returns:',
+                        "{ a:true, b:true, c:true }"
+                    ])
                 ]
             )
         ])
@@ -544,10 +550,12 @@ dd { margin-bottom: 1em; }
                 hh.code( 'o2kv' )
                 , [
                     'converts an object to the array of its key-value pairs:'
-                    , js_pre_code( "o2kv({ a:1, b:'xyz', c:null })" )
-                    , 'may return:'
-                    , js_pre_code( "[ ['c', null], ['a', 1], ['b', 'xyz'] ]" )
-                    , 'The array order is '
+                    , js_pre_code([
+                        "o2kv({ a:1, b:'xyz', c:null })",
+                        '// *may* return:',
+                        "[ ['c', null], ['a', 1], ['b', 'xyz'] ]"
+                    ])
+                    , '"' + js_code( '*may*' ) + '": The array order is '
                     , hh( 'a href="' + nokeyorder_ref + '"'
                         , 'not guaranteed'
                         )
@@ -559,9 +567,11 @@ dd { margin-bottom: 1em; }
                 hh.code( 'kv2o' )
                 , [
                     'converts an array of key-value pairs to an object:'
-                    , js_pre_code( "kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])" )
-                    , 'returns:'
-                    , js_pre_code( "{ a:1, b:'xyz', c:null }" )
+                    , js_pre_code([
+                        "kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])",
+                        '// returns:',
+                        "{ a:1, b:'xyz', c:null }"
+                    ])
                 ]
             )
              
