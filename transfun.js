@@ -616,20 +616,25 @@ var global, exports; // NPM support [github#1]
                     this instanceof _ChainSpec  ?  this  :  new _ChainSpec
                 )
                     .add_step( arity, tf_id, spec  ||  specgen, transfun, arguments )
+
+                , cached_appfun = chainspec.appfun  // avoid duplicated work [github#2]
                 ;
-
-                // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
-                appfun._tf_chainspec = chainspec;
-
-                // Necessary to support `tfun( <appfun> )`
-                var _tf_bound_arg = arguments;
-                appfun._tf_bound = function () { return transfun.apply( this, _tf_bound_arg ); }
-                appfun._tf_bound._is_transfun = true;
-
-                // For convenience: give access
-                appfun.getBodyCode = appfun_getBodyCode;
-                
-                return mix_published_tfun_methods_into_appfun( chainspec, appfun );
+                if (!cached_appfun)
+                {
+                    // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
+                    appfun._tf_chainspec = chainspec;
+                    
+                    // Necessary to support `tfun( <appfun> )`
+                    var _tf_bound_arg = arguments;
+                    appfun._tf_bound = function () { return transfun.apply( this, _tf_bound_arg ); }
+                    appfun._tf_bound._is_transfun = true;
+                    
+                    // For convenience: give access
+                    appfun.getBodyCode = appfun_getBodyCode;
+                    
+                    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
+                }
+                return cached_appfun;
                 
                 // --- Details
 
@@ -720,10 +725,11 @@ var global, exports; // NPM support [github#1]
 
     // ---------- Private implementation
 
-    var _CS_cache; // [github#2]
+    var _CS_cache // [github#2]
+    ;
 
     function _ChainSpec( /*?object (all or nothing)?*/opt )
-    {        
+    {
         var TFARG_ARR            = 'tfarg_arr'
         ,   SPEC_ARR             = 'spec_arr'
         ,   EXTERN_ARR           = 'extern_arr'
