@@ -1111,7 +1111,9 @@ dd { margin-bottom: 1em; }
 
         var id = tval( s )(
             split( '""' ).map( 'v.match(/\\w/) ? v : "-"' ).join( '""' )
-        );
+        ) 
+            .toLowerCase()
+        ;
 
         return hh( 'p class="highlight" id="' + id + '"' , [
             hh.em( s ) 
