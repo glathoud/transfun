@@ -1356,7 +1356,7 @@ var global, exports; // NPM support [github#1]
     function _create_CS_cache()
     {
         var tmp = 'undefined' !== typeof Map  &&  Map.prototype
-        ,  base = { cs : null, map : _create_Map_fallback() }
+        ,  base = { cs : null, map : _create_MapWrap() }
         ;
         return { get : _CS_cache_get, set : _CS_cache_set };
 
@@ -1408,7 +1408,7 @@ var global, exports; // NPM support [github#1]
                     if (cs)
                     {
                         // set: one step deeper
-                        var tmp_cm = { cs : null, map : _create_Map_fallback() };
+                        var tmp_cm = { cs : null, map : _create_MapWrap() };
                         map.set( x, tmp_cm );
                         cs_map = tmp_cm;
                     }
@@ -1434,7 +1434,7 @@ var global, exports; // NPM support [github#1]
     } // _create_CS_cache
 
     var is_Map_supported;
-    function _create_Map_fallback()
+    function _create_MapWrap()
     {
         if (null == is_Map_supported)
         {
@@ -1452,11 +1452,11 @@ var global, exports; // NPM support [github#1]
         ,   other_store = !is_Map_supported  &&  []
         ;
         
-        return { get   : _Map_fallback_get
-                 , set : _Map_fallback_set 
+        return { get   : _MapWrap_get
+                 , set : _MapWrap_set 
                };
 
-        function _Map_fallback_get( k )
+        function _MapWrap_get( k )
         {
             var tk = typeof k;
             if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
@@ -1477,7 +1477,7 @@ var global, exports; // NPM support [github#1]
             }
         }
 
-        function _Map_fallback_set( k, v )
+        function _MapWrap_set( k, v )
         {
             var tk = typeof k;
             if ('number' === tk && isFinite( tk )  ||  'string' === tk  ||  'boolean' === tk)
