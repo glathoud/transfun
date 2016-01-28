@@ -408,7 +408,11 @@ dd { margin-bottom: 1em; }
 
         , centered_pic( 'toolbox' )
 
-        , section_title_with_anchor( 'toolbox', 'Also predefined: ' + hh.code( 'mapIn' ) + ', ' + hh.code( 'and' ) + ', ' + hh.code( 'or' ) + '...' )
+        , section_title_with_anchor( 'toolbox', [
+            'Also predefined: ' + hh.code( 'mapIn' ) + ', ' + hh.code( 'and' ) + ', ' + hh.code( 'or' )
+            , ', ' + hh.code( 'o2keys')
+            , '...'
+        ])
 
         , hh.p([
             'Beside ' + c_mfr + ', other transformations are also predefined:'
@@ -1116,6 +1120,9 @@ dd { margin-bottom: 1em; }
 
     function section_title_with_anchor( id, text )
     {
+        if ('string' !== typeof text)
+            text = text.join( '' )
+
         if (id)
             st_arr.push( { id : id, text : text } );
         

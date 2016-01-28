@@ -48,7 +48,7 @@ function test()
     ;
     (age_mean  ||  null).toPrecision.call.a;
 
-    age_clean.join( '#' ) === filter( '!=null' ).map( '.age' )( corrupt_arr ).join( '#' )  ||  null.bug;
+    oEquals( age_clean, filter( '!=null' ).map( '.age' )( corrupt_arr ) )  ||  null.bug;
 
     age_mean === tval(
         corrupt_arr
@@ -60,7 +60,7 @@ function test()
 
     var mapsafe = filter( '!=null' ).map();  // Partial transformation: needs one more argument to be complete
 
-    age_clean.join( '#' ) === tval( corrupt_arr )( mapsafe( '.age' ) ).join( '#' )  ||  null.bug;
+    oEquals( age_clean, tval( corrupt_arr )( mapsafe( '.age' ) ) )  ||  null.bug;
 
     var age_mean_appfun = decl( 'count', '0' )
         .next( mapsafe( '.age' ) )  // needs .next call because `mapsafe` has not been published
@@ -78,7 +78,7 @@ function test()
 
     var mapsafe_not_called = filter( '!=null' ).map;  // Partial transformation: needs one more argument to be complete
 
-    age_clean.join( '#' ) === tval( corrupt_arr )( mapsafe_not_called( '.age' ) ).join( '#' )  ||  null.bug;
+    oEquals( age_clean, tval( corrupt_arr )( mapsafe_not_called( '.age' ) ) )  ||  null.bug;
 
     var age_mean_appfun_2 = decl( 'count', '0' )
         .next( mapsafe_not_called( '.age' ) )  // needs .next call because `mapsafe_not_called` has not been published
@@ -125,15 +125,15 @@ function test()
 
     // externs
     
-    age_clean.join( '#' ) === filter( function ( v ) { return v!=null; } ).map( '.age' )( corrupt_arr ).join( '#' )  ||  null.bug;
-    age_clean.join( '#' ) === filter( '!=null' ).map( function ( v ) { return v.age; } )( corrupt_arr ).join( '#' )  ||  null.bug;
-    age_clean.join( '#' ) === tval(
+    oEquals( age_clean, filter( function ( v ) { return v!=null; } ).map( '.age' )( corrupt_arr ) )  ||  null.bug;
+    oEquals( age_clean, filter( '!=null' ).map( function ( v ) { return v.age; } )( corrupt_arr ) )  ||  null.bug;
+    oEquals( age_clean, tval(
         corrupt_arr
     )(
         filter( function ( v ) { return v!=null; } )
             .map( function ( v ) { return v.age; } )
-    )
-        .join( '#' )  ||  null.bug
+    ))
+        ||  null.bug
     ;
 
     console.log( geommean._tf_dbg.code_body );
@@ -148,7 +148,7 @@ function test()
     , obtained = filterRight( '%2' )( arr )
     , expected = [ 13, 7, 1 ]
     ;
-    expected.join( '#' ) === obtained.join( '#' )  ||  null.bug;
+    oEquals( expected, obtained )  ||  null.bug;
 
     //
     
