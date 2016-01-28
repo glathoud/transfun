@@ -1369,8 +1369,14 @@ var global, exports; // NPM support [github#1]
             cs  ||  (cs = null);
             
             var cs_map = _CS_cache_getset_descent( base, arr, cs );
+            
+            if (cs)  // set
+                cs === cs_map.cs  ||  null.bug;
 
-            var cs = cs_map  &&  cs_map.cs;
+            else if (cs_map)  // get
+                cs = cs_map.cs;
+            
+            // result
 
             if (cs)
                 cs instanceof _ChainSpec  ||  null.bug;
@@ -1432,7 +1438,7 @@ var global, exports; // NPM support [github#1]
     {
         if (null == is_Map_supported)
         {
-            tmp = 'undefined' !== typeof Map  &&  Map.prototype;
+            var tmp = 'undefined' !== typeof Map  &&  Map.prototype;
             is_Map_supported = tmp  &&
                 'function' === typeof tmp.get  &&
                 'function' === typeof tmp.set  &&
