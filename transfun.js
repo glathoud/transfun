@@ -763,10 +763,10 @@ var global, exports; // NPM support [github#1]
             arity === args.length  ||  null.bug;
 
             // [github#2] to speedup the code generation
-            var _CS_cache_key = this[ CACHE_KEY ]
-                .concat( [ tf_id ] )
-                .concat( Array.apply( null, args ) )
-            ;
+            var _CS_cache_key = this[ CACHE_KEY ].slice();
+            _CS_cache_key.push( tf_id );
+            _CS_cache_key.push.apply( _CS_cache_key, args );
+            
             _CS_cache  ||  (_CS_cache = _create_CS_cache());
             var already = _CS_cache.get( _CS_cache_key );
             if (already)
