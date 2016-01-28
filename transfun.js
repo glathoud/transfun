@@ -1439,11 +1439,12 @@ var global, exports; // NPM support [github#1]
         if (null == is_Map_supported)
         {
             var tmp = 'undefined' !== typeof Map  &&  Map.prototype;
-            is_Map_supported = tmp  &&
-                'function' === typeof tmp.get  &&
-                'function' === typeof tmp.set  &&
-                'function' === typeof tmp.has
-            ;
+            is_Map_supported = !!(
+                tmp  &&
+                    'function' === typeof tmp.get  &&
+                    'function' === typeof tmp.set  &&
+                    'function' === typeof tmp.has
+            );
         }
         
         var basic_store = {}
