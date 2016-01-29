@@ -7,7 +7,9 @@
   Contact: glat@glat.info
 */
 
-/*global tval tpub tfun fullexpr 
+/*global 
+
+  tval tpub tfun fullexpr 
   map filter reduce redinit sum prod decl
   console global exports
   Map
@@ -40,24 +42,21 @@ var global, exports; // NPM support [github#1]
     ;
     
     // ---------- Public API: global namespace access
+    // (1) through global variables
+    // (2) through `tfun.*` methods
+    //
+    // (1) & (2) also apply to global `transfun`s
+    // published with `tpub` (examples below).
 
-    global.fullexpr = fullexpr_;
-    global.tval     = tval_;
-    global.tpub     = tpub_;
-    global.tfun     = tfun_;
+    global.fullexpr = tfun.fullexpr = fullexpr;
+    global.tval     = tfun.tval     = tval;
+    global.tpub     = tfun.tpub     = tpub;
+    global.tfun     = tfun.tfun     = tfun; // :)
 
-    // ---------- Public API: TF namespace access
-
-    global.TF = { fullexpr : fullexpr_
-                  , tval   : tval_
-                  , tpub   : tpub_
-                  , tfun   : tfun_
-                };
-    
     // --- Publish a few common transfunctions, specifying an
     // internally imperative implementation for a functional.
 
-    tpub_( 'map', {
+    tpub( 'map', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { loopleftright : {
@@ -68,7 +67,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'mapRight', {
+    tpub( 'mapRight', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { looprightleft : {
@@ -79,7 +78,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'mapIn', {
+    tpub( 'mapIn', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
             return { loopin : {
@@ -89,7 +88,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'filter', {
+    tpub( 'filter', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : {
@@ -99,7 +98,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'filterRight', {
+    tpub( 'filterRight', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { looprightleft : {
@@ -109,7 +108,7 @@ var global, exports; // NPM support [github#1]
         }
     });
     
-    tpub_( 'filterIn', {
+    tpub( 'filterIn', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopin : {
@@ -119,7 +118,7 @@ var global, exports; // NPM support [github#1]
         }
     });
     
-    tpub_( 'reduce', {
+    tpub( 'reduce', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { loopleftright : {
@@ -137,7 +136,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'reduceRight', {
+    tpub( 'reduceRight', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { looprightleft : {
@@ -155,7 +154,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'reduceIn', {
+    tpub( 'reduceIn', {
         arity : 1
         , specgen : function ( /*string | externcall object*/combine ) {
             return { loopin : {
@@ -175,7 +174,7 @@ var global, exports; // NPM support [github#1]
 
 
     
-    tpub_( 'redinit', {
+    tpub( 'redinit', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopleftright : {
@@ -186,7 +185,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'redinitRight', {
+    tpub( 'redinitRight', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { looprightleft : {
@@ -197,7 +196,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'redinitIn', {
+    tpub( 'redinitIn', {
         arity : 2
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopin : {
@@ -209,14 +208,14 @@ var global, exports; // NPM support [github#1]
     });
     
 
-    tpub_( 'breakWhen', {
+    tpub( 'breakWhen', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : { bodyadd : { 'if' : fullexpr( test, 'v', 'k' ), 'then' : 'break' } }};
         }
     });
 
-    tpub_( 'takeWhile', {
+    tpub( 'takeWhile', {
         arity : 1
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopleftright : {
@@ -226,7 +225,7 @@ var global, exports; // NPM support [github#1]
         }
     });
 
-    tpub_( 'takeWhileIn', {
+    tpub( 'takeWhileIn', {
         arity : 1
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopin : {
@@ -238,7 +237,7 @@ var global, exports; // NPM support [github#1]
 
     // -- and
     
-    tpub_( 'and', {
+    tpub( 'and', {
         arity : 0
         , spec : { loopleftright : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -250,7 +249,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'andRight', {
+    tpub( 'andRight', {
         arity : 0
         , spec : { looprightleft : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -262,7 +261,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'andIn', {
+    tpub( 'andIn', {
         arity : 0
         , spec : { loopin : {
             beforeloop : { decl : [ 'out', 'true' ] }
@@ -276,7 +275,7 @@ var global, exports; // NPM support [github#1]
 
     // -- or
     
-    tpub_( 'or', {
+    tpub( 'or', {
         arity : 0
         , spec : { loopleftright : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -288,7 +287,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'orRight', {
+    tpub( 'orRight', {
         arity : 0
         , spec : { looprightleft : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -300,7 +299,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'orIn', {
+    tpub( 'orIn', {
         arity : 0
         , spec : { loopin : {
             beforeloop : { decl : [ 'out', 'false' ] }
@@ -315,7 +314,7 @@ var global, exports; // NPM support [github#1]
 
     // "Values" extraction:
     
-    tpub_( 'o2values', {
+    tpub( 'o2values', {
         arity  : 0
         , spec : { loopin : {
             beforeloop  : { decl : [ 'out', '[]' ] }
@@ -326,12 +325,12 @@ var global, exports; // NPM support [github#1]
 
     // "Key" conversions:
 
-    tpub_( 'o2keys', {
+    tpub( 'o2keys', {
         arity : 0
         , spec : { stepadd : { set : [ 'current', 'Object.keys(current)' ] } }
     });
 
-    tpub_( 'keys2o', {
+    tpub( 'keys2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }
@@ -343,7 +342,7 @@ var global, exports; // NPM support [github#1]
 
     // "Key-values" conversions:
 
-    tpub_( 'o2kv', {
+    tpub( 'o2kv', {
         arity  : 0
         , spec : { loopin : {
             beforeloop  : { decl : [ 'out', '[]' ] }
@@ -352,7 +351,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'kv2o', {
+    tpub( 'kv2o', {
         arity  : 0
         , spec : { loopleftright : {
             beforeloop  : { decl : [ 'out', '{}' ] }
@@ -361,7 +360,7 @@ var global, exports; // NPM support [github#1]
         }}
     });
 
-    tpub_( 'decl', {
+    tpub( 'decl', {
         arity : 2
         , specgen : function ( /*string*/name, /*string | externcall object*/expr ) {
             return {
@@ -371,14 +370,14 @@ var global, exports; // NPM support [github#1]
     });
 
     
-    tpub_( 'sum', redinit( '0', '+' ) );
+    tpub( 'sum', redinit( '0', '+' ) );
 
-    tpub_( 'join', '#s',  '.join(#s)' );
-    tpub_( 'split', '#s', '.split(#s)' );
+    tpub( 'join', '#s',  '.join(#s)' );
+    tpub( 'split', '#s', '.split(#s)' );
     
     // ---------- Public API implementation
 
-    function tval_( /*...args...*/ )
+    function tval( /*...args...*/ )
     // Convenience sugar to reverse the syntax:
     // value first, then function:
     //
@@ -420,7 +419,7 @@ var global, exports; // NPM support [github#1]
 
 
     var _tpub_cache;
-    function tpub_( name, spec_or_fun_or_str /*... more strings in the shortcut variant...*/ )
+    function tpub( name, spec_or_fun_or_str /*... more strings in the shortcut variant...*/ )
     {
         (name  ||  null).substring.call.a;
 
@@ -428,18 +427,23 @@ var global, exports; // NPM support [github#1]
         if (name in _tpub_cache)
             throw new Error( '"' + name + '" already published!' );
 
-        var tf = _tpub_cache[ name ] = tfun_.apply(
+        var tf = _tpub_cache[ name ] = tfun.apply(
             null
             , with_default_loopname( Array.prototype.slice.call( arguments, 1 ) )
         );
         
         // Also publish the function to the global namespace
-        // 
-        // if arity 0 -> publish the appfun directly
         //
-        // if arity > 0 -> publish the transfun
+        // (1) through global variables
+        // (2) through `tfun.*` methods
+        //
+        // Note about arity & convenience:
+        // 
+        // if arity == 0 then create and publish the appfun,
+        // if arity  > 0 then publish the transfun.
+        // 
         new Function( 'tf'
-                      , 'TF["' + name + '"]=' + name + '=tf' + (
+                      , 'tfun["' + name + '"]=' + name + '=tf' + (
                           tf._tf_arity > 0  ?  ''  :  '()'
                       )
                     )( tf );
@@ -492,7 +496,7 @@ var global, exports; // NPM support [github#1]
         }
     }
 
-    function fullexpr_( /*string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar )
+    function fullexpr( /*string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar )
     // string->string: Complete a code expression of one or two variables.
     //
     // Examples:
@@ -525,7 +529,7 @@ var global, exports; // NPM support [github#1]
     }
     
     var _transfun_id;  // for caching [github#2], to speedup the code generation
-    function tfun_( def_or_fun_or_str /*... more strings in the string shortcut variant...*/ )
+    function tfun( def_or_fun_or_str /*... more strings in the string shortcut variant...*/ )
     {
         var tof = typeof def_or_fun_or_str;
 
