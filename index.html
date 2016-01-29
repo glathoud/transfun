@@ -428,6 +428,8 @@ dd { margin-bottom: 1em; }
         , hh.p([
             'Beside ' + c_mfr + ', other transformations are also predefined:'
         ])
+        
+
         , hh.dl([
             
             dl_describe(
@@ -582,6 +584,35 @@ dd { margin-bottom: 1em; }
             )
              
         ])
+
+        , highlight( 'Global transformations and namespaces' )
+
+        , hh.p([
+            ' The transformations defined above can be accessed both through '
+            , ' global variables and as ' + js_code( 'tfun.*' ) + ' methods (safer):'
+        ])
+        , js_pre_code([
+            'map',
+            'tfun.map   // map === tfun.map',
+            '',
+            'filter', 
+            'tfun.filter // filter === tfun.filter',
+            '// etc.'
+        ])
+        
+        , hh.p([
+             ' Depending on your use case, esp. other libraries, you may opt for global access &mdash; shorter &mdash; '
+            , ' or for access under ' + js_code( 'tfun.*' ) + ' &mdash; safer but more verbose.'
+        ])
+
+
+
+
+
+
+
+
+
 
 
 
@@ -818,8 +849,8 @@ dd { margin-bottom: 1em; }
             'Global or private transformations can be defined:'
         ])
         , js_pre_code([
-            '// In global namespace: <name> and TF.<name>',
-            '//   TF.<name> good to prevent name collisions',
+            '// In global namespace: <name> and tfun.<name>',
+            '//   tfun.<name> good to prevent name collisions',
             '//   with other libraries',
             'tpub( <name:string>, <definition:object> );',
             '',
