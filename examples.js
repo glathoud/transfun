@@ -1,3 +1,12 @@
+/* This file is merely a notebook:
+  
+   These are a bunch of production examples accumulated over the years
+   intertwined with tentative design of the `transfun` API.
+   
+   Copyright 2016 by Guillaume Lathoud
+   Boost license: see the file ./LICENSE
+*/
+
 var sum   = reduce( 'out+v' )
 ,   sum2d = map( sum ).next( sum )
 ;
