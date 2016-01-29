@@ -1,10 +1,18 @@
 <!doctype html>
+<!-- Copyright Guillaume Lathoud 2016
+     Boost License: see the file ./LICENSE
+-->
 <html>
   <head>
     <meta charset=utf-8/>
     <title>transfun: tests</title>
     <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
-    <style type="text/css">.section-anchor { font-size : 90%; font-decoration: none; }</style>
+    <style type="text/css">
+      body { font-family: helvetica; }
+      .section-anchor { font-size : 90%; font-decoration: none; }
+
+      .license { width: 110%; height: 400px; border: none; margin: 0; paddin: 0; overflow: hidden; }
+    </style>
     <script type="text/javascript" src="opinel.js"></script>
     <script type="text/javascript" src="transfun.js"></script>
     <script type="text/javascript" src="test.js"></script>
@@ -54,6 +62,12 @@
             , hh( 'hr id="unit-test-hr"' )
             , section_title_with_anchor( 'unit-test', 'Unit tests' )
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
+
+
+            , hh.hr()
+            , section_title_with_anchor( 'license' , 'License' )
+            // object did not have a stable CSS formatting (scrollbar randomly showing up)
+            , hh( 'iframe name="license" type="text/plain" data="LICENSE" src="LICENSE" class="license"' )
 
         ].join( '\n' )
     );

@@ -1,10 +1,17 @@
-/* This file is merely a notebook:
+/*
+  examples.js
   
-   These are a bunch of production examples accumulated over the years
-   intertwined with tentative design of the `transfun` API.
-   
-   Copyright 2016 by Guillaume Lathoud
-   Boost license: see the file ./LICENSE
+  Copyright Guillaume Lathoud 2016
+  Boost License: see the file ./LICENSE
+
+  Contact: glat@glat.info
+*/
+
+/*
+  This file is merely a notebook:
+  
+  These are a bunch of production examples accumulated over the years,
+  intertwined with tentative design of the `transfun` API.
 */
 
 var sum   = reduce( 'out+v' )

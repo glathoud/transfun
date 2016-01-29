@@ -1,3 +1,12 @@
+/*
+  test.js
+  
+  Copyright Guillaume Lathoud 2016
+  Boost License: see the file ./LICENSE
+
+  Contact: glat@glat.info
+*/
+
 function test()
 {
     console.time( 'transfun:test' );

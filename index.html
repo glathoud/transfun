@@ -1,4 +1,7 @@
 <!doctype html>
+<!-- Copyright Guillaume Lathoud 2016
+     Boost License: see the file ./LICENSE
+-->
 <html>
   <head>
     <meta charset=utf-8/>
@@ -25,8 +28,11 @@ dd { margin-bottom: 1em; }
     .section-hr, .section-title {margin-top: 2.5em; }
 .email_icon { vertical-align: middle; max-height: 2.25em; }
 
+
+
 @media only print  { .print-hidden, .section-anchor, .highlight-anchor { visibility: hidden; } }
 
+    .license { width: 110%; height: 400px; border: none; margin: 0; paddin: 0; overflow: hidden; }
     </style>
     <link rel="stylesheet" type="text/css" href="prettify/prettify.css"/>
     <script type="text/javascript" src="transfun.js"></script>
@@ -713,8 +719,20 @@ dd { margin-bottom: 1em; }
 
         , section_hr()
 
+        , section_title_with_anchor( 'license' , 'License' )
+
+        , hh.p( 'The ' + c_transfun + ' code has the Boost License:' )
+
+        // object did not have a stable CSS formatting (scrollbar randomly showing up)
+        , hh( 'iframe name="license" type="text/plain" data="LICENSE" src="LICENSE" class="license"' )
+        
 
 
+
+
+
+
+        , section_hr()
 
 
 

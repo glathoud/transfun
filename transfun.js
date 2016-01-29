@@ -1,3 +1,12 @@
+/*
+  transfun.js
+  
+  Copyright Guillaume Lathoud 2016
+  Boost License: see the file ./LICENSE
+
+  Contact: glat@glat.info
+*/
+
 /*global tval tpub tfun fullexpr 
   map filter reduce redinit sum prod decl
   console global exports

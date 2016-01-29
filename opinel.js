@@ -4,7 +4,7 @@
   A bunch of useful small functions & shortcuts for JavaScript.
   Use at your own risk. See the file ./LICENSE
 
-  Guillaume Lathoud, 2016
+  Copyright Guillaume Lathoud 2016
   glat@glat.info
 */
 
