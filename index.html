@@ -602,7 +602,10 @@ dd { margin-bottom: 1em; }
         
         , hh.p([
              ' Depending on your use case, esp. other libraries, you may opt for global access &mdash; shorter &mdash; '
-            , ' or for access under ' + js_code( 'tfun.*' ) + ' &mdash; safer but more verbose.'
+            , ' or for access under ' + js_code( 'tfun.*' ) + ' &mdash; safer but slightly more verbose:'
+        ])
+        , js_pre_code([
+            "var appfun = tfun.map( '.p' ).filter( '!=null' ).reduce( '+' );",
         ])
 
 
@@ -653,7 +656,7 @@ dd { margin-bottom: 1em; }
         , section_title_with_anchor( 'tval', 'Convenient pipe-like order using ' + c_tval )
 
         , hh.p([
-            'If you write things in a "single step":'
+            'If you write things in a single line:'
         ])
         , js_pre_code([
             "var result = map( '.p' ).filter( '!=null' ).reduce( '+' )( arr )",
