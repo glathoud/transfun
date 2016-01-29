@@ -610,6 +610,85 @@ dd { margin-bottom: 1em; }
 
 
 
+        
+        , centered_pic( 'oldcpu' )
+        , section_title_with_anchor( 'practical', 'Negligible CPU overhead' )
+        
+        , hh.p([
+            'As mentionned above, '
+            , 'the '
+            , c_transfun
+            , ' approach has two steps:'
+        ])
+
+        , js_pre_code([
+            "var appfun = map( '.p' ).filter( '!=null' ).reduce( '+' );",
+            "var result = appfun( arr ); // very fast!"
+        ])
+        
+        , hh.p([
+            'The cost of the first step &mdash; creating the '
+            , js_code( 'appfun' )
+            , ' &mdash; is negligible (see&nbsp;&rarr;'
+            , hh( 'a href="https://github.com/glathoud/transfun/issues/2" class="issue_closed"'
+                  , '#2' )
+            , '), so one can write the two steps in a single line:'
+        ])
+
+        , js_pre_code([
+            "var result = map( '.p' ).filter( '!=null' ).reduce( '+' )( arr );",
+        ])
+
+        , hh.p([
+            'However, I personally don\'t like the order in which the term of that line read,'
+            , ' but that can be fixed. See the next Section.'
+        ])
+
+
+
+        
+        
+
+        , centered_pic( 'pipechair' )
+        , section_title_with_anchor( 'tval', 'Convenient pipe-like order using ' + c_tval )
+
+        , hh.p([
+            'If you write things in a "single step":'
+        ])
+        , js_pre_code([
+            "var result = map( '.p' ).filter( '!=null' ).reduce( '+' )( arr )",
+            "//              2              3                  4         1"
+        ])
+        , hh.p([
+            '...the reading order might be a bit confusing, because the input value '
+            , hh.code( 'arr' ) 
+            , ' is at the end&nbsp;(1), while the rest&nbsp;(2,3,4) follows a pipe-like order.'
+        ])
+        , hh.p([
+            'In such cases you can use ' + c_tval + ' to improve the reading order, putting the data ' 
+            , c_arr
+            , ' first:'
+        ])
+        , js_pre_code([
+            "var result = tval( arr )( map('.p').filter('!=null').reduce('+') );",
+            "//                  1        2            3                4"
+        ])
+        , hh.p([
+            "There is no magic here: "
+            , c_tval
+            , ' simply applies the appfun&nbsp;(2,3,4) on its data parameter&nbsp;(1). '
+        ])
+        , hh.p([ ' Generally:' ])
+        , js_pre_code([
+            'tval( <data> )( <appfun> ) === <appfun>( <data> )'
+        ])
+        
+        
+
+
+        
+
+
 
 
 
@@ -1115,43 +1194,6 @@ dd { margin-bottom: 1em; }
                ])
 
 
-
-
-
-        , centered_pic( 'pipechair' )
-        , section_title_with_anchor( 'tval', next_annex_name() + ': Convenient pipe-like order using ' + c_tval )
-
-        , hh.p([
-            'If you write things in a "single step":'
-        ])
-        , js_pre_code([
-            "var result = map( '.p' ).filter( '!=null' ).reduce( '+' )( arr )",
-            "//              2              3                  4         1"
-        ])
-        , hh.p([
-            '...the reading order might be a bit confusing, because the input value '
-            , hh.code( 'arr' ) 
-            , ' is at the end&nbsp;(1), while the rest&nbsp;(2,3,4) follows a pipe-like order.'
-        ])
-        , hh.p([
-            'In such cases you can use ' + c_tval + ' to improve the reading order, putting the data ' 
-            , c_arr
-            , ' first:'
-        ])
-        , js_pre_code([
-            "var result = tval( arr )( map('.p').filter('!=null').reduce('+') );",
-            "//                  1        2            3                4"
-        ])
-        , hh.p([
-            "There is no magic here: "
-            , c_tval
-            , ' simply applies the appfun&nbsp;(2,3,4) on its data parameter&nbsp;(1). '
-        ])
-        , hh.p([ ' Generally:' ])
-        , js_pre_code([
-            'tval( <data> )( <appfun> ) === <appfun>( <data> )'
-        ])
-
     ].join( '\n' ));  
 
     gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
@@ -1283,6 +1325,14 @@ dd { margin-bottom: 1em; }
                 , href  : 'http://www.nambos.de/en/naming-product-name-company-name.php'
                 , attr  : 'width="250px"'
             }
+
+            , oldcpu : {
+                src     : 'img/pic_oldcpu.jpg'
+                , title : 'old CPU'
+                , href  : 'http://arstechnica.com/civis/viewtopic.php?f=12&t=308172'
+                , attr  : 'width="200px"'
+            }
+
             
             , pipechair : {
                 src     : 'img/pic_pipechair.jpg'
