@@ -42,3 +42,7 @@ A domain-specific language is used to define `map/filter/reduce`. With this lang
 # More about this
 
 http://glat.info/transfun/
+
+# License
+
+The Boost License apply, as described in the file [LICENSE](./LICENSE).
