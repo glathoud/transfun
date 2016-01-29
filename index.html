@@ -742,6 +742,8 @@ dd { margin-bottom: 1em; }
             , hh( 'a href="../email.jpg" title="email" alt="email"'
                   , hh( 'img src="../images/email_icon.png" class="email_icon"' )
                 )
+            , ' or &rarr;&nbsp;' + hh( 'a href="' + github_ref + '"', 'GitHub' )
+               , '.'
         ])
 
 
@@ -910,7 +912,7 @@ dd { margin-bottom: 1em; }
         , hh.p('is equivalent to write:')
         , js_pre_code( "map('v.p')" )
         , hh.p( 'Both work. Moreover, function arguments are also accepted:' )
-        , js_pre_code( "map((v)=>v.p)" )
+        , js_pre_code( "map((x)=>x.p)" )
         , hh.p([
             '...but lead to a performance loss. For a longer discussion about '
             , 'function arguments, please refer to the Section:&nbsp;'
@@ -950,6 +952,8 @@ dd { margin-bottom: 1em; }
         , js_pre_code( "filter('!=null')")
         , hh.p('is equivalent to write:')
         , js_pre_code( "filter('v!=null')" )            
+        , hh.p( 'Both work. Moreover, function arguments are also ' +  hh( 'a href="#with-functions"', 'accepted' ) + ':' )
+        , js_pre_code( "filter((x)=>x!=null)" )
 
 
         , highlight( 'Example: redinit' )
