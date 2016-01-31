@@ -189,8 +189,13 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                     , "decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' ).getBodyCode()"
 
                     , "tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' ) )"
-
                     , "split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' ).getBodyCode()"
+
+
+                    , "tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' ) )"
+
+                    , "split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' ).getBodyCode()"
+
                 ]
             );
         }

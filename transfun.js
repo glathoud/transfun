@@ -126,7 +126,7 @@ var global, exports; // NPM support [github#1]
                                 , { decl : [ 'redinit', 'false' ] }
                               ]
                 , bodyadd   : { 'if'     : 'redinit'
-                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                                 , 'else' : [ {   set : [ 'out', 'v' ] }
                                              , { set : [ 'redinit', 'true' ] }
                                            ]
@@ -144,7 +144,7 @@ var global, exports; // NPM support [github#1]
                                 , { decl : [ 'redinit', 'false' ] }
                               ]
                 , bodyadd   : { 'if'     : 'redinit'
-                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                                 , 'else' : [ {   set : [ 'out', 'v' ] }
                                              , { set : [ 'redinit', 'true' ] }
                                            ]
@@ -162,7 +162,7 @@ var global, exports; // NPM support [github#1]
                                 , { decl : [ 'redinit', 'false' ] }
                               ]
                 , bodyadd   : { 'if'     : 'redinit'
-                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                                , then   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                                 , 'else' : [ {   set : [ 'out', 'v' ] }
                                              , { set : [ 'redinit', 'true' ] }
                                            ]
@@ -179,7 +179,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopleftright : {
                 beforeloop  : { decl : [ 'out', fullexpr( redinit, 'current' ) ] }
-                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                 , afterloop : { set : [ 'current', 'out' ] }
             }};
         }
@@ -190,7 +190,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { looprightleft : {
                 beforeloop  : { decl : [ 'out', fullexpr( redinit, 'current' ) ] }
-                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                 , afterloop : { set : [ 'current', 'out' ] }
             }};
         }
@@ -201,12 +201,48 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string*/redinit, /*string | externcall object*/combine ) {
             return { loopin : {
                 beforeloop  : { decl : [ 'out', fullexpr( redinit, 'current' ) ] }
-                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v' ) ] }
+                , bodyadd   : { set : [ 'out', fullexpr( combine, 'out', 'v', 'k' ) ] }
                 , afterloop : { set : [ 'current', 'out' ] }
             }};
         }
     });
     
+    tpub( 'each', {
+        arity : 1
+        , specgen : function ( /*string*/action ) {
+            return { loopleftright : {
+                beforeloop  : []
+                , bodyadd   : fullexpr.call( { statement : true }, action, 'current', 'v', 'k' )
+                , afterloop : []
+            }};
+        }
+
+    });
+
+    tpub( 'eachRight', {
+        arity : 1
+        , specgen : function ( /*string*/action ) {
+            return { looprightleft : {
+                beforeloop  : []
+                , bodyadd   : fullexpr.call( { statement : true }, action, 'current', 'v', 'k' )
+                , afterloop : []
+            }};
+        }
+
+    });
+
+    tpub( 'eachIn', {
+        arity : 1
+        , specgen : function ( /*string*/action ) {
+            return { loopin : {
+                beforeloop  : []
+                , bodyadd   : fullexpr.call( { statement : true }, action, 'current', 'v', 'k' )
+                , afterloop : []
+            }};
+        }
+
+    });
+
 
     tpub( 'breakWhen', {
         arity     : 1
@@ -496,7 +532,7 @@ var global, exports; // NPM support [github#1]
         }
     }
 
-    function fullexpr( /*string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar )
+    function fullexpr( /*string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar /*...more variables (for [extern]call)...*/)
     // string->string: Complete a code expression of one or two variables.
     //
     // Examples:
@@ -505,11 +541,15 @@ var global, exports; // NPM support [github#1]
     // 'v+k'     === fullexpr( '+', 'v', 'k' )
     // }}}
     {
+        var         opt = this
+        , opt_statement = opt  &&  opt.statement
+        ;
+
         if ('object' === typeof code)
         {
             var externcall = code.externcall;
             (externcall  ||  null).substring.call.a;
-            return externcall + '(' + leftvar + (rightvar  ?  ',' + rightvar  :  '') + ')';
+            return externcall + '(' + Array.apply( 0, arguments ).slice( 1 ).join( ', ') + ')';
         }
         
         (code      ||  null).substring.call.a;
@@ -525,7 +565,7 @@ var global, exports; // NPM support [github#1]
         if (is_right_implicit)
             code = code + (is_left_implicit  ?  (rightvar  ||  '')  :  leftvar);
 
-        return '(' + code + ')';
+        return opt_statement  ?  code  :  '(' + code + ')';
     }
     
     var _transfun_id;  // for caching [github#2], to speedup the code generation
