@@ -8,8 +8,6 @@
 
   --- DESCRIPTION ---
 
-  XXX WORK IN PROGRESS - NOT TESTED YET
-
   Split an `appfun` across workers. 
   
   `appfun` must support the interface:
@@ -43,12 +41,14 @@ var psingle, psplit; // required
     psingle = tfun_psingle;
     psplit  = tfun_psplit;
 
+    psingle.getSystemInfo = tfun_psingle_getSystemInfo;
+    
     // ---------- Public API implementation
 
     function tfun_psingle( appfun )
     // Setup an `appfun` runner for a single parallel worker.
     {
-        return tfun_psplit( appfun, { n : 1 } );
+        return tfun_psplit( appfun, { _single : true, n : 1 } );
     }
 
     function tfun_psplit( appfun, /*?object { n : <integer>} | { prop : <float between 0 and 1>}?*/cfg )
@@ -59,6 +59,14 @@ var psingle, psplit; // required
         return new _ParallelSplit( appfun, cfg );
     }
 
+    function tfun_psingle_getSystemInfo()
+    {
+        return {
+            default_n_workers   : WORKERS_SUPPORTED  ?  DEFAULT_N_WORKERS  :  null
+            , workers_supported : WORKERS_SUPPORTED
+        };
+    }
+    
     // ---------- Private details
 
     function _ParallelSplit( appfun, cfg, previous_parallelMerge )
@@ -70,12 +78,17 @@ var psingle, psplit; // required
             ?  0 < cfg.n       &&  cfg.n < Infinity  &&  cfg.n.toPrecision.call.a
             :  0.0 < cfg.prop  &&  cfg.prop < 1.0    &&  cfg.prop.toPrecision.call.a
         ;
-        
         this.appfun = appfun;
         this.cfg    = cfg;
         this.previous_parallelMerge = previous_parallelMerge  ||  null;
-    }
 
+        if (cfg._single)
+        {
+            cfg.n === 1  ||  null.bug;
+            return this.pmerge( 'out' );
+        }
+    }
+    
     var PS_proto = _ParallelSplit.prototype;
 
     PS_proto.pnext           = PS_pnext;
@@ -89,22 +102,24 @@ var psingle, psplit; // required
         return new _ParallelSplit( this.appfun  ?  this.appfun.next( appfun )  :  appfun, this.cfg );
     }
 
-    function PS_pmerge( /*function (out,v) => new_out*/mergefun )
+    function PS_pmerge( /*function (out,v) => new_out | (partial) expression string*/mergefun )
     {
         return new _ParallelMerge( this, mergefun );
     }
     
-    function PS_pmergeRight( /*function (out,v) => new_out*/mergefun )
+    function PS_pmergeRight( /*function (out,v) => new_out | (partial) expression string*/mergefun )
     {
         return new _ParallelMerge( this, mergefun, { righttoleft : true } );
     }
 
-    function PS_pmerginit( /*any*/initval, /*function (out,v) => new_out*/mergefun )
+    function PS_pmerginit( /*non-string value | string code*/initval
+        , /*function (out,v) => new_out | (partial) expression string*/mergefun )
     {
         return new _ParallelMerge( this, mergefun, { initval : initval } );
     }
     
-    function PS_pmerginitRight( /*any*/initval, /*function (out,v) => new_out*/mergefun )
+    function PS_pmerginitRight( /*non-string value | string code*/initval
+        , /*function (out,v) => new_out | (partial) expression string*/mergefun )
     {
         return new _ParallelMerge( this, mergefun, { initval : initval, righttoleft : true } );
     }
@@ -123,7 +138,7 @@ var psingle, psplit; // required
     var PM_proto = _ParallelMerge.prototype;
 
     PM_proto.next    = PM_next;
-    PM_proto.run     = PM_run;
+    PM_proto.runOn   = PM_runOn;
     PM_proto.psingle = PM_psingle;
     PM_proto.psplit  = PM_psplit;
     
@@ -135,7 +150,7 @@ var psingle, psplit; // required
         return new _ParallelMerge( this.parallelSplit, this.mergefun, this.opt, new_naf );
     }
 
-    function PM_run( data )
+    function PM_runOn( data )
     {
         var that = this;
         
@@ -145,18 +160,23 @@ var psingle, psplit; // required
         , cb_arr = []
         ;
 
-        _PS_run.call( that.parallelSplit, data ).then( _PM_merge_result );
+        _PS_runOn.call( that.parallelSplit, data ).then( _PM_merge_result );
         
-        return { then : _PM_run_then };
+        return { then : _PM_runOn_then };
 
         function _PM_merge_result( result_arr )
         {
-            var  method = that.opt.righttoleft  ?  'reduceRight'  :  'reduce';
+            var has_initval = 'initval' in that.opt
+            ,     tfun_name = (has_initval  ?  'redinit'  :  'reduce')
+                + (that.opt.righttoleft  ?  'Right'  :  '')
 
-            merged_result = 'initval' in that.opt
-                ?  result_arr[ method ]( that.mergefun, that.opt.initval )
-                :  result_arr[ method ]( that.mergefun )
+            , result_merge_appfun = 'initval' in that.opt
+                ?  tfun[ tfun_name ]( that.opt.initval, that.mergefun )
+                :  tfun[ tfun_name ]( that.mergefun )
+
+            , merged_result = result_merge_appfun( result_arr )
             ;
+            
             done = true;
 
             var final_merged_result = nextAppfun
@@ -168,7 +188,7 @@ var psingle, psplit; // required
                 cb_arr.shift()( final_merged_result );
         }
 
-        function _PM_run_then( callback )
+        function _PM_runOn_then( callback )
         {
             if (done)
                 callback( merged_result );
@@ -190,7 +210,7 @@ var psingle, psplit; // required
     
     // ---------- Private details: Deeper
 
-    function _PS_run( data )
+    function _PS_runOn( data )
     {
         var that = this;
         
@@ -200,13 +220,13 @@ var psingle, psplit; // required
         ,   ppm    = that.previous_parallelMerge
         ;
         if (ppm)
-            ppm.run( data ).then( _PS_run_impl );
+            ppm.runOn( data ).then( _PS_runOn_impl );
         else
-            _PS_run_impl( data );
+            _PS_runOn_impl( data );
 
-        return { then : _PS_run_then };
+        return { then : _PS_runOn_then };
 
-        function _PS_run_then( callback )
+        function _PS_runOn_then( callback )
         {
             if (done)
                 callback( split_result );
@@ -214,10 +234,13 @@ var psingle, psplit; // required
                 cb_arr.push( callback );
         }
 
-        function _PS_run_impl( data2 )
+        function _PS_runOn_impl( data2 )
         {
             var  cfg = that.cfg
             , appfun = that.appfun
+
+            , data2_length = data2  &&  data2.length
+
             , split_data
             ;
             if (WORKERS_SUPPORTED)
@@ -229,25 +252,27 @@ var psingle, psplit; // required
                         :  Math.round( cfg.prop * DEFAULT_N_WORKERS )
                 ));
                 n.toPrecision.call.a;
-                
+
                 if (n < 2)
                 {
                     split_data = [ data2 ];
                 }
                 else
                 {
-                    if (!(data2  instanceof Array  ||  (data2  &&  data2.slice  &&  data2.length != null)))
+                    if (!(data2  instanceof Array  ||  (data2  &&  data2.slice  &&  data2_length != null)))
                         throw new Error( 'ParallelSplit on more than one worker can only run on array data!' );
 
-                    var delta  = Math.max( 1, data2.length / n )
+                    split_data = [];
+                    
+                    var delta  = Math.max( 1, data2_length / n )
                     ,   x      = 0
                     ,   i_next = 0
                     ;
-                    while (i_next < n)
+                    while (i_next < data2_length)
                     {
                         x += delta;
 
-                        var j = 1 + Math.min( n, Math.max( i_next, Math.round( x ) ) );
+                        var j = 1 + Math.min( data2_length, Math.max( i_next, Math.round( x ) ) );
 
                         split_data.push( data2.slice( i_next, j ) );
 
@@ -255,7 +280,7 @@ var psingle, psplit; // required
                     }
                 }
 
-                var n_worker = split_data
+                var n_worker = split_data.length
                 , result_arr = new Array( n_worker )
                 , n_received = 0
                 , bodycode   = appfun.getBodyCode()
@@ -266,38 +291,20 @@ var psingle, psplit; // required
             else if ('function' === typeof setTimeout)
             {
                 // Workers not supported. Fallback 1: later.
-                setTimeout( _PS_fallback_run_in_main );
+                setTimeout( _PS_fallback_runOn_in_main );
                 
             }
             else
             {
                 // Workers not supported. Fallback 2: now.
-                _PS_fallback_run_in_main();
+                _PS_fallback_runOn_in_main();
             }
 
             // --- details
             
             function _PS_start_one_worker( data_piece, i_worker )
             {
-                var blob_url = URL.createObjectURL(
-                    new Blob(
-                        [ // Javascript code that can run any piece of code (xxx we might switch to a worker pool later on)
-                            "(function () {",
-                            "var w_code2fun = {};",
-                            "self.addEventListener('message', function(e) {",
-                            "var w_code = e.data.w_code;",
-                            "(w_code  ||  null).substring.call.a;",
-                            "var fun = w_code in w_code2fun  ?  w_code2fun[ w_code ]  :  (w_code2fun[ w_code ] = new Function( 'current', w_code ))",
-                            ",   ret = fun( e.data.w_data )",
-                            ";",
-                            "self.postMessage( ret );",
-                            "})();"
-                        ]
-                        , {type: 'application/javascript'}
-                    )
-                )
-                , worker = new Worker( blob_url )
-                ;
+                var worker = _parallel_takePoolWorker();
                 worker.addEventListener( 'message', _PS_receive_one_result );
 
                 worker.postMessage( { w_data   : data_piece
@@ -309,7 +316,7 @@ var psingle, psplit; // required
                 {
                     result_arr[ i_worker ] = e.data;
                     n_received++;
-                    worker.terminate(); // xxx we might switch to a worker pool later on
+                    _parallel_releasePoolWorker( worker );
                     
                     if (n_received === n_worker)
                     {
@@ -320,7 +327,7 @@ var psingle, psplit; // required
 
             } // _PS_start_one_worker
 
-            function _PS_fallback_run_in_main()
+            function _PS_fallback_runOn_in_main()
             {
                 split_result = [ appfun( data ) ];
                 _PS_transmit_result();
@@ -334,8 +341,43 @@ var psingle, psplit; // required
                     cb_arr.shift()( split_result );
             }
             
-        } // _PS_run_impl
+        } // _PS_runOn_impl
 
-    } // _PS_run
+    } // _PS_runOn
+
+    // ---------- Maintain a worker pool so that we don't have to
+    // terminate anyone.
+
+    var workerPool = [];
+    function _parallel_takePoolWorker()
+    {
+        return workerPool.length
+            ?  workerPool.pop()
+            :  new Worker( URL.createObjectURL( new Blob(
+                [
+                    [ // Javascript code that can run any piece of code on any piece of data
+                        "(function () {",
+                        "  var w_code2fun = {};",
+                        "  self.addEventListener('message', function(e) {",
+                        "    var w_code = e.data.w_code;",
+                        "    (w_code  ||  null).substring.call.a;",
+                        "    var fun = w_code in w_code2fun  ?  w_code2fun[ w_code ]  :  (w_code2fun[ w_code ] = new Function( 'current', w_code ))",
+                        "    ,   ret = fun( e.data.w_data )",
+                        "    ;",
+                        "    self.postMessage( ret );",
+                        "  });",
+                        "})();"
+                    ].join( '\n' )  // join( '\n' ) for blob code source readability, in case of error.
+                ]
+                , {type: 'application/javascript'}
+                
+            )))
+        ;
+    }
+
+    function _parallel_releasePoolWorker( worker )
+    {
+        workerPool.push( worker );
+    }
     
 })();

@@ -412,6 +412,21 @@ var global, exports; // NPM support [github#1]
         }
     });
 
+    tpub( 'declIn', {
+        arity : 1
+        , specgen : function ( /*object: name -> value*/o ) {
+            var arr = [];
+            for (var k in o) { if (!(k in _emptyObj)) {  // More flexible than hasOwnProperty
+                var v = o[ k ];
+                arr.push({
+                    decl : [ k, tfun.fullexpr( v, 'current' ) ]
+                });
+            }}
+
+            return { stepadd : arr };
+        }
+    });
+
     
     tpub( 'sum', tfun.redinit( '0', '+' ) );
 
@@ -753,6 +768,7 @@ var global, exports; // NPM support [github#1]
 
                 function appfun_getNExternal()
                 {
+                    ensure_appimpl();
                     return extern_arr.length;
                 }
 

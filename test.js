@@ -7,6 +7,8 @@
   Contact: glat@glat.info
 */
 
+/*global test async_test*/
+
 function test()
 {
     console.time( 'transfun:test' );
@@ -62,8 +64,8 @@ function test()
     age_mean === tval(
         corrupt_arr
     )(
-        // filter( '!=null' ) may change the length of the array so we need to count.
-        tfun.decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' )
+        // filter( '!=null' ) may change the length of the array so we need to _count.
+        tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' )
     )  ||  null.bug;
 
 
@@ -71,10 +73,10 @@ function test()
 
     oEquals( age_clean, tval( corrupt_arr )( mapsafe( '.age' ) ) )  ||  null.bug;
 
-    var age_mean_appfun = tfun.decl( 'count', '0' )
+    var age_mean_appfun = tfun.decl( '_count', '0' )
         .next( mapsafe( '.age' ) )  // needs .next call because `mapsafe` has not been published
-        .redinit( '0', 'count++, out+v' )
-        .next( '/count' )
+        .redinit( '0', '_count++, out+v' )
+        .next( '/_count' )
     ;
     
     age_mean === tval( corrupt_arr )( age_mean_appfun )  ||  null.bug;
@@ -89,10 +91,10 @@ function test()
 
     oEquals( age_clean, tval( corrupt_arr )( mapsafe_not_called( '.age' ) ) )  ||  null.bug;
 
-    var age_mean_appfun_2 = tfun.decl( 'count', '0' )
+    var age_mean_appfun_2 = tfun.decl( '_count', '0' )
         .next( mapsafe_not_called( '.age' ) )  // needs .next call because `mapsafe_not_called` has not been published
-        .redinit( '0', 'count++, out+v' )
-        .next( '/count' )
+        .redinit( '0', '_count++, out+v' )
+        .next( '/_count' )
     ;
     
     age_mean === tval( corrupt_arr )( age_mean_appfun_2 )  ||  null.bug;
@@ -214,7 +216,7 @@ function test()
     null === tfun.and( [ 1, true, 2, null, 'great' ] )  ||  null.bug;
     null === tfun.and( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
     0 === tfun.andRight( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
-   
+    
     true  === tval( [ 1, 4, 7, 10, 13, 16, 18 ] )( tfun.map( '>0' ).and() )  ||  null.bug;
     false === tval( [ 1, 4, -7, 10, 13, -16, 18 ] )( tfun.map( '>0' ).and() )  ||  null.bug;
 
@@ -254,8 +256,222 @@ function test()
     s_out === tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( { 'if' : '!/\\w/.test(v)', then : 'current[k] = \"-\"' } ).join( '\"\"' ) )  ||  null.bug;
     s_out === tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( { 'if' : '!/\\w/.test(v)', then : { set_at : [ 'current', 'k', '\"-\"' ] } } ).join( '\"\"' ) )  ||  null.bug;
 
+    //
+
+    "********" === tval( 'abcd\nefghijkl\nmnop' )( tfun.split( '"\\n"' ).redinit( '""', 'out.length > v.length ? out : v' ).next( '.replace( /[\\s\\S]/g, "*" )' ) )  ||  null.bug;
+    
+    //
+
+    oEquals(
+        { a : 531, b : 642 }
+        , [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ]
+            .reduce( function ( a, b ) { return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) ); } )
+    )
+        ||  null.bug
+    ;
+
+    oEquals(
+        { a : 531, b : 642 }
+        , tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )
+        ( tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b}' ) )
+    )
+        ||  null.bug
+    ;                                                                              
+    
+    oEquals(
+        { a : 531, b : 642 }
+        , tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )
+        ( tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ) )
+    )
+        ||  null.bug
+    ;                                                                              
+    
     // 
     
     console.timeEnd( 'transfun:test' );
     console.log( 'transfun:test: all tests passed.' );
+}
+
+
+// ----------------------------------------------------------------------
+
+function async_run_test( detailnode, outnode )
+{
+    detailnode.innerHTML = outnode.innerHTML = 'running...';
+
+    var test_data, truth_mean;
+
+    var sum_appfun = tfun.decl( '_count', '0' )
+        .map( '.p' ).filter( '!=null' ).redinit( '0', '_count++, out+v' )
+        .next( '{ sum : current, count : _count }' )
+
+    , sum2mean_appfun = tfun.declIn( { _count : '.count', _sum : '.sum' }).next( '{ sum : _sum, count : _count, mean : _sum / _count }' )
+
+    , mean_appfun = sum_appfun.next( sum2mean_appfun )
+    ;
+    async_test_loop(
+        async_finished
+        , [
+            setup_truth
+            , check_truth
+            , check_sync_appfun
+            , check_psingle_appfun
+            , check_psplit_appfun_maximum
+            , check_psplit_appfun_50percent
+        ]
+    )
+    
+    function async_finished( /*boolean*/success )
+    {
+        outnode.innerHTML = success === true ? 'success' : 'failure';
+        detailnode.innerHTML = '' + async_run_test;
+        prettyPrint();
+    }
+
+    function setup_truth( /*function*/notifyDone )
+    {
+        test_data = create_pseudo_random_arr();
+        var truth = test_data.reduce( function (out, x) { return x.p != null  ?  { sum : out.sum + x.p, count : out.count + 1 } : out }
+                                      , { sum : 0, count : 0 }
+                                    );
+        truth_mean = { sum : truth.sum, count : truth.count, mean : truth.sum / truth.count };
+
+        notifyDone();
+    }
+    
+    function check_truth( /*function*/notifyDone )
+    {
+        test_data.length  &&  'p' in test_data[ 0 ]  ||  null.bug;
+
+        (truth_mean.sum  ||  null).toPrecision.call.a;
+        (truth_mean.count  ||  null).toPrecision.call.a;
+        (truth_mean.mean  ||  null).toPrecision.call.a;
+        
+        truth_mean.sum === test_data.filter(function (x) { return x.p != null; }).reduce(function (a, b) { return a + b.p; },0)  ||  null.bug;
+        truth_mean.count === test_data.filter(function (x) { return x.p != null }).length  ||  null.bug;
+        1e-10 > Math.abs( truth_mean.mean - truth_mean.sum / truth_mean.count )  ||  null.bug;
+        
+        notifyDone();
+    }
+
+    function check_sync_appfun( /*function*/notifyDone )
+    {
+        var sync_result = mean_appfun( test_data );
+        oEquals( truth_mean, sync_result )  ||  null.bug;
+        notifyDone();
+    }
+
+    function check_psingle_appfun( /*function*/notifyDone )
+    // single worker thread
+    {
+        var async_appfun = psingle( sum_appfun )
+            .next( sum2mean_appfun )
+        ;
+        async_appfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+    }
+
+    function check_psplit_appfun_maximum( /*function*/notifyDone )
+    // maximum number of worker threads
+    {
+        var async_appfun = psplit( sum_appfun )
+            .pmerge( pmerge_result )
+            .next( sum2mean_appfun )
+        ;
+        async_appfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+
+        function pmerge_result( a, b )
+        {
+            return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) );
+        }
+    }
+
+
+    function check_psplit_appfun_50percent( /*function*/notifyDone )
+    // 50% of the maximum number of worker threads
+    {
+        var async_appfun = psplit( sum_appfun, { prop : 0.5 } )
+            .pmerge( pmerge_result )
+            .next( sum2mean_appfun )
+        ;
+        async_appfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+
+        function pmerge_result( a, b )
+        {
+            return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) );
+        }
+    }
+}
+
+function async_test_loop( finished, arr )
+{
+    var success = false;
+    
+    arr = [ async_log_begin ].concat( arr ).concat( async_log_end );
+    
+    console.time( 'transfun:async_test_loop' );
+    
+    async_test_next();
+
+    function async_test_next( /*?boolean?*/maybe_async_success )
+    {
+        if (false === maybe_async_success)  // useful test to catch an async failure as in `check_psingle_appfun: receive_result`
+            async_log_end( function () {
+                console.error( 'async_test_loop: failure!' );
+                finished( false );
+            } );
+        else
+            setTimeout( async_test_next_impl, 0 );
+    }
+    
+    function async_test_next_impl()
+    {
+        if (arr.length < 1)
+        {
+            console.log( 'async_test: all tests passed.' );
+            finished( true );
+        }
+        else
+        {                       
+            var one_test = arr.shift();
+            try {
+                one_test( async_test_next );
+            }
+            catch ( e )
+            {
+                success = false;
+                console.error( 'async_test_loop caught an error on test "' + one_test.name + '":', e );
+                finished( false );
+            }
+        }
+    }
+
+    function async_log_begin( /*function*/notifyDone )
+    {
+        console.time( 'async_test_loop' );
+        notifyDone();
+    }
+    
+    function async_log_end( /*function*/notifyDone )
+    {
+        console.timeEnd( 'async_test_loop' );
+        notifyDone();
+    }
 }

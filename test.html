@@ -15,6 +15,8 @@
     </style>
     <script type="text/javascript" src="opinel.js"></script>
     <script type="text/javascript" src="transfun.js"></script>
+    <script type="text/javascript" src="plugin/devilapp.js"></script>
+    <script type="text/javascript" src="plugin/parallel.js"></script>
     <script type="text/javascript" src="test.js"></script>
   </head>
   <body>
@@ -67,6 +69,10 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , section_title_with_anchor( 'unit-test', 'Unit tests' )
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
 
+            , hh( 'hr id="async-unit-test-hr"' )
+            , section_title_with_anchor( 'async-unit-test', 'Async unit tests' )
+            , hh.pre( hh( 'code id="async-unit-test-code" class="prettyprint lang-js"', '(should start soon)' ) )
+
 
             , hh.hr()
             , section_title_with_anchor( 'license' , 'License' )
@@ -78,7 +84,9 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
 
     gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
         return hh.li( hh( 'a href="#' + o.id + '"', o.text ) +
-                      (o.id === 'unit-test'  ?  ' (' + hh( 'span id="result"' ) + ')'  :  '')
+                      (o.id === 'unit-test'  ?  ' (' + hh( 'span id="result"' ) + ')' 
+                       : o.id === 'async-unit-test'  ?  ' (' + hh( 'span id="async-result"', 'should start soon' ) + ') '
+                       : '')
                     );
     }).join( '\n' ) );
 
@@ -179,7 +187,15 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         function print_gen_code_expl()
         {
             var f = tfun.map( function (v) {
-                var dashes = v.replace( /[\s\S]/g, '-' );
+                var dashes = tval( v )(
+                    tfun
+                        .split( '"\\n"' )
+                        .redinit( '""'
+                                  , 'out.length > v.length ? out : v'
+                                )
+                        .next( '.replace( /[\\s\\S]/g, "-" )' )
+                )
+                ;
                 return  dashes + "\n" + v + '\n' + dashes + '\n' +
                     (new Function('return ' + v)()) + '\n'
             })
@@ -190,8 +206,23 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                 [
                     "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
                     , "tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
-                    , "tfun.decl( 'count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', 'count++, out+v' ).next( '/count' ).getBodyCode()"
+                    , "tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' ).getBodyCode()"
 
+
+                    , "tval( 'abcd\\nefghijkl\\nmnop' )( tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ) )"
+                    , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ).getBodyCode()"
+                    
+
+                    , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )\n  ( tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ) )\n, null\n, 2 )"
+                    , "tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ).getBodyCode()"
+                    
+                    , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )( tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b }' ) ), null, 2)"
+                    , "tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b }' ).getBodyCode()"
+                    
+                    , "JSON.stringify(  [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ].reduce( function (a,b) { return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) ); } ), null, 2)"
+                    , "tfun.mapIn( 'v+this[k]' ).getBodyCode() // xxx think about zip-like stuff and/or loop-in-loop... or not"
+                    
+                    
                     , "'some/string*\"@cha\xEEne$de_caract\xE8res'.replace( /\\W/g, '-' )"
                     , "tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' ) )"
                     , "tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' ) )"
@@ -325,30 +356,6 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
             }
         }
         
-        function create_pseudo_random_arr()
-        {
-            var n  = 10000
-            , arr  = new Array(n)
-            , drop = 0.1 // Proportion of numbers to drop
-            ;
-            
-            // Deterministic pseudo-random numbers to make sure
-            // arr is always generated the same way.
-            // http://stackoverflow.com/questions/521295/javascript-random-seeds
-            var seed = 1;
-            
-            for (var i = n; i--;)
-                arr[i] = { p: random() < drop ? null : i };
-            
-            return arr;
-
-            function random()
-            {
-                var x = Math.sin(seed++) * 10000;
-                return x - Math.floor(x);
-            }
-        }
-
         function run_test( test_data, name, impl, notifyDone )
         {
             var current_n     = 1
@@ -413,6 +420,41 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         }
         
     })();
+
+        function create_pseudo_random_arr()
+        {
+            var n  = 10000
+            , arr  = new Array(n)
+            , drop = 0.1 // Proportion of numbers to drop
+            ;
+            
+            // Deterministic pseudo-random numbers to make sure
+            // arr is always generated the same way.
+            // http://stackoverflow.com/questions/521295/javascript-random-seeds
+            var seed = 1;
+            
+            for (var i = n; i--;)
+                arr[i] = { p: random() < drop ? null : i };
+            
+            return arr;
+
+            function random()
+            {
+                var x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            }
+        }
+    </script>
+
+
+    <script type="text/javascript">
+// async unit tests
+(function () {
+    var detailnode = gEBI( 'async-unit-test-code' )
+    ,      outnode = gEBI( 'async-result' )
+    ;
+    async_run_test( detailnode, outnode );
+})();
     </script>
 
     <script type="text/javascript" src="prettify/prettify.js"></script>
