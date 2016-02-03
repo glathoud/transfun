@@ -316,6 +316,8 @@ var psingle, psplit; // required
                 {
                     result_arr[ i_worker ] = e.data;
                     n_received++;
+
+                    worker.removeEventListener( 'message', _PS_receive_one_result );
                     _parallel_releasePoolWorker( worker );
                     
                     if (n_received === n_worker)
@@ -355,17 +357,34 @@ var psingle, psplit; // required
             ?  workerPool.pop()
             :  new Worker( URL.createObjectURL( new Blob(
                 [
-                    [ // Javascript code that can run any piece of code on any piece of data
+                    [
+                        "/* parallel.js (plugin for transfun.js)",
+                        "   Web Worker that can run any piece of code on any piece of data",
+                        "",
+                        "   Copyright 2016 Guillaume Lathoud",
+                        "   Boost license",
+                        "*/",
+                        "",
                         "(function () {",
-                        "  var w_code2fun = {};",
-                        "  self.addEventListener('message', function(e) {",
+                        "",
+                        "  var w_code2fun = {}; /* to cache the created functions */",
+                        "",
+                        "  self.addEventListener( 'message', ww_any_listener )",
+                        "",
+                        "  function ww_any_listener(e)",
+                        "  {",
                         "    var w_code = e.data.w_code;",
-                        "    (w_code  ||  null).substring.call.a;",
-                        "    var fun = w_code in w_code2fun  ?  w_code2fun[ w_code ]  :  (w_code2fun[ w_code ] = new Function( 'current', w_code ))",
+                        "    w_code.substring.call.a;",
+                        "",
+                        "    var fun = w_code in w_code2fun",
+                        "        ?  w_code2fun[ w_code ]",
+                        "        :  (w_code2fun[ w_code ] = new Function( 'current', w_code ))",
+                        "",
                         "    ,   ret = fun( e.data.w_data )",
                         "    ;",
                         "    self.postMessage( ret );",
-                        "  });",
+                        "  }",
+                        "",
                         "})();"
                     ].join( '\n' )  // join( '\n' ) for blob code source readability, in case of error.
                 ]

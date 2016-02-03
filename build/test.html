@@ -15,7 +15,7 @@
     </style>
     <script type="text/javascript" src="opinel.js"></script>
     <script type="text/javascript" src="transfun.js"></script>
-    <script type="text/javascript" src="plugin/devilappfun.js"></script>
+    <script type="text/javascript" src="plugin/devilapp.js"></script>
     <script type="text/javascript" src="plugin/parallel.js"></script>
     <script type="text/javascript" src="test.js"></script>
   </head>
@@ -70,7 +70,7 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
 
             , hh( 'hr id="async-unit-test-hr"' )
-            , section_title_with_anchor( 'async-unit-test', 'Parallel web workers unit tests' )
+            , section_title_with_anchor( 'async-unit-test', 'Async unit tests' )
             , hh.pre( hh( 'code id="async-unit-test-code" class="prettyprint lang-js"', '(should start soon)' ) )
 
 
@@ -157,7 +157,7 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
 })();
     </script>
 
-<script type="text/javascript">
+    <script type="text/javascript">
     (function () {
         var success = false
         ,   printed = false
@@ -421,29 +421,29 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         
     })();
 
-function create_pseudo_random_arr()
-{
-    var n  = 10000
-    , arr  = new Array(n)
-    , drop = 0.1 // Proportion of numbers to drop
-    ;
-    
-    // Deterministic pseudo-random numbers to make sure
-    // arr is always generated the same way.
-    // http://stackoverflow.com/questions/521295/javascript-random-seeds
-    var seed = 1;
-    
-    for (var i = n; i--;)
-        arr[i] = { p: random() < drop ? null : i };
-    
-    return arr;
+        function create_pseudo_random_arr()
+        {
+            var n  = 10000
+            , arr  = new Array(n)
+            , drop = 0.1 // Proportion of numbers to drop
+            ;
+            
+            // Deterministic pseudo-random numbers to make sure
+            // arr is always generated the same way.
+            // http://stackoverflow.com/questions/521295/javascript-random-seeds
+            var seed = 1;
+            
+            for (var i = n; i--;)
+                arr[i] = { p: random() < drop ? null : i };
+            
+            return arr;
 
-    function random()
-    {
-        var x = Math.sin(seed++) * 10000;
-        return x - Math.floor(x);
-    }
-} 
+            function random()
+            {
+                var x = Math.sin(seed++) * 10000;
+                return x - Math.floor(x);
+            }
+        }
     </script>
 
 

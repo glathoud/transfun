@@ -13,7 +13,7 @@ line-height: 1.5em;
     text-align: justify;
     font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
          }
-    .highlight { margin-top: 2em }
+    .highlight { margin-top: 2em; text-decoration: underline; }
     .highlight-anchor { visibility: hidden; }
     .highlight:hover .highlight-anchor { visibility: visible; }
     .left { float : left; }
@@ -23,6 +23,9 @@ code { font-size: 1.1em; }
 dd { margin-bottom: 1em; }
     .legend { font-weight: bold; text-align: center; margin-bottom: 1.5em; margin-top: 0.35em; font-style: italic; }
     .centered-pic { text-align: center; margin-top: 3em; margin-bottom: 2em; }
+    .centered-cell { text-align: center; vertical-align: middle; padding-left: 2em; padding-right: 0;}
+    .yes-no img { max-width : 1.25em; }
+    .done { text-decoration: line-through; }
 
 #title { margin-bottom: 6em; }
     .section-hr, .section-title {margin-top: 2.5em; }
@@ -45,6 +48,9 @@ dd { margin-bottom: 1em; }
     var c_transfun  = hh.code( 'transfun.js' )
     ,   c_appfun    = hh.code( 'appfun' )
     ,   c_arr       = hh.code( 'arr' )
+
+    ,   c_lazy      = hh.code( 'lazy.js' )
+
     ,   c_m         = hh.code( 'map' )
     ,   c_mfr       = hh.code( 'map/filter/reduce' )
 
@@ -55,15 +61,36 @@ dd { margin-bottom: 1em; }
     ,   c_o2arr_conv    = hh.code( 'o2values, o2keys, keys2o' ) + ' and ' + hh.code( 'o2kv, kv2o' )
 
     ,   c_next      = hh.code( 'next' )
+
+    ,   c_parallel  = hh.code( 'parallel.js' )
+    
     ,   c_tval      = hh.code( 'tval' )
+
+    ,   c_wu        = hh.code( 'wu.js' )
+    
     ,   github_ref  = 'http://github.com/glathoud/transfun'
     ,   haskell_ref = 'http://chrisdone.com/posts/stream-composability' // 'https://www.reddit.com/r/programming/comments/2s5gj2/java_8_no_more_loops/cnn30vn'
+
+    ,   lazy_ref = 'https://github.com/dtao/lazy.js/'
+    
     ,   nokeyorder_ref     = 'http://stackoverflow.com/questions/30076219/does-es6-introduce-a-well-defined-order-of-enumeration-for-object-properties'
+
+    ,   parallel_ref = 'https://github.com/glathoud/transfun/blob/master/plugin/parallel.js'
+    ,   parallel_example_ref = 'test.html#async-unit-test'
+
     ,   transducers_js_ref = 'https://www.reddit.com/r/javascript/comments/42sxfb/understanding_transducers_in_javascript/'
 
     ,   jsperf_motivation = 'http://jsperf.com/arr-map-filter-reduce/4'
     ,   test_ref = 'test.html'
     ,   test_run_it_ref = test_ref + '#speed-test'
+
+    ,   wu_ref = 'https://github.com/fitzgen/wu.js/'
+
+    ,   sp_yes = hh( 'span class="yes-no"', hh( 'img src="img/pic_yes.png"' ) )
+    ,   sp_no  = hh( 'span class="yes-no"', '' )  // hh( 'img src="img/pic_no.png"' ) )
+
+    ,   comp_table_sep = [ { comp_table_sep : true } ]
+    
     ,   st_arr = [];
     ;
     
@@ -125,6 +152,20 @@ dd { margin-bottom: 1em; }
             , '.'
         ])
 
+        , highlight( 'Plugins' )
+
+        , hh.dl([
+            dl_describe(
+                c_parallel + ' plugin'
+                , ['To split an ' + c_appfun + ' across web workers, using 1, some or all of the other available CPU cores: '
+                   , hh( 'a href="' + parallel_example_ref + '"', 'Example of use' )
+                   , ',&nbsp; '
+                   , hh( 'a href="' + parallel_ref + '"', 'plugin source code' )                
+                  ]
+            )
+        ])
+
+        
         , section_title_with_anchor( '', 'Contents' )
         , hh( 'p id="contents"' )
 
@@ -813,7 +854,10 @@ dd { margin-bottom: 1em; }
         , highlight( 'Future work' )
 
         , hh.p([
-            'At the moment, I see two interesting directions: parallelism and tail calls.'
+            'At the moment, I see two interesting directions: '
+            , hh( 'span class="done"', 'parallelism' )
+            , '&nbsp;(' + hh( 'a href="' + parallel_example_ref + '"', 'done' ) + ')'
+            , ' and tail calls.'
             , ' If you have other suggestions, feel free to drop me a note:&nbsp;'
             , hh( 'a href="../email.jpg" title="email" alt="email"'
                   , hh( 'img src="../images/email_icon.png" class="email_icon"' )
@@ -822,8 +866,14 @@ dd { margin-bottom: 1em; }
                , '.'
         ])
 
+        , highlight( 'Comparison with stream-based approaches' )
 
-       
+        , hh.p([
+            '...in the corresponding '
+            , hh( 'a href="#compare-with-stream"', 'Annex' )
+            , '.'
+        ])
+        
 
 
         , section_hr()
@@ -1180,6 +1230,112 @@ dd { margin-bottom: 1em; }
                ])
 
 
+
+
+
+
+
+        , centered_pic( 'streams' )
+
+
+        , section_title_with_anchor( 'compare-with-stream', next_annex_name() + ': Comparison with stream-based approaches' )
+
+        , hh.p([
+
+            hh( 'a href="' + wu_ref + '"', c_wu )
+            , ' and '
+            , hh( 'a href="' + lazy_ref + '"', c_lazy )
+            , ' are stream-based libraries that compare to '
+            , c_transfun
+            , ' as follows:'
+        ])
+
+        , hh.table([
+            th_row( [ 'Feature', c_wu, c_lazy, c_transfun ] )
+            , tr_rows([ 
+                comp_table_sep
+                ,[ 'takes stream input',                    sp_yes, sp_yes, sp_no ]
+                ,[ 'takes array input',                     sp_yes, sp_yes, sp_yes ]
+                ,[ 'takes object input',                    sp_no,  sp_no,  sp_yes ]
+                ,comp_table_sep
+                ,[ 'offers array &hArr; object conversion', sp_no, sp_no,  sp_yes ]
+                ,[ 'lets the user define transformations',  sp_no, sp_no,  sp_yes ]
+                ,comp_table_sep
+                ,[ 'solves ' + hh( 'a href="#motivation"', 'performance issue' ) + ' #1 (calls)',   sp_no, sp_no,  sp_yes ]
+                ,[ 'solves ' + hh( 'a href="#motivation"', 'performance issue' ) + ' #2 (arrays)',  sp_yes, sp_yes, sp_yes ]
+                ,comp_table_sep
+                ,[ 'implemented using ES6 generators',      sp_yes, sp_no,  sp_no  ]
+                ,[ 'implemented using code generation',     sp_no,  sp_no,  sp_yes ]
+                ,comp_table_sep
+                ,[ 'separates data from application',       sp_no, sp_no, sp_yes ]
+                ,[ 'offers parallelism (web workers)',      sp_no,  sp_no,  sp_yes ]
+                ,comp_table_sep
+            ])
+        ])
+
+        , hh.p([
+            'The core difference is that ' + c_transfun + ' generates a single piece of code. '
+            , ' This makes parallelism and performance analysis easy, as detailed below. '
+        ])
+
+        , hh.p([
+            ' On the other hand, ' + c_transfun + ' does not support streams at the moment (February 2016).'
+        ])
+
+        /*
+        , hh.p([
+            'Of course things are not cast in stone: ' + c_wu + ' and ' + c_lazy + ' might offer parallelism '
+            , 'someday ; ' + c_transfun + ' might support streams someday.'
+        ])
+        */
+
+        , highlight( 'Parallelism with ' + c_transfun + ': web workers' )
+
+        , hh.p([
+            'This is an array-only feature, requiring the '
+            , c_parallel + ' plugin'
+            , ', which runs an ' + c_appfun + ' in parallel, using 1, some or all of the available other CPU cores: '
+            , hh( 'a href="' + parallel_example_ref + '"', 'Example of use' )
+            , ',&nbsp; '
+            , hh( 'a href="' + parallel_ref + '"', 'plugin source code' )
+            , '.'
+        ])
+        
+        , highlight( 'Performance analysis with ' + c_transfun )
+
+        , hh.p([
+            'Let us say that some profiling is pointing at the following line being called very often: '
+        ])
+        
+        , js_pre_code([
+            "// ...",
+            "var result = appfun( data );  // <<< here",
+            "// ..."
+        ])
+
+        , hh.p([ 'To make sure to get the best possible performance, we can easily look at the generated code:' ])
+
+        , js_pre_code([
+            "appfun.getBodyCode()",
+            "// for example",
+            "//     tfun.map( '.p' ).filter( '!=null' ).reduce( '+' ).getBodyCode()",
+            "// returns:",
+            tfun.map( '.p' ).filter( '!=null' ).reduce( '+' ).getBodyCode()
+        ])
+
+        , hh.p([ 'in that case we could scratch a little speedup by switching to ' + js_code( 'redinit()' ) + ':' ])
+
+        , js_pre_code([
+            "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()",
+            "// returns:",
+            tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()
+        ])
+
+        , hh.p([
+            'Debugging might be easier with ' + hh.em( 'one' ) + ' piece of generated code, '
+            , 'as compared to the inherently distributed implementation of the stream-based approaches.'
+        ])
+        
     ].join( '\n' ));  
 
     gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
@@ -1210,9 +1366,14 @@ dd { margin-bottom: 1em; }
 
         return hh( 'p class="highlight" id="' + id + '"' , [
             hh.em( s ) 
-            , '&nbsp;&nbsp;'
-            , hh( 'a href="#' + id + '" class="highlight-anchor"'
-                  , '#'
+            , ''
+            , hh( 'span class="highlight-anchor"'
+                  , [
+                      '&nbsp;&nbsp;'
+                      , hh( 'a href="#' + id + '"'
+                            , '#'
+                          )
+                  ]
                 )
         ] ); 
     }
@@ -1240,11 +1401,35 @@ dd { margin-bottom: 1em; }
             st_arr.push( { id : id, text : text } );
         
         return hh( 'h3 id="' + id + '" class="section-title"'
-                , text + '&nbsp;' +
-                (!id  ?  ''  :  hh( 'span class="section-anchor"', '(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
+                , text + '' +
+                (!id  ?  ''  :  hh( 'span class="section-anchor"', '&nbsp;(' + hh( 'a href="#' + id + '"', '#' ) + ')' ))
               )
     }
+    
+    function th_row( arr )
+    {
+        return tval( arr )(
+            tfun.map( 'hh( "th" + (k < 1 ? "" : " class=\'centered-cell\'"), v)' )
+                .next( 'hh.tr(current)' )
+        );
+    }
 
+    function tr_rows( arr )
+    {
+        var one_row_appfun = tfun.map( [
+            'v.comp_table_sep'
+            , '?'
+            , 'hh( "td colspan=\'4\'", hh.hr() )'
+            , ':'
+            , 'hh( "td" + (k < 1 ? "" : " class=\'centered-cell\'"), v)'
+        ].join( '  ' )).next( 'hh.tr(current)' )
+        ;
+
+        return tval( arr )(
+            tfun.map( one_row_appfun ).join( '"\\n"' )
+        )
+        ;
+    }
     
     function next_annex_name()
     {
@@ -1324,7 +1509,15 @@ dd { margin-bottom: 1em; }
                 , href  : 'https://www.google.com/search?site=&tbm=isch&source=hp&biw=1280&bih=929&q=pipe+order&oq=pipe+order&gs_l=img.3..0i8i30.547.1986.0.2069.10.10.0.0.0.0.111.875.9j1.10.0....0...1ac.1.64.img..0.10.873._USxC-CA36c#tbm=isch&q=pipe+sofa+&imgrc=mxR23v7hgEeSbM%3A'
                 , attr  : 'width="250px"'
             }
-                        
+
+            , streams : {
+                src      : 'img/pic_streams.jpg'
+                , title  : 'Looking down - shot by Alexander Cohn'
+                , href   : 'http://www.cohnphoto.com/#!/portfolio/G0000AwPsapVV6DE/I0000RqxjAZdfIQc'
+                , attr   : 'height="300px"'
+            }
+
+            
             , sun : {
                 src     : 'img/pic_sun.jpg'
                 , title : 'sun pic'

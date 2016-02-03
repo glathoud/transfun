@@ -32,22 +32,24 @@ var devilappfun;
 
     function tfun_devilappfun( f )
     {
-        return _DAF_create( [ f ] );
+        return _DAF_create( 'function' === typeof f  ?  [ f ]  :  f );
     }
 
     // ---------- Private details
 
     function _DAF_create( f_arr )
     {
+        f_arr.splice.call.a; // must be an array
+
         var code
         , impl
         ;
 
         // Minimal support of the `appfun` interface.
         
-        daf.getBodyCode   = daf_getBodyCode;
-        daf.getNExternals = daf_getNExternals;
-        daf.next          = daf_next;
+        daf.getBodyCode  = daf_getBodyCode;
+        daf.getNExternal = daf_getNExternal;
+        daf.next         = daf_next;
                 
         return daf;
 
@@ -63,7 +65,7 @@ var devilappfun;
             return code;
         }
 
-        function daf_getNExternals()
+        function daf_getNExternal()
         // Of course you won't put any externals in your code, right?
         {
             return 0;
