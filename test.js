@@ -367,7 +367,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psingle_appfun( /*function*/notifyDone )
-    // single worker thread
+    // single worker process
     {
         var async_appfun = psingle( sum_appfun )
             .next( sum2mean_appfun )
@@ -382,7 +382,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psplit_appfun_maximum( /*function*/notifyDone )
-    // maximum number of worker threads
+    // maximum number of worker processes
     {
         var async_appfun = psplit( sum_appfun )
             .pmerge( pmerge_result )
@@ -404,7 +404,7 @@ function async_run_test( detailnode, outnode )
 
 
     function check_psplit_appfun_50percent( /*function*/notifyDone )
-    // 50% of the maximum number of worker threads
+    // 50% of the maximum number of worker processes
     {
         var async_appfun = psplit( sum_appfun, { prop : 0.5 } )
             .pmerge( pmerge_result )
@@ -439,7 +439,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psplit_devilappfun_maximum( /*function*/notifyDone )
-    // maximum number of worker threads
+    // maximum number of worker processes
     {
         var async_devilappfun = psplit( devilappfun( sum_native ) )
             .pmerge( pmerge_result )
@@ -459,7 +459,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psplit_devilappfun_50percent( /*function*/notifyDone )
-    // 50% of the maximum number of worker threads
+    // 50% of the maximum number of worker processs
     {
         var async_devilappfun = psplit( devilappfun( sum_native ), { prop : 0.5 } )
             .pmerge( pmerge_result )
