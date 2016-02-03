@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-rm -rf build/*
+rm build/*.js build/*.html
 cat transfun.js plugin/*.js > build/transfun.js
-cp test.html opinel.js test.js build/
+cp LICENSE test.html opinel.js test.js build/
 cp -a prettify build/prettify
 

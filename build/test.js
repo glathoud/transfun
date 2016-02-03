@@ -315,9 +315,14 @@ function async_run_test( detailnode, outnode )
             setup_truth
             , check_truth
             , check_sync_appfun
+
             , check_psingle_appfun
             , check_psplit_appfun_maximum
             , check_psplit_appfun_50percent
+
+            , check_psingle_devilappfun
+            , check_psplit_devilappfun_maximum
+            , check_psplit_devilappfun_50percent
         ]
     )
     
@@ -362,7 +367,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psingle_appfun( /*function*/notifyDone )
-    // single worker thread
+    // single worker process
     {
         var async_appfun = psingle( sum_appfun )
             .next( sum2mean_appfun )
@@ -377,7 +382,7 @@ function async_run_test( detailnode, outnode )
     }
 
     function check_psplit_appfun_maximum( /*function*/notifyDone )
-    // maximum number of worker threads
+    // maximum number of worker processes
     {
         var async_appfun = psplit( sum_appfun )
             .pmerge( pmerge_result )
@@ -399,7 +404,7 @@ function async_run_test( detailnode, outnode )
 
 
     function check_psplit_appfun_50percent( /*function*/notifyDone )
-    // 50% of the maximum number of worker threads
+    // 50% of the maximum number of worker processes
     {
         var async_appfun = psplit( sum_appfun, { prop : 0.5 } )
             .pmerge( pmerge_result )
@@ -418,6 +423,90 @@ function async_run_test( detailnode, outnode )
             return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) );
         }
     }
+
+    function check_psingle_devilappfun( /*function*/notifyDone )
+    {
+        var async_devilappfun = psingle( devilappfun( sum_native ) )
+            .next( devilappfun( sum2mean_native ) )
+        ;
+        async_devilappfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+    }
+
+    function check_psplit_devilappfun_maximum( /*function*/notifyDone )
+    // maximum number of worker processes
+    {
+        var async_devilappfun = psplit( devilappfun( sum_native ) )
+            .pmerge( pmerge_result )
+            .next( devilappfun( sum2mean_native ) )
+        ;
+        async_devilappfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+        function pmerge_result( a, b )
+        {
+            return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) );
+        }
+    }
+
+    function check_psplit_devilappfun_50percent( /*function*/notifyDone )
+    // 50% of the maximum number of worker processs
+    {
+        var async_devilappfun = psplit( devilappfun( sum_native ), { prop : 0.5 } )
+            .pmerge( pmerge_result )
+            .next( devilappfun( sum2mean_native ) )
+        ;
+        async_devilappfun.runOn( test_data )
+            .then( receive_result )
+        ;
+        function receive_result( r )
+        {
+            notifyDone( oEquals( truth_mean, r ) );
+        }
+        function pmerge_result( a, b )
+        {
+            return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) );
+        }
+    }
+
+    function sum_native( arr )
+    {
+        var count = 0
+        ,   sum   = 0
+        ;
+        for (var n = arr.length, i = 0; i < n; i++)
+        {
+            var x = arr[ i ];
+            if (x.p != null)
+            {
+                count++;
+                sum += x.p;
+            }
+        }
+        return { count : count, sum : sum };
+    }
+
+    function sum2mean_native( o )
+    {
+        var sum = o.sum
+        , count = o.count
+        ;
+        return {
+            sum : sum
+            , count : count
+            , mean : sum / count
+        };
+    }
+    
 }
 
 function async_test_loop( finished, arr )
