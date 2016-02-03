@@ -957,9 +957,9 @@ dd { margin-bottom: 1em; }
         ])
         
         , js_pre_code([
-            "var sumAppfun = tfun.reduce( '+' );",
+            "var sumAppfun = tfun.reduce('+');",
             "// ...",
-            "var otherAppfun = tfun.map( '.p' ).filter( '!=null' ).next( sumAppfun );",
+            "var otherAppfun = tfun.map('.p').filter('!=null').next(sumAppfun);",
             "// ...",
             "var result = otherAppfun([{p:123},{p:null},{p:1000}]);",
             "// result === 1123"
@@ -987,7 +987,7 @@ dd { margin-bottom: 1em; }
         , highlight( 'Example: ' + js_code( 'tfun.map' ) )
 
         , hh.p([ 
-            'For example, ' + hh.code( 'tfun.map' ) + ' is created as follows:' 
+            'For example, ' + hh.code( 'tfun.map' ) + ' is created and published as follows:' 
         ])
 
         , js_pre_code([
@@ -1010,12 +1010,27 @@ dd { margin-bottom: 1em; }
                 hh.em( 'without' ) + ' writing a ' + hh.code( 'for' ) + ' loop:'
         ])
 
-        , hh.ul([
-            hh.li( hh.code( 'arity' ) + ' is the number of parameters of ' + hh.code( 'specgen' ) + ',' )
-            , hh.li( hh.code( 'loopleftright' ) + ' &ndash; "loop through an array from 1st to last element",' )
-            , hh.li( hh.code( "morph: 'array'" ) + ' &ndash; "transform an array into another array",' )
-            , hh.li( hh.code( 'conserve_array_length: true' ) + ' &ndash; (what it says!),' )
-            , hh.li( hh.code( 'bodyadd' ) + ' &ndash; what to do inside the loop.' )
+        , hh.dl([
+            dl_describe(
+                hh.code( 'arity' )
+                , ' is the number of parameters of ' + hh.code( 'specgen' )
+            )
+            , dl_describe(
+                hh.code( 'loopleftright' )
+                , ' means: "loop through an array from 1st to last element"' 
+            )
+            , dl_describe(
+                hh.code( "morph: 'array'" ) 
+                , ' means: "transform an array into another array"' 
+            )
+            , dl_describe( 
+                hh.code( 'conserve_array_length: true' ) 
+                , ' means: just what it says!' 
+            )
+            , dl_describe(
+                hh.code( 'bodyadd' )
+                , ' describes what to do inside the loop.' 
+            )
         ])
 
         , hh.p([
