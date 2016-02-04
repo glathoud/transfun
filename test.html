@@ -75,6 +75,126 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                 )
 
 
+            , hh.hr()
+            , section_title_with_anchor( 'example-parallel-speed-test-result', 'Parallel speed test: Example results' )
+            , hh( 'div id="epstr-data-cont"'
+                  , hh.pre( hh( 'code class="prettyprint lang-js"', [ 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36',
+                                   '',
+
+
+                      JSON.stringify( [
+  {
+    "size": 10000,
+    "nw2speed": [
+      {
+        "n_worker": 0,
+        "data_len": 10000,
+        "dur_ms": 4,
+        "ops_per_sec": 250
+      },
+      {
+        "n_worker": 1,
+        "data_len": 10000,
+        "dur_ms": 88,
+        "ops_per_sec": 11.363636363636363,
+        "max_inw_dur_ms": 0,
+        "overhead_dur_ms": 88
+      },
+      {
+        "n_worker": 2,
+        "data_len": 10000,
+        "dur_ms": 77,
+        "ops_per_sec": 12.987012987012987,
+        "max_inw_dur_ms": 1,
+        "overhead_dur_ms": 76
+      },
+      {
+        "n_worker": 3,
+        "data_len": 10000,
+        "dur_ms": 73,
+        "ops_per_sec": 13.698630136986301,
+        "max_inw_dur_ms": 0,
+        "overhead_dur_ms": 73
+      }
+    ]
+  },
+  {
+    "size": 100000,
+    "nw2speed": [
+      {
+        "n_worker": 0,
+        "data_len": 100000,
+        "dur_ms": 9,
+        "ops_per_sec": 111.11111111111111
+      },
+      {
+        "n_worker": 1,
+        "data_len": 100000,
+        "dur_ms": 755,
+        "ops_per_sec": 1.3245033112582782,
+        "max_inw_dur_ms": 3,
+        "overhead_dur_ms": 752
+      },
+      {
+        "n_worker": 2,
+        "data_len": 100000,
+        "dur_ms": 630,
+        "ops_per_sec": 1.5873015873015872,
+        "max_inw_dur_ms": 2,
+        "overhead_dur_ms": 628
+      },
+      {
+        "n_worker": 3,
+        "data_len": 100000,
+        "dur_ms": 635,
+        "ops_per_sec": 1.5748031496062993,
+        "max_inw_dur_ms": 2,
+        "overhead_dur_ms": 633
+      }
+    ]
+  },
+  {
+    "size": 1000000,
+    "nw2speed": [
+      {
+        "n_worker": 0,
+        "data_len": 1000000,
+        "dur_ms": 7,
+        "ops_per_sec": 142.85714285714286
+      },
+      {
+        "n_worker": 1,
+        "data_len": 1000000,
+        "dur_ms": 8582,
+        "ops_per_sec": 0.11652295502213936,
+        "max_inw_dur_ms": 7,
+        "overhead_dur_ms": 8575
+      },
+      {
+        "n_worker": 2,
+        "data_len": 1000000,
+        "dur_ms": 8073,
+        "ops_per_sec": 0.12386968908708039,
+        "max_inw_dur_ms": 5,
+        "overhead_dur_ms": 8068
+      },
+      {
+        "n_worker": 3,
+        "data_len": 1000000,
+        "dur_ms": 7074,
+        "ops_per_sec": 0.1413627367825841,
+        "max_inw_dur_ms": 3,
+        "overhead_dur_ms": 7071
+      }
+    ]
+  }
+]
+                                      , null, 2 )
+                                                                 ])))
+
+
+
+
             , hh( 'hr id="unit-test-hr"' )
             , section_title_with_anchor( 'unit-test', 'Unit tests' )
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
