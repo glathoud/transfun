@@ -492,23 +492,24 @@ function async_run( funarr )
         var size, test_data, correct_result, one_speed_result;
         function loop_through_test_array_sizes( notifyDone )
         {
-            var   array_sizes = [ 1e4, 1e5 ] // xxx, 1e6, 1e7 ]
+            var   array_sizes = [ 1e4, 1e5, 1e6 ] // xxx, 1e7 ]
             , max_array_size  = Math.max.apply( Math, array_sizes )
             , max_test_data   = create_pseudo_random_arr( max_array_size )
             ;
             
             parallel_appfun = tfun
-                .decl( '_count', '0' )
+                .declIn( { _count : '0', _inw_t_begin : 'Date.now()' } )
                 .map( '.p' )
                 .filter( '!=null' )
                 .redinit( '0', '_count++, out+v' )
-                .next( '{ sum : current, count : _count }' )
+                .next( '{ sum : current, count : _count, max_inw_dur_ms : Date.now() - _inw_t_begin }' )
             
             merge_fun = function ( a, b )
             {
                 return {
-                    sum     : a.sum   + b.cum
+                    sum     : a.sum   + b.sum
                     , count : a.count + b.count
+                    , max_inw_dur_ms : Math.max( a.max_inw_dur_ms, b.max_inw_dur_ms )
                 };
             };
 
@@ -548,7 +549,8 @@ function async_run( funarr )
             ,   t_end   = Date.now()
             ;
             
-            correct_result = with_mean( tmp );
+            tmp = with_mean( tmp );
+            correct_result = { sum : tmp.sum, count : tmp.count, mean : tmp.mean };
 
             var dur_ms = t_end - t_begin
             , nw2speed = [
@@ -572,11 +574,9 @@ function async_run( funarr )
                 sum > 0  ||  null.bug;
                 count > 0  ||  null.bug;
 
-                return {
-                    sum     : sum
-                    , count : count
-                    , mean  : sum / count
-                };
+                var ret = Object.create( o );
+                ret.mean = sum / count;
+                return ret;
             }
             
             function get_speed_obj( n_worker, data_len, dur_ms )
@@ -620,10 +620,14 @@ function async_run( funarr )
                     {
                         var t_end  = Date.now()
                         ,   dur_ms = t_end - t_begin
+                        , max_inw_dur_ms = r.max_inw_dur_ms
                         ;
-                        oEquals( correct_result, r )  ||  null.bug;
+                        max_inw_dur_ms.toPrecision.call.a;
+                        oEquals( correct_result, { sum : r.sum, count : r.count, mean : r.mean } )  ||  null.bug;
 
                         nw2speed[ n ] = get_speed_obj( n, test_data.length, dur_ms );
+                        nw2speed[ n ].max_inw_dur_ms  = max_inw_dur_ms;
+                        nw2speed[ n ].overhead_dur_ms = dur_ms - max_inw_dur_ms;
 
                         speed_test_next_n_worker();
                     }
@@ -634,21 +638,13 @@ function async_run( funarr )
 
         function parallel_speed_test_done()
         {
-            console.log('xxx ___ parallel_speed_test_done', speed_result_arr)
-            window.speed_result_arr = speed_result_arr;
-            xxx
+            console.log('parallel_speed_test_done', speed_result_arr);
 
-            var node = gEBI( 'speed-test-result' );
-            node.innerHTML = node.innerHTML.replace( /speed:\s*(\d+)[^\(]*(\([^\)]*\))/g, replace_sanity_check_with_speed_bar );
+            var node = gEBI( 'parallel-speed-test-result' );
+            node.innerHTML += '\n' + JSON.stringify( speed_result_arr, null, 2 );
             
-            sst_btn.textContent = orig_text;
-            sst_btn.removeAttribute( 'disabled' );
-            
-            function replace_sanity_check_with_speed_bar( s, s_n, s_paren )
-            {
-                var n = Math.max( 1, Math.round( parseFloat( s_n ) / 1000 ) );
-                return s.replace( s_paren, tfun.map( '"&ndash;"' ).join( '""' )( Array.apply( null, new Array( n ) ) ) );
-            }
+            psst_btn.textContent = orig_text;
+            psst_btn.removeAttribute( 'disabled' );
         }
     }
 
