@@ -65,6 +65,16 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , section_title_with_anchor( 'example-speed-test-result', 'Speed test: Example results' )
             , hh( 'div id="estr-data-cont"' )
             
+
+            , hh.hr()
+            , section_title_with_anchor( 'parallel-speed-test', 'Parallel speed test: Run it!' )
+            , hh( 'button id ="parallel-speed-test-start" disabled="disabled"', 'Waiting for async unit tests to complete...' )
+            , hh( 'div id="pspt-out-cont" style="display: none;"'
+                  , hh.pre( hh( 'code id="parallel-speed-test-useragent"', navigator.userAgent ) ) + 
+                  hh.pre( hh( 'code id="parallel-speed-test-result"', ' ' ) )
+                )
+
+
             , hh( 'hr id="unit-test-hr"' )
             , section_title_with_anchor( 'unit-test', 'Unit tests' )
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
@@ -339,22 +349,6 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         }
 
         // --- Tool functions
-
-        function async_run( funarr )
-        {
-            if (funarr.length > 0)
-                setTimeout( async_next, 1234 );  // 1234: pause to let the browser breathe
-            
-            function async_next()
-            {
-                funarr[ 0 ]( notifyDone );  // funarr[ 0 ] might be itself async -> pass it a callback
-            }
-            
-            function notifyDone()
-            {
-                async_run( funarr.slice( 1 ) );
-            }
-        }
         
         function run_test( test_data, name, impl, notifyDone )
         {
@@ -421,39 +415,243 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         
     })();
 
-function create_pseudo_random_arr()
-{
-    var n  = 10000
-    , arr  = new Array(n)
-    , drop = 0.1 // Proportion of numbers to drop
-    ;
-    
-    // Deterministic pseudo-random numbers to make sure
-    // arr is always generated the same way.
-    // http://stackoverflow.com/questions/521295/javascript-random-seeds
-    var seed = 1;
-    
-    for (var i = n; i--;)
-        arr[i] = { p: random() < drop ? null : i };
-    
-    return arr;
 
-    function random()
+function async_run( funarr )
+{
+    if (funarr.length > 0)
+        setTimeout( async_next, 1234 );  // 1234: pause to let the browser breathe
+    
+    function async_next()
     {
-        var x = Math.sin(seed++) * 10000;
-        return x - Math.floor(x);
+        funarr[ 0 ]( notifyDone );  // funarr[ 0 ] might be itself async -> pass it a callback
     }
-} 
+    
+    function notifyDone()
+    {
+        async_run( funarr.slice( 1 ) );
+    }
+}
     </script>
 
 
     <script type="text/javascript">
-// async unit tests
+// async unit tests (e.g. parallel web workers)
 (function () {
     var detailnode = gEBI( 'async-unit-test-code' )
     ,      outnode = gEBI( 'async-result' )
     ;
     async_run_test( detailnode, outnode );
+})();
+    </script>
+
+
+    <script type="text/javascript">
+// parallel speed test
+(function () {
+    after_async( setup_parallel_speed_test );
+
+    function setup_parallel_speed_test()
+    {
+        var psst_btn = gEBI( 'parallel-speed-test-start' )
+        , orig_text = psst_btn.textContent
+        ;
+        
+        aEL( psst_btn, 'click', parallel_speed_test_start );
+        psst_btn.innerHTML = 'Run it!';
+        rA( psst_btn, 'disabled' );
+        psst_btn.style.display = '';
+        
+        var n_worker_max, speed_result_arr;
+        function parallel_speed_test_start()
+        {
+            sA( psst_btn, 'disabled', 'disabled' );
+            psst_btn.textContent = 'Running...';
+            
+            var node = gEBI( 'parallel-speed-test-result' );
+            node.textContent = '\n' + node.textContent;
+            
+            gEBI( 'pspt-out-cont' ).style.display = '';
+            
+            speed_result_arr = [];
+
+            async_run( [
+                chose_n_worker_max
+                , loop_through_test_array_sizes
+                , parallel_speed_test_done
+            ] );
+        }
+
+        function chose_n_worker_max( notifyDone )
+        {
+            var n_cores  = navigator.hardwareConcurrency  ||  8;  // xxx
+            n_worker_max = n_cores - 1;
+            notifyDone();
+        }
+
+        var parallel_appfun, merge_fun;
+        var size, test_data, correct_result, one_speed_result;
+        function loop_through_test_array_sizes( notifyDone )
+        {
+            var   array_sizes = [ 1e4, 1e5 ] // xxx, 1e6, 1e7 ]
+            , max_array_size  = Math.max.apply( Math, array_sizes )
+            , max_test_data   = create_pseudo_random_arr( max_array_size )
+            ;
+            
+            parallel_appfun = tfun
+                .decl( '_count', '0' )
+                .map( '.p' )
+                .filter( '!=null' )
+                .redinit( '0', '_count++, out+v' )
+                .next( '{ sum : current, count : _count }' )
+            
+            merge_fun = function ( a, b )
+            {
+                return {
+                    sum     : a.sum   + b.cum
+                    , count : a.count + b.count
+                };
+            };
+
+            next_size();
+
+            // --- Details
+
+            function next_size()
+            {
+                setTimeout( next_size_impl, 1000 );  // Let the browser breathe..
+            }
+            
+            function next_size_impl()
+            {
+                if (!array_sizes.length)
+                {
+                    notifyDone();
+                }
+                else
+                {
+                    size      = array_sizes.shift();
+                    test_data = max_test_data.slice( 0, size );
+                    
+                    loop_through_n_worker( next_size );
+                }
+            }
+            
+        }
+
+        function loop_through_n_worker( notifyDone )
+        {
+            var n = 0;
+
+            // First n=0: in the main process
+            var t_begin = Date.now()
+            ,   tmp     = tval( test_data )( parallel_appfun )
+            ,   t_end   = Date.now()
+            ;
+            
+            correct_result = with_mean( tmp );
+
+            var dur_ms = t_end - t_begin
+            , nw2speed = [
+                get_speed_obj( n, test_data.length, dur_ms )
+            ]
+            ;
+
+            // Now with parallel processes
+            speed_test_next_n_worker();
+            
+            // --- Details (function declarations)
+
+            function with_mean( o )
+            {
+                var sum   = tmp.sum
+                ,   count = tmp.count
+                ;
+                (sum    ||  null).toPrecision.call.a;
+                (count  ||  null).toPrecision.call.a;
+
+                sum > 0  ||  null.bug;
+                count > 0  ||  null.bug;
+
+                return {
+                    sum     : sum
+                    , count : count
+                    , mean  : sum / count
+                };
+            }
+            
+            function get_speed_obj( n_worker, data_len, dur_ms )
+            {
+                return {
+                    n_worker      : n_worker
+                    , data_len    : data_len
+                    , dur_ms      : dur_ms
+                    , ops_per_sec : 1000 / dur_ms
+                };
+            }
+
+            function speed_test_next_n_worker()
+            {
+                setTimeout( speed_test_next_n_worker_impl, 1234 );  // Let the browser breathe
+            }
+            
+            function speed_test_next_n_worker_impl()
+            {
+                if (!(n < n_worker_max))
+                {
+                    speed_result_arr.push({
+                        size : size
+                        , nw2speed : nw2speed
+                    });
+                    notifyDone();
+                }
+                else
+                {
+                    n++;
+                    
+                    var t_begin = Date.now()
+
+                    ,   tmp     = psplit( parallel_appfun, { n : n } )
+                        .pmerge( merge_fun)
+                        .next( with_mean )
+                        .runOn( test_data )
+                        .then( receive_result )
+                    ;
+                    function receive_result( r )
+                    {
+                        var t_end  = Date.now()
+                        ,   dur_ms = t_end - t_begin
+                        ;
+                        oEquals( correct_result, r )  ||  null.bug;
+
+                        nw2speed[ n ] = get_speed_obj( n, test_data.length, dur_ms );
+
+                        speed_test_next_n_worker();
+                    }
+                }
+            }
+            
+        }
+
+        function parallel_speed_test_done()
+        {
+            console.log('xxx ___ parallel_speed_test_done', speed_result_arr)
+            window.speed_result_arr = speed_result_arr;
+            xxx
+
+            var node = gEBI( 'speed-test-result' );
+            node.innerHTML = node.innerHTML.replace( /speed:\s*(\d+)[^\(]*(\([^\)]*\))/g, replace_sanity_check_with_speed_bar );
+            
+            sst_btn.textContent = orig_text;
+            sst_btn.removeAttribute( 'disabled' );
+            
+            function replace_sanity_check_with_speed_bar( s, s_n, s_paren )
+            {
+                var n = Math.max( 1, Math.round( parseFloat( s_n ) / 1000 ) );
+                return s.replace( s_paren, tfun.map( '"&ndash;"' ).join( '""' )( Array.apply( null, new Array( n ) ) ) );
+            }
+        }
+    }
+
 })();
     </script>
 

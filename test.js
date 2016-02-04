@@ -9,6 +9,32 @@
 
 /*global test async_test*/
 
+
+function create_pseudo_random_arr( /*?integer?*/n )
+{
+    n != null  ||  (n  = 10000)
+
+    var arr  = new Array(n)
+    ,   drop = 0.1 // Proportion of numbers to drop
+    ;
+    
+    // Deterministic pseudo-random numbers to make sure
+    // arr is always generated the same way.
+    // http://stackoverflow.com/questions/521295/javascript-random-seeds
+    var seed = 1;
+    
+    for (var i = n; i--;)
+        arr[i] = { p: random() < drop ? null : i };
+    
+    return arr;
+
+    function random()
+    {
+        var x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+    }
+} 
+
 function test()
 {
     console.time( 'transfun:test' );
@@ -295,6 +321,25 @@ function test()
 
 // ----------------------------------------------------------------------
 
+function after_async( callback )
+{
+    if (after_async.done_with_success)
+        callback();
+    else
+        after_async.cb_arr.push( callback );
+}
+after_async.cb_arr = [];
+after_async.ready = function ( success ) 
+{ 
+    if (success === true) 
+    {
+        after_async.done_with_success = true;
+
+        while (after_async.cb_arr.length) 
+            after_async.cb_arr.shift()(); 
+    }
+};
+
 function async_run_test( detailnode, outnode )
 {
     detailnode.innerHTML = outnode.innerHTML = 'running...';
@@ -331,6 +376,8 @@ function async_run_test( detailnode, outnode )
         outnode.innerHTML = success === true ? 'success' : 'failure';
         detailnode.innerHTML = '' + async_run_test;
         prettyPrint();
+
+        after_async.ready( success );
     }
 
     function setup_truth( /*function*/notifyDone )
