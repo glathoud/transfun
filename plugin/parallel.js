@@ -24,6 +24,7 @@
 
   You may however develop your own. Example: ./devilappfun.js
 
+  ---- USAGE ----
   
   Efforts were made to write parallel.js in a standalone way,
   so that it can be used with or without transfun.js.

@@ -708,11 +708,11 @@ function async_run( funarr )
                 var sum   = tmp.sum
                 ,   count = tmp.count
                 ;
-                (sum    ||  null).toPrecision.call.a;
-                (count  ||  null).toPrecision.call.a;
+                sum  .toPrecision.call.a;
+                count.toPrecision.call.a;
 
-                sum > 0  ||  null.bug;
-                count > 0  ||  null.bug;
+                sum >= 0  ||  null.bug;
+                count >= 0  ||  null.bug;
 
                 var ret = Object.create( o );
                 ret.mean = sum / count;
