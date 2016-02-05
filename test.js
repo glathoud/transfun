@@ -353,6 +353,16 @@ function async_run_test( detailnode, outnode )
     , sum2mean_appfun = tfun.declIn( { _count : '.count', _sum : '.sum' }).next( '{ sum : _sum, count : _count, mean : _sum / _count }' )
 
     , mean_appfun = sum_appfun.next( sum2mean_appfun )
+
+    , actual_parallel_tests = [
+        check_psingle_appfun
+        , check_psplit_appfun_maximum
+        , check_psplit_appfun_50percent
+        
+        , check_psingle_devilappfun
+        , check_psplit_devilappfun_maximum
+        , check_psplit_devilappfun_50percent
+    ]
     ;
     async_test_loop(
         async_finished
@@ -360,15 +370,9 @@ function async_run_test( detailnode, outnode )
             setup_truth
             , check_truth
             , check_sync_appfun
-
-            , check_psingle_appfun
-            , check_psplit_appfun_maximum
-            , check_psplit_appfun_50percent
-
-            , check_psingle_devilappfun
-            , check_psplit_devilappfun_maximum
-            , check_psplit_devilappfun_50percent
         ]
+            .concat( actual_parallel_tests )
+            .concat( actual_parallel_tests )  // A second time, to make sure code caching does not break things
     )
     
     function async_finished( /*boolean*/success )

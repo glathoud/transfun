@@ -632,7 +632,7 @@ function async_run( funarr )
         var size, test_data, correct_result, one_speed_result;
         function loop_through_test_array_sizes( notifyDone )
         {
-            var   array_sizes = [ 1e4, 1e5, 1e6 ]
+            var   array_sizes = [ 1, 10, 100, 1e3, 1e4, 1e5, 1e6 ]
             , max_array_size  = Math.max.apply( Math, array_sizes )
             , max_test_data   = create_pseudo_random_arr( max_array_size )
             ;
