@@ -1785,11 +1785,16 @@ var devilappfun;
   The `appfun`s produced by ../transfun.js support that interface.
 
   You may however develop your own. Example: ./devilappfun.js
+
+  ---- USAGE ----
+  
+  Efforts were made to write parallel.js in a standalone way,
+  so that it can be used with or without transfun.js.
 */
 
 /*global psingle psplit navigator URL Blob Worker setTimeout*/
 
-var psingle, psplit; // required
+var psingle, psplit;
 (function () {
 
     var DEFAULT_N_WORKERS = navigator.hardwareConcurrency - 1  ||  3
@@ -1800,20 +1805,20 @@ var psingle, psplit; // required
     
     // ---------- Public API
     
-    psingle = tfun_psingle;
-    psplit  = tfun_psplit;
+    psingle = psingle_;
+    psplit  = psplit_;
 
-    psingle.getSystemInfo = tfun_psingle_getSystemInfo;
+    psingle.getSystemInfo = psingle_getSystemInfo;
     
     // ---------- Public API implementation
 
-    function tfun_psingle( appfun )
+    function psingle_( appfun )
     // Setup an `appfun` runner for a single parallel worker.
     {
-        return tfun_psplit( appfun, { _single : true, n : 1 } );
+        return psplit( appfun, { _single : true, n : 1 } );
     }
 
-    function tfun_psplit( appfun, /*?object { n : <integer>} | { prop : <float between 0 and 1>}?*/cfg )
+    function psplit_( appfun, /*?object { n : <integer>} | { prop : <float between 0 and 1>}?*/cfg )
     // Setup an `appfun` runner for a several parallel workers.
     {
         cfg != null  ||  (cfg = { n : DEFAULT_N_WORKERS });
@@ -1821,7 +1826,7 @@ var psingle, psplit; // required
         return new _ParallelSplit( appfun, cfg );
     }
 
-    function tfun_psingle_getSystemInfo()
+    function psingle_getSystemInfo()
     {
         return {
             default_n_workers   : WORKERS_SUPPORTED  ?  DEFAULT_N_WORKERS  :  null
@@ -1914,11 +1919,16 @@ var psingle, psplit; // required
 
     function PM_runOn( data )
     {
-        var that = this;
-        
-        var done
-        , merged_result
+        var        that = this
+        ,           opt = that.opt
+        ,   righttoleft = opt.righttoleft
+        ,   has_initval = 'initval' in opt
+
+        ,   mergefun = that.mergefun
         , nextAppfun = that.nextAppfun
+
+        , done
+        , merged_result
         , cb_arr = []
         ;
 
@@ -1928,17 +1938,47 @@ var psingle, psplit; // required
 
         function _PM_merge_result( result_arr )
         {
-            var has_initval = 'initval' in that.opt
-            ,     tfun_name = (has_initval  ?  'redinit'  :  'reduce')
-                + (that.opt.righttoleft  ?  'Right'  :  '')
+            var n = result_arr.length;
 
-            , result_merge_appfun = 'initval' in that.opt
-                ?  tfun[ tfun_name ]( that.opt.initval, that.mergefun )
-                :  tfun[ tfun_name ]( that.mergefun )
-
-            , merged_result = result_merge_appfun( result_arr )
-            ;
+            // We could use the `merge`/`mergeinit`/etc.  from
+            // transfun.js, or the native array reduce methods, but we
+            // want parallel.js to be standalone (no transfun.js) and
+            // fast (no method call), hence the verbose code below.
             
+            var merged_result;
+            
+            if (has_initval)
+            {
+                merged_result = opt.initval;
+                if (righttoleft)
+                {
+                    for (var i = n; i--;)
+                        merged_result = mergefun( merged_result, result_arr[ i ] );
+                }
+                else
+                {
+                    for (var i = 0; i < n; ++i)
+                        merged_result = mergefun( merged_result, result_arr[ i ] );
+                }
+            }
+            else
+            {
+                if (righttoleft)
+                {
+                    var i = n-1;
+                    merged_result = result_arr[ i ];
+                    while (i--)
+                        merged_result = mergefun( merged_result, result_arr[ i ] );
+                }
+                else
+                {
+                    var i = 0;
+                    merged_result = result_arr[ i ];
+                    for (var i = 1; i < n; ++i)
+                        merged_result = mergefun( merged_result, result_arr[ i ] );
+                }
+            }
+                        
             done = true;
 
             var final_merged_result = nextAppfun
@@ -1972,6 +2012,15 @@ var psingle, psplit; // required
     
     // ---------- Private details: Deeper
 
+    // We'll cache the created functions in the workers so that we can
+    // spare communication overhead: pass the bodycode of a given
+    // function only one time per worker, later on only use `codeid`.
+    //
+    var _code_count  = 0  // `_code_count` will be used to create a `codeid` string
+    ,   _bodycode_2_codeid    = {}
+    ,   _workerid_2_codeidset = {}  // to keep track of: which worker has what function already in its own cache.
+    ;
+    
     function _PS_runOn( data )
     {
         var that = this;
@@ -2046,6 +2095,11 @@ var psingle, psplit; // required
                 , result_arr = new Array( n_worker )
                 , n_received = 0
                 , bodycode   = appfun.getBodyCode()
+
+                // `codeid` will be used to manage caching
+                , codeid     = bodycode in _bodycode_2_codeid
+                    ?  _bodycode_2_codeid[ bodycode ]
+                    :  (_bodycode_2_codeid[ bodycode ] = (_code_count++).toString( 36 ))
                 ;
                 
                 split_data.forEach( _PS_start_one_worker );
@@ -2066,13 +2120,38 @@ var psingle, psplit; // required
             
             function _PS_start_one_worker( data_piece, i_worker )
             {
-                var worker = _parallel_takePoolWorker();
+                var workerObj = _parallel_takePoolWorker()
+                ,   workerid  = workerObj.workerid
+                ,   worker    = workerObj.worker
+
+                // We'll cache the `bodycode`, sending it only the
+                // first time, later on only its `codeid`.
+                //
+                // This assumes the worker to cache the corresponding
+                // function as well, see `_parallel_takePoolWorker`.
+                // 
+                ,   w_codeidset = _workerid_2_codeidset[ workerid ]
+                ,   w_already   = codeid in w_codeidset
+                
+                ,   message = {
+                    w_data     : data_piece
+                    , w_codeid : codeid 
+                }
+                ;
+                if (!w_already)
+                {
+                    // The worker will compile the function the first
+                    // time, and cache it.
+                    message.w_code        = bodycode; 
+
+                    // The main thread has to remember what each worker
+                    // knows.
+                    w_codeidset[ codeid ] = true;
+                }
+                
                 worker.addEventListener( 'message', _PS_receive_one_result );
 
-                worker.postMessage( { w_data   : data_piece
-                                      , w_code : bodycode
-                                    }
-                                  );
+                worker.postMessage( message );
                 
                 function _PS_receive_one_result( e )
                 {
@@ -2080,7 +2159,7 @@ var psingle, psplit; // required
                     n_received++;
 
                     worker.removeEventListener( 'message', _PS_receive_one_result );
-                    _parallel_releasePoolWorker( worker );
+                    _parallel_releasePoolWorker( workerObj );
                     
                     if (n_received === n_worker)
                     {
@@ -2112,12 +2191,18 @@ var psingle, psplit; // required
     // ---------- Maintain a worker pool so that we don't have to
     // terminate anyone.
 
-    var workerPool = [];
+    var workerObjPool  = []
+    ,   workerCount = 0
+    ;
     function _parallel_takePoolWorker()
+    // returns a `workerObj` with two properties:
+    // `workerid` and `worker`.
     {
-        return workerPool.length
-            ?  workerPool.pop()
-            :  new Worker( URL.createObjectURL( new Blob(
+        if (workerObjPool.length)
+            return workerObjPool.pop();
+
+        var workerid = workerCount++
+        ,   worker   = new Worker( URL.createObjectURL( new Blob(
                 [
                     [
                         "/* parallel.js (plugin for transfun.js)",
@@ -2129,20 +2214,26 @@ var psingle, psplit; // required
                         "",
                         "(function () {",
                         "",
-                        "  var w_code2fun = {}; /* to cache the created functions */",
+                        "/* To cache the created functions and ",
+                        "   NOT have to pass their code more than one time,",
+                        "   which reduces communication overhead.",
+                        "*/",
+                        "  var w_codeid2fun = {};",
                         "",
                         "  self.addEventListener( 'message', ww_any_listener )",
                         "",
                         "  function ww_any_listener(e)",
                         "  {",
-                        "    var w_code = e.data.w_code;",
-                        "    w_code.substring.call.a;",
+                        "    var e_data   = e.data",
+                        "    ,   w_codeid = e_data.w_codeid",
+                        "    ;",
+                        "    (w_codeid  ||  null).substring.call.a;",
                         "",
-                        "    var fun = w_code in w_code2fun",
-                        "        ?  w_code2fun[ w_code ]",
-                        "        :  (w_code2fun[ w_code ] = new Function( 'current', w_code ))",
+                        "    var fun = 'w_code' in e_data",
+                        "        ?  (w_codeid2fun[ w_codeid ] = new Function( 'current', e_data.w_code ))",
+                        "        :  w_codeid2fun[ w_codeid ]",
                         "",
-                        "    ,   ret = fun( e.data.w_data )",
+                        "    ,   ret = fun( e_data.w_data )",
                         "    ;",
                         "    self.postMessage( ret );",
                         "  }",
@@ -2154,11 +2245,13 @@ var psingle, psplit; // required
                 
             )))
         ;
+        _workerid_2_codeidset[ workerid ] = {};
+        return { workerid : workerid, worker : worker };
     }
 
-    function _parallel_releasePoolWorker( worker )
+    function _parallel_releasePoolWorker( workerObj )
     {
-        workerPool.push( worker );
+        workerObjPool.push( workerObj );
     }
     
 })();

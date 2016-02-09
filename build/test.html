@@ -65,6 +65,328 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , section_title_with_anchor( 'example-speed-test-result', 'Speed test: Example results' )
             , hh( 'div id="estr-data-cont"' )
             
+
+            , hh.hr()
+            , section_title_with_anchor( 'parallel-speed-test', 'Parallel speed test: Run it!' )
+            , hh.pre( hh( 'code class="prettyprint lang-js"'
+                          , [
+                              "parallel_appfun = tfun",
+                              "  .declIn( { _count : '0', _inw_t_begin : 'Date.now()' } )",
+                              "  .map( '.p' )",
+                              "  .filter( '!=null' )",
+                              "  .redinit( '0', '_count++, out+v' )",
+                              "  .next( '{ sum : current, count : _count, max_inw_dur_ms : Date.now() - _inw_t_begin }' )",
+                              ";"
+                          ].join( '\n' )
+                        ))
+            
+            , hh.p([ '...on arrays of data with increasing sizes.' ])
+
+            , hh.p([ 'As of February 2016, most of the time is spent in communication overhead - directly proportional to the array size. ' ])
+            
+            , hh.p([ ' In the future, big *numerical* data could be passed with SharedArrayBuffer:' ])
+            , hh.p([ hh( 'a href="https://blog.mozilla.org/javascript/2015/02/26/the-path-to-parallel-javascript/"' 
+                           , 'https://blog.mozilla.org/javascript/2015/02/26/the-path-to-parallel-javascript/' ) 
+                   ])
+            , hh.p([ hh( 'a href="https://www.chromestatus.com/feature/4570991992766464"'
+                         , 'https://www.chromestatus.com/feature/4570991992766464' )
+                   ])
+
+            , hh.p([ hh( 'a href="https://gist.github.com/dherman/5463054"' 
+                         , 'https://gist.github.com/dherman/5463054'
+                       )])
+
+            , hh.p([ hh( 'a href="https://code.google.com/p/chromium/issues/detail?id=497295"'
+                         , 'https://code.google.com/p/chromium/issues/detail?id=497295'
+                       )])
+
+
+            , hh.p([ hh( 'a href="https://bugs.chromium.org/p/v8/issues/detail?id=4614"'
+                         , 'https://bugs.chromium.org/p/v8/issues/detail?id=4614'
+                       )])
+
+            , hh.p([ hh( 'a href="https://code.google.com/p/chromium/issues/detail?id=569681"'
+                         , 'https://code.google.com/p/chromium/issues/detail?id=569681'
+                       )])
+
+
+
+
+            , hh.p([
+                'For now (February 2016) it might be reasonable to restrict the use of web workers to '
+                , ' CPU-intensive tasks that require little data, e.g. an intensive search '
+                , 'of a solution in a large space of possibilities.'
+            ])
+
+            , hh.p([
+                'So this example here is currently a *bad* usage example, but at the same time a good way to measure the communication overhead with Web Workers.'
+            ])
+
+            , hh( 'button id ="parallel-speed-test-start" disabled="disabled"', 'Waiting for async unit tests to complete...' )
+            , hh( 'div id="pspt-out-cont" style="display: none;"'
+                  , hh.pre( hh( 'code id="parallel-speed-test-useragent"', navigator.userAgent ) ) + 
+                  hh.pre( hh( 'code id="parallel-speed-test-result"', ' ' ) )
+                )
+
+
+            , hh.hr()
+            , section_title_with_anchor( 'example-parallel-speed-test-result', 'Parallel speed test: Example results' )
+            , hh( 'div id="epstr-data-cont"'
+                  , hh.pre( hh( 'code class="prettyprint lang-js"', [ 
+                      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36\n\n',
+                      JSON.stringify( [
+                          {
+                              "size": 1,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 1,
+                                      "dur_ms": 3,
+                                      "ops_per_sec": 333.3333333333333
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 1,
+                                      "dur_ms": 4,
+                                      "ops_per_sec": 250,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 4
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 1,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 2
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 1,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 2
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 10,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 10,
+                                      "dur_ms": 0,
+                                      "ops_per_sec": null
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 10,
+                                      "dur_ms": 1,
+                                      "ops_per_sec": 1000,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 1
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 10,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 2
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 10,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 2
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 100,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 100,
+                                      "dur_ms": 0,
+                                      "ops_per_sec": null
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 100,
+                                      "dur_ms": 6,
+                                      "ops_per_sec": 166.66666666666666,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 6
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 100,
+                                      "dur_ms": 4,
+                                      "ops_per_sec": 250,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 4
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 100,
+                                      "dur_ms": 7,
+                                      "ops_per_sec": 142.85714285714286,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 7
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 1000,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 1000,
+                                      "dur_ms": 1,
+                                      "ops_per_sec": 1000
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 1000,
+                                      "dur_ms": 21,
+                                      "ops_per_sec": 47.61904761904762,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 21
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 1000,
+                                      "dur_ms": 13,
+                                      "ops_per_sec": 76.92307692307692,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 13
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 1000,
+                                      "dur_ms": 12,
+                                      "ops_per_sec": 83.33333333333333,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 12
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 10000,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 10000,
+                                      "dur_ms": 0,
+                                      "ops_per_sec": null
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 10000,
+                                      "dur_ms": 93,
+                                      "ops_per_sec": 10.75268817204301,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 93
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 10000,
+                                      "dur_ms": 70,
+                                      "ops_per_sec": 14.285714285714286,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 70
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 10000,
+                                      "dur_ms": 69,
+                                      "ops_per_sec": 14.492753623188406,
+                                      "max_inw_dur_ms": 0,
+                                      "overhead_dur_ms": 69
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 100000,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 100000,
+                                      "dur_ms": 9,
+                                      "ops_per_sec": 111.11111111111111
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 100000,
+                                      "dur_ms": 823,
+                                      "ops_per_sec": 1.2150668286755772,
+                                      "max_inw_dur_ms": 3,
+                                      "overhead_dur_ms": 820
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 100000,
+                                      "dur_ms": 665,
+                                      "ops_per_sec": 1.5037593984962405,
+                                      "max_inw_dur_ms": 1,
+                                      "overhead_dur_ms": 664
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 100000,
+                                      "dur_ms": 634,
+                                      "ops_per_sec": 1.5772870662460567,
+                                      "max_inw_dur_ms": 1,
+                                      "overhead_dur_ms": 633
+                                  }
+                              ]
+                          },
+                          {
+                              "size": 1000000,
+                              "nw2speed": [
+                                  {
+                                      "n_worker": 0,
+                                      "data_len": 1000000,
+                                      "dur_ms": 8,
+                                      "ops_per_sec": 125
+                                  },
+                                  {
+                                      "n_worker": 1,
+                                      "data_len": 1000000,
+                                      "dur_ms": 12101,
+                                      "ops_per_sec": 0.08263779852904718,
+                                      "max_inw_dur_ms": 8,
+                                      "overhead_dur_ms": 12093
+                                  },
+                                  {
+                                      "n_worker": 2,
+                                      "data_len": 1000000,
+                                      "dur_ms": 7715,
+                                      "ops_per_sec": 0.12961762799740764,
+                                      "max_inw_dur_ms": 3,
+                                      "overhead_dur_ms": 7712
+                                  },
+                                  {
+                                      "n_worker": 3,
+                                      "data_len": 1000000,
+                                      "dur_ms": 6850,
+                                      "ops_per_sec": 0.145985401459854,
+                                      "max_inw_dur_ms": 3,
+                                      "overhead_dur_ms": 6847
+                                  }
+                              ]
+                          }
+                      ]
+                                      , null, 2)
+                  ])))
+
+
+
+
             , hh( 'hr id="unit-test-hr"' )
             , section_title_with_anchor( 'unit-test', 'Unit tests' )
             , hh.pre( hh( 'code id="unit-test-code" class="prettyprint lang-js"', ' ' ) )
@@ -339,22 +661,6 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         }
 
         // --- Tool functions
-
-        function async_run( funarr )
-        {
-            if (funarr.length > 0)
-                setTimeout( async_next, 1234 );  // 1234: pause to let the browser breathe
-            
-            function async_next()
-            {
-                funarr[ 0 ]( notifyDone );  // funarr[ 0 ] might be itself async -> pass it a callback
-            }
-            
-            function notifyDone()
-            {
-                async_run( funarr.slice( 1 ) );
-            }
-        }
         
         function run_test( test_data, name, impl, notifyDone )
         {
@@ -421,39 +727,239 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
         
     })();
 
-function create_pseudo_random_arr()
-{
-    var n  = 10000
-    , arr  = new Array(n)
-    , drop = 0.1 // Proportion of numbers to drop
-    ;
-    
-    // Deterministic pseudo-random numbers to make sure
-    // arr is always generated the same way.
-    // http://stackoverflow.com/questions/521295/javascript-random-seeds
-    var seed = 1;
-    
-    for (var i = n; i--;)
-        arr[i] = { p: random() < drop ? null : i };
-    
-    return arr;
 
-    function random()
+function async_run( funarr )
+{
+    if (funarr.length > 0)
+        setTimeout( async_next, 1234 );  // 1234: pause to let the browser breathe
+    
+    function async_next()
     {
-        var x = Math.sin(seed++) * 10000;
-        return x - Math.floor(x);
+        funarr[ 0 ]( notifyDone );  // funarr[ 0 ] might be itself async -> pass it a callback
     }
-} 
+    
+    function notifyDone()
+    {
+        async_run( funarr.slice( 1 ) );
+    }
+}
     </script>
 
 
     <script type="text/javascript">
-// async unit tests
+// async unit tests (e.g. parallel web workers)
 (function () {
     var detailnode = gEBI( 'async-unit-test-code' )
     ,      outnode = gEBI( 'async-result' )
     ;
     async_run_test( detailnode, outnode );
+})();
+    </script>
+
+
+    <script type="text/javascript">
+// parallel speed test
+(function () {
+    after_async( setup_parallel_speed_test );
+
+    function setup_parallel_speed_test()
+    {
+        var psst_btn = gEBI( 'parallel-speed-test-start' )
+        , orig_text = psst_btn.textContent
+        ;
+        
+        aEL( psst_btn, 'click', parallel_speed_test_start );
+        psst_btn.innerHTML = 'Run it!';
+        rA( psst_btn, 'disabled' );
+        psst_btn.style.display = '';
+        
+        var n_worker_max, speed_result_arr;
+        function parallel_speed_test_start()
+        {
+            sA( psst_btn, 'disabled', 'disabled' );
+            psst_btn.textContent = 'Running...';
+            
+            var node = gEBI( 'parallel-speed-test-result' );
+            node.textContent = '\n' + node.textContent;
+            
+            gEBI( 'pspt-out-cont' ).style.display = '';
+            
+            speed_result_arr = [];
+
+            async_run( [
+                chose_n_worker_max
+                , loop_through_test_array_sizes
+                , parallel_speed_test_done
+            ] );
+        }
+
+        function chose_n_worker_max( notifyDone )
+        {
+            var n_cores  = navigator.hardwareConcurrency  ||  8;  // xxx
+            n_worker_max = n_cores - 1;
+            notifyDone();
+        }
+
+        var parallel_appfun, merge_fun;
+        var size, test_data, correct_result, one_speed_result;
+        function loop_through_test_array_sizes( notifyDone )
+        {
+            var   array_sizes = [ 1, 10, 100, 1e3, 1e4, 1e5, 1e6 ]
+            , max_array_size  = Math.max.apply( Math, array_sizes )
+            , max_test_data   = create_pseudo_random_arr( max_array_size )
+            ;
+            
+            parallel_appfun = tfun
+                .declIn( { _count : '0', _inw_t_begin : 'Date.now()' } )
+                .map( '.p' )
+                .filter( '!=null' )
+                .redinit( '0', '_count++, out+v' )
+                .next( '{ sum : current, count : _count, max_inw_dur_ms : Date.now() - _inw_t_begin }' )
+            
+            merge_fun = function ( a, b )
+            {
+                return {
+                    sum     : a.sum   + b.sum
+                    , count : a.count + b.count
+                    , max_inw_dur_ms : Math.max( a.max_inw_dur_ms, b.max_inw_dur_ms )
+                };
+            };
+
+            next_size();
+
+            // --- Details
+
+            function next_size()
+            {
+                setTimeout( next_size_impl, 1000 );  // Let the browser breathe..
+            }
+            
+            function next_size_impl()
+            {
+                if (!array_sizes.length)
+                {
+                    notifyDone();
+                }
+                else
+                {
+                    size      = array_sizes.shift();
+                    test_data = max_test_data.slice( 0, size );
+                    
+                    loop_through_n_worker( next_size );
+                }
+            }
+            
+        }
+
+        function loop_through_n_worker( notifyDone )
+        {
+            var n = 0;
+
+            // First n=0: in the main process
+            var t_begin = Date.now()
+            ,   tmp     = tval( test_data )( parallel_appfun )
+            ,   t_end   = Date.now()
+            ;
+            
+            tmp = with_mean( tmp );
+            correct_result = { sum : tmp.sum, count : tmp.count, mean : tmp.mean };
+
+            var dur_ms = t_end - t_begin
+            , nw2speed = [
+                get_speed_obj( n, test_data.length, dur_ms )
+            ]
+            ;
+
+            // Now with parallel processes
+            speed_test_next_n_worker();
+            
+            // --- Details (function declarations)
+
+            function with_mean( o )
+            {
+                var sum   = tmp.sum
+                ,   count = tmp.count
+                ;
+                sum  .toPrecision.call.a;
+                count.toPrecision.call.a;
+
+                sum >= 0  ||  null.bug;
+                count >= 0  ||  null.bug;
+
+                var ret = Object.create( o );
+                ret.mean = sum / count;
+                return ret;
+            }
+            
+            function get_speed_obj( n_worker, data_len, dur_ms )
+            {
+                return {
+                    n_worker      : n_worker
+                    , data_len    : data_len
+                    , dur_ms      : dur_ms
+                    , ops_per_sec : 1000 / dur_ms
+                };
+            }
+
+            function speed_test_next_n_worker()
+            {
+                setTimeout( speed_test_next_n_worker_impl, 1234 );  // Let the browser breathe
+            }
+            
+            function speed_test_next_n_worker_impl()
+            {
+                if (!(n < n_worker_max))
+                {
+                    speed_result_arr.push({
+                        size : size
+                        , nw2speed : nw2speed
+                    });
+                    notifyDone();
+                }
+                else
+                {
+                    n++;
+                    
+                    var t_begin = Date.now()
+
+                    ,   tmp     = psplit( parallel_appfun, { n : n } )
+                        .pmerge( merge_fun)
+                        .next( with_mean )
+                        .runOn( test_data )
+                        .then( receive_result )
+                    ;
+                    function receive_result( r )
+                    {
+                        var t_end  = Date.now()
+                        ,   dur_ms = t_end - t_begin
+                        , max_inw_dur_ms = r.max_inw_dur_ms
+                        ;
+                        max_inw_dur_ms.toPrecision.call.a;
+                        oEquals( correct_result, { sum : r.sum, count : r.count, mean : r.mean } )  ||  null.bug;
+
+                        nw2speed[ n ] = get_speed_obj( n, test_data.length, dur_ms );
+                        nw2speed[ n ].max_inw_dur_ms  = max_inw_dur_ms;
+                        nw2speed[ n ].overhead_dur_ms = dur_ms - max_inw_dur_ms;
+
+                        speed_test_next_n_worker();
+                    }
+                }
+            }
+            
+        }
+
+        function parallel_speed_test_done()
+        {
+            console.log('parallel_speed_test_done', speed_result_arr);
+
+            var node = gEBI( 'parallel-speed-test-result' );
+            node.innerHTML += '\n' + JSON.stringify( speed_result_arr, null, 2 );
+            
+            psst_btn.textContent = orig_text;
+            psst_btn.removeAttribute( 'disabled' );
+        }
+    }
+
 })();
     </script>
 
