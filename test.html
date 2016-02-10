@@ -115,8 +115,13 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , hh.p([
                 'For now (February 2016) it might be reasonable to restrict the use of web workers to '
                 , ' CPU-intensive tasks that require little data, e.g. an intensive search '
-                , 'of a solution in a large space of possibilities.'
+                , 'of a solution in a large space of possibilities. Or split the data and pass it '
+                , 'to the corresponding workers using '
+                , hh( 'a href="https://developer.mozilla.org/en-US/docs/Web/API/Transferable"'
+                      , 'Transferables' )
+                , '.'
             ])
+
 
             , hh.p([
                 'So this example here is currently a *bad* usage example, but at the same time a good way to measure the communication overhead with Web Workers.'
