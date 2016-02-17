@@ -1062,15 +1062,15 @@ dd { margin-bottom: 1em; }
             "    , specgen: function ( /*string | externcall object*/test ) {",
             "        return { loopleftright: {",
             "            morph    : 'array'",
-            "            , bodyadd: { restwrap: function ( rest ) {",
-            "                  return { 'if': fullexpr( test, 'v', 'k' ),",
-            "                           'then': rest }; } }",
+            "            , bodyadd: { restwrap: {",
+            "                  'if': fullexpr( test, 'v', 'k' ),",
+            "                  'then': { rest : 1 } } }",
             "        }};",
             "    }",
             "});"
         ])
         , hh.p([
-            'The construct ' + js_code( '{ restwrap : function ( rest ) { ... } }' ) +
+            'The construct ' + js_code( '{ restwrap : { if : ..., then : { rest : 1 } } }' ) +
                 ' wraps ' + hh.em( 'whatever' ) + ' future steps the body of the loop will have,' +
                 ' inside an if/then branch.'
         ])
@@ -1137,9 +1137,8 @@ dd { margin-bottom: 1em; }
             "    ",
             "    { loopleftright: {",
             "        morph    : 'array'",
-            "        , bodyadd: { restwrap: function ( rest ) {",
-            "                         return { 'if': 'v!=null',",
-            "                                  'then': rest }; } }",
+            "        , bodyadd: { restwrap: { 'if': 'v!=null',",
+            "                                  'then': { rest : 1 } } }",
             "    }},",
             "    ",
             "    { loopleftright: {",
@@ -1163,9 +1162,8 @@ dd { margin-bottom: 1em; }
             "    { loopleftright: {",
             "        beforeloop : { decl: [ 'out', '0' ]",
             "        , bodyadd: [ { set: [ 'v', 'v.p' ] },",
-            "                     { restwrap: function ( rest ) {",
-            "                         return { 'if': 'v!=null',",
-            "                                  'then': rest }; } },",
+            "                     { restwrap: { 'if': 'v!=null',",
+            "                                   'then': { rest : 1 } } },",
             "                     { set: [ 'out', 'out+v' ] }",
             "                   ]",
             "        , afterloop: { set: [ 'current', 'out' ] }",
@@ -1178,9 +1176,8 @@ dd { margin-bottom: 1em; }
         , hh.p( '...is done after unwrapping:' )
         , js_pre_code([
             "        , bodyadd: [ { set: [ 'v', 'v.p' ] },",
-            "                     { restwrap: function ( rest ) {",
-            "                         return { 'if': 'v!=null',",
-            "                                  'then': rest }; } },",
+            "                     { restwrap: { 'if': 'v!=null',",
+            "                                   'then': { rest : 1 } } },",
             "                     { set: [ 'out', 'out+v' ] }",
             "                   ]",
         ])

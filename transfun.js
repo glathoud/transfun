@@ -100,7 +100,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : {
                 morph     : 'array'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -110,7 +110,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { looprightleft : {
                 morph     : 'array'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -120,7 +120,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopin : {
                 morph     : 'object'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -263,7 +263,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopleftright : {
                 morph     : 'array'
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : rest, 'else' : 'break' }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : { rest : 1 }, 'else' : 'break' } }
             }};
         }
     });
@@ -273,7 +273,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopin : {
                 morph     : 'object'
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : rest, 'else' : 'break' }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : { rest : 1 }, 'else' : 'break' } }
             }};
         }
     });
@@ -1473,7 +1473,7 @@ var global, exports; // NPM support [github#1]
 	    , restwrap = step.restwrap
 	    ;
 	    if (restwrap)
-                ret = ret.slice( 0, i ).concat( restwrap( ret.slice( i + 1 ) ) );
+                ret = ret.slice( 0, i ).concat( rest_unwrap( restwrap, ret.slice( i + 1 ) ) );
 
 	    walk_step( step );  // Check for similar cases, deeper
         }
@@ -1494,6 +1494,31 @@ var global, exports; // NPM support [github#1]
         }
     }
 
+    function rest_unwrap( restwrap, rest )
+    {
+        return clone_unwrap( restwrap );
+
+        function clone_unwrap( o )
+        // Deep copy of `o`, except for the places where we find
+        // '#rest', which we replace with a shallow copy of `rest`.
+        {
+            if (!(o  &&  'object' === typeof o))
+                return o;
+            
+            var ret = o instanceof Array  ?  []  :  {};
+            
+            for (var k in o) { if (!(k in _emptyObj)) {   // More flexible than hasOwnProperty
+
+                if (k === 'rest')
+                    return rest.slice();
+                
+                ret[ k ] = clone_unwrap( o[ k ] );
+            }}
+
+            return ret;
+        }
+    }
+    
     // --- Support for caching to speedup the code generation
     // --- [github#2]
 
