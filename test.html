@@ -532,7 +532,16 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
             gEBI( 'gen-code-expl-code' ).innerHTML = f(
                 [
                     "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
+
+
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"') )"
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"') )"
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"') )"
+
                     , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
+                    , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"').getBodyCode()"
+
+                    , "tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"').getBodyCode()"
 
                     , "tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
                     , "tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' ).getBodyCode()"
