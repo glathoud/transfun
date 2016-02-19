@@ -532,13 +532,14 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
             gEBI( 'gen-code-expl-code' ).innerHTML = f(
                 [
                     "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
+                    , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
+
                     , "tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
                     , "tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' ).getBodyCode()"
 
 
                     , "tval( 'abcd\\nefghijkl\\nmnop' )( tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ) )"
-                    , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ).getBodyCode()"
-                    
+                    , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ).getBodyCode()"                   
 
                     , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )\n  ( tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ) )\n, null\n, 2 )"
                     , "tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ).getBodyCode()"

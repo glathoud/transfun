@@ -597,7 +597,7 @@ var global, exports; // NPM support [github#1]
 
 	// string: expression => complete it if necessary.
 
-        (code      ||  null).substring.call.a;
+        code.substring.call.a;  // the empty string '' is allowed, means the value itself, unchanged
         (leftvar   ||  null).substring.call.a;
         rightvar  &&  rightvar.substring.call.a;
         
