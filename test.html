@@ -533,11 +533,6 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                 [
                     "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
 
-
-                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"') )"
-                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"') )"
-                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"') )"
-
                     , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
                     , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"').getBodyCode()"
 
@@ -567,6 +562,12 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                     , "tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : { set_at : [ 'current', 'k', '\"-\"' ] } } ).join( '\"\"' ) )"
                     
                     
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"') )"
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"') )"
+                    , "tval( 'abc=123&xyz=456&def=qq' )( tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"') )"
+                    , "'abc=123&xyz=456&def=qq'.replace( /(?:^|&)xyz=[^&]*/g, '' )"
+
+
                     , "tfun.split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' ).getBodyCode()"
                     , "tfun.split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' ).getBodyCode()"
                     , "tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : 'current[k] = \"-\"' } ).join( '\"\"' ).getBodyCode()"
