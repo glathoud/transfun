@@ -312,6 +312,18 @@ function test()
         ||  null.bug
     ;                                                                              
     
+    var     h0  = 'abc=123&xyz=456&def=qq'
+    , expected  = 'abc=123&def=qq'
+    , obtained  = tval( h0 )( tfun.split( '"&"' ).filter( '' ).map( '.split("=")').filter( 'v[0]!="xyz"' ).map( '.join("=")' ).join( '"&"') )
+    , obtained2 = tval( h0 )( tfun.split( '"&"' ).filter( '.split("=")[0]!="xyz"' ).join( '"&"') )
+    , obtained3 = tval( h0 )( tfun.split( '"&"' ).filter( '!/^xyz=/.test(v)' ).join( '"&"') )
+    , obtained4 = h0.replace( /(?:^|&)xyz=[^&]*/g, '' )
+    ;
+    expected === obtained   ||  null.bug;
+    expected === obtained2  ||  null.bug;
+    expected === obtained3  ||  null.bug;
+    expected === obtained4  ||  null.bug;
+
     // 
     
     console.timeEnd( 'transfun:test' );

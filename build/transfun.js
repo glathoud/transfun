@@ -100,7 +100,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopleftright : {
                 morph     : 'array'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -110,7 +110,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { looprightleft : {
                 morph     : 'array'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -120,7 +120,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /*string | externcall object*/test ) {
             return { loopin : {
                 morph     : 'object'  // --> means, among other, reducable + depending on conserve_array_length (always false here), init & bodyend (store)
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : rest }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : { rest : 1 } } }
             }};
         }
     });
@@ -263,7 +263,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopleftright : {
                 morph     : 'array'
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : rest, 'else' : 'break' }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : { rest : 1 }, 'else' : 'break' } }
             }};
         }
     });
@@ -273,7 +273,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( /* string | externcall object*/test ) {
             return { loopin : {
                 morph     : 'object'
-                , bodyadd : { restwrap : function ( rest ) { return { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : rest, 'else' : 'break' }; } }
+                , bodyadd : { restwrap : { 'if' : tfun.fullexpr( test, 'v', 'k' ), then : { rest : 1 }, 'else' : 'break' } }
             }};
         }
     });
@@ -558,7 +558,7 @@ var global, exports; // NPM support [github#1]
     }
 
     function fullexpr( /* ... see _stmt_expr_common... */ )
-    // string->string: Complete a code expression of one or two variables.
+    // string|object->string|object: Complete a code expression of one or two variables.
     //
     // Examples:
     // {{{
@@ -583,7 +583,7 @@ var global, exports; // NPM support [github#1]
             {
 	        var externcall = code.externcall;
 	        (externcall  ||  null).substring.call.a;
-	        return externcall + '(' + Array.apply( 0, arguments ).slice( 1 ).join( ', ') + ')';
+	        return { 'call' : { fun : externcall, arg : Array.apply( 0, arguments ).slice( 1 ) } };
             }
 
             // object: definition piece => as is.
@@ -597,7 +597,7 @@ var global, exports; // NPM support [github#1]
 
 	// string: expression => complete it if necessary.
 
-        (code      ||  null).substring.call.a;
+        code.substring.call.a;  // the empty string '' is allowed, means the value itself, unchanged
         (leftvar   ||  null).substring.call.a;
         rightvar  &&  rightvar.substring.call.a;
         
@@ -729,6 +729,7 @@ var global, exports; // NPM support [github#1]
 		    
 		    // For convenience: give access
 		    appfun.getBodyCode  = appfun_getBodyCode;
+                    appfun.getFunSpec   = appfun_getFunSpec;
                     appfun.getNExternal = appfun_getNExternal;
 		    
 		    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
@@ -764,6 +765,15 @@ var global, exports; // NPM support [github#1]
                 {
 		    ensure_appimpl();
 		    return code_body;
+                }
+
+                function appfun_getFunSpec()
+                {
+                    ensure_appimpl();
+                    return { funSpec : {
+                        varNameArr : code_par_arr.slice()
+                        , specArr  : chainspec.spec_arr
+                    }};
                 }
 
                 function appfun_getNExternal()
@@ -915,7 +925,7 @@ var global, exports; // NPM support [github#1]
 		    {
                         // extern function
                         var e_i    = e_arr.length
-                        ,   e_name = '__extern$' + e_i + '__'
+                        ,   e_name = '__extern$' + e_i + (one.name  ?  '_' + one.name : '' ) + '__'
                         ;
                         e_arr .push( one );
                         en_arr.push( e_name );
@@ -1449,7 +1459,9 @@ var global, exports; // NPM support [github#1]
 
 	    :  (x = expr.comment)  ?  '/* ' + x + ' */'
 
-	    :  hasNoKey( x )  ?  ''
+            :  (x = expr.call)  ?  x.fun + '(' + x.arg.join( ',' ) + ')'
+        
+	    :  hasNoKey( expr )  ?  ''
 
 	    :  null.unsupported_or_bug
         ;
@@ -1473,7 +1485,7 @@ var global, exports; // NPM support [github#1]
 	    , restwrap = step.restwrap
 	    ;
 	    if (restwrap)
-                ret = ret.slice( 0, i ).concat( restwrap( ret.slice( i + 1 ) ) );
+                ret = ret.slice( 0, i ).concat( rest_unwrap( restwrap, ret.slice( i + 1 ) ) );
 
 	    walk_step( step );  // Check for similar cases, deeper
         }
@@ -1494,6 +1506,31 @@ var global, exports; // NPM support [github#1]
         }
     }
 
+    function rest_unwrap( restwrap, rest )
+    {
+        return clone_unwrap( restwrap );
+
+        function clone_unwrap( o )
+        // Deep copy of `o`, except for the places where we find
+        // '#rest', which we replace with a shallow copy of `rest`.
+        {
+            if (!(o  &&  'object' === typeof o))
+                return o;
+            
+            var ret = o instanceof Array  ?  []  :  {};
+            
+            for (var k in o) { if (!(k in _emptyObj)) {   // More flexible than hasOwnProperty
+
+                if (k === 'rest')
+                    return rest.slice();
+                
+                ret[ k ] = clone_unwrap( o[ k ] );
+            }}
+
+            return ret;
+        }
+    }
+    
     // --- Support for caching to speedup the code generation
     // --- [github#2]
 
