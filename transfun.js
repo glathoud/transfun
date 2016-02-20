@@ -558,7 +558,7 @@ var global, exports; // NPM support [github#1]
     }
 
     function fullexpr( /* ... see _stmt_expr_common... */ )
-    // string->string: Complete a code expression of one or two variables.
+    // string|object->string|object: Complete a code expression of one or two variables.
     //
     // Examples:
     // {{{
@@ -583,7 +583,7 @@ var global, exports; // NPM support [github#1]
             {
 	        var externcall = code.externcall;
 	        (externcall  ||  null).substring.call.a;
-	        return externcall + '(' + Array.apply( 0, arguments ).slice( 1 ).join( ', ') + ')';
+	        return { 'call' : { fun : externcall, arg : Array.apply( 0, arguments ).slice( 1 ) } };
             }
 
             // object: definition piece => as is.
@@ -1459,7 +1459,9 @@ var global, exports; // NPM support [github#1]
 
 	    :  (x = expr.comment)  ?  '/* ' + x + ' */'
 
-	    :  hasNoKey( x )  ?  ''
+            :  (x = expr.call)  ?  x.fun + '(' + x.arg.join( ',' ) + ')'
+        
+	    :  hasNoKey( expr )  ?  ''
 
 	    :  null.unsupported_or_bug
         ;
