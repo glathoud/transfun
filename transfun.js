@@ -729,6 +729,7 @@ var global, exports; // NPM support [github#1]
 		    
 		    // For convenience: give access
 		    appfun.getBodyCode  = appfun_getBodyCode;
+                    appfun.getFunSpec   = appfun_getFunSpec;
                     appfun.getNExternal = appfun_getNExternal;
 		    
 		    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
@@ -764,6 +765,15 @@ var global, exports; // NPM support [github#1]
                 {
 		    ensure_appimpl();
 		    return code_body;
+                }
+
+                function appfun_getFunSpec()
+                {
+                    ensure_appimpl();
+                    return { funSpec : {
+                        varNameArr : code_par_arr.slice()
+                        , specArr  : chainspec.spec_arr
+                    }};
                 }
 
                 function appfun_getNExternal()
