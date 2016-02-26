@@ -4,7 +4,7 @@
   A bunch of useful small functions & shortcuts for JavaScript.
   Use at your own risk. See the file ./LICENSE
 
-  Copyright Guillaume Lathoud 2016
+  Guillaume Lathoud, 2016
   glat@glat.info
 */
 
@@ -55,8 +55,11 @@ function qSA( sel, /*?*/node )
 
 /* html getters */
 
-function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string | array of string?*/html ) 
+function hh( /*string, e.g. 'div' or 'div class="myclass"'*/tname, /*?string | array of string?*/html /*... maybe more `html` arguments... */) 
 {
+    if (arguments.length > 2)
+        html = Array.prototype.slice.call( arguments, 1 );
+    
     html = array_2_string( html );
 
     var tag = tname.replace( /\s[\S\s].*$/, '' ).replace( /^\s*|\s*$/g, '' );

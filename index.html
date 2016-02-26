@@ -165,6 +165,29 @@ dd { margin-bottom: 1em; }
             )
         ])
 
+        , highlight( 'Related topics' )
+
+        , hh.p([
+            'These might also interest you:'
+        ])
+
+        , hh.ul([
+            
+            hh.li([ '&rarr;&nbsp;'
+                    , hh( 'a href="http://chrisdone.com/posts/stream-composability"'
+                          , 'Stream fusion and composability (Java 8 and Haskell) for newbies'
+                        )
+                  ])
+            
+            , hh.li([ '&rarr;&nbsp;', hh( 'a href="https://blogs.janestreet.com/flambda/"'
+                        , 'A better inliner for OCaml, and why it matters'
+                      )])
+
+            , hh.li([ '...and much more in '
+                      , hh( 'a href="#annex-related-topics"', 'Annex' )
+                      , '.'
+            ])
+        ])
         
         , section_title_with_anchor( '', 'Contents' )
         , hh( 'p id="contents"' )
@@ -1347,7 +1370,113 @@ dd { margin-bottom: 1em; }
             'Debugging might be easier with ' + hh.em( 'one' ) + ' piece of generated code, '
             , 'as compared to the inherently distributed implementation of the stream-based approaches.'
         ])
+
+
+
+
+
+
+
+
+
+
+
+        , section_title_with_anchor( 'annex-related-topics', next_annex_name() + ': Related topics' )
+
+        , hh.p([ 'I received very interesting feedback, especially on '
+                 , hh.code( 'comp.lang.javascript' )
+                 , '.'
+               ])
+
+        , highlight( 'Getting rid of variables (when possible)' )
+
+        , hh.blockquote([
+            'Side note about lambdas: it would be nice to be able to write some '
+            , 'without variables at all. OCaml has an interesting notation where one '
+            , 'can wrap an operator + into a function (+)'
+        ])
+
+        , hh.p([ 'Haskell has that too, and it came (at least in the case of Haskell), '
+                , 'from Miranda designed by David Turner.  He may have got it from a 1973 '
+                , 'dissertation by Wile and (like so many such things) it probably has even '
+                , 'older roots in mathematical logic.'
+              ])
+
+        , hh.p([ 'Haskell (and Miranda) can go both ways.  (+) is a function make from an '
+                , 'operator, but given a function like mod, you can make an operator from '
+                , 'it using `...`: '
+              ])
+
+        , hh.pre( hh.code( '95 `mod` 10' ) )
         
+        , hh.p([ 'is 5.  And you can combine the two.  Since operators permit sections '
+                , 'using either operand it can be handy to write (`mod` 10) for the "modulo 10" function.'
+              ])
+
+        , hh.p( '-- ')
+        , hh.p( 'Ben.' )
+
+        , highlight( 'Oliver Steele\'s Functional JavaScript' )
+
+        , hh.p([ 'The original documentation page seems to be offline, but the code '
+                 , 'is on '
+                 , hh( 'a href="https://github.com/osteele/functional-javascript"'
+                       , 'GitHub'
+                       )
+                 , ' and there is an '
+                 , hh( 'a href="https://github.com/osteele/functional-javascript"'
+                       , 'initial announcement'
+                       )
+                 , '.'
+               ])
+
+        , highlight( 'Transducers' )
+
+        , hh.p([
+            'First discussed in the Clojure community, e.g. '
+            , hh( 'a href="http://blog.cognitect.com/blog/2014/8/6/transducers-are-coming"'
+                  , 'Transducers are coming'
+                  )
+            , '. There are several well-known Javascript versions, including '
+            , hh( 'a href="https://github.com/jlongster/transducers.js"'
+                  , 'jlongster/transducers.js'
+                )
+            , ' and '
+            , hh( 'a href="https://github.com/cognitect-labs/transducers-js"'
+                  , 'cognitect-labs/transducers-js'
+                )
+            , '.  They\'re also partially folded into some more general-purpose libraries like '
+            , hh( 'a href="http://ramdajs.com"'
+                  , 'Ramda'
+                )
+            , ' (disclosure: I\'m one of the authors.)'
+        ])
+        , hh.p([ '-- Scott' ])
+        
+        , highlight( 'Trine: functional programming using the :: bind operator' )
+
+        , hh.blockquote([ 'Ramda argues that lodash and underscore put the data in the wrong place: at the first parameter of the function, while it should be at the last position. They\'re both (subjectively) wrong: the natural place for data in JS is the '
+                          , hh.code( 'this' )
+                          , ' parameter.'
+                        ])
+        
+        , hh.p([ '&rarr;&nbsp;'
+                 , hh( 'a href="https://github.com/jussi-kalliokoski/trine"'
+                     , 'jussi-kalliokoski/trine' )
+               ])
+
+        , highlight( 'Fold-fusion laws' )
+
+        , hh.p([ '&rarr;&nbsp;'
+                 , tautolink( 'http://www.cs.nott.ac.uk/~pszgmh/fold.pdf' )
+               ])
+        
+        , hh.p( '&rarr;&nbsp;'
+                 , tautolink( 'https://www.cs.ox.ac.uk/ralf.hinze/publications/IFL10.pdf' )
+               )
+
+        , hh.p([ 'Feedback from Michael Haufe (TNO).' ])
+
     ].join( '\n' ));  
 
     gEBI( 'contents' ).innerHTML = hh.ul( st_arr.map( function ( o ) {
@@ -1358,6 +1487,14 @@ dd { margin-bottom: 1em; }
 
     // Tool functions
     
+    function tautolink( href )
+    {
+        return hh( 'a href="' + href + '"'
+                 , href 
+                 );
+    }
+    
+
     function dl_describe( dt, dd )
     {
         return [
