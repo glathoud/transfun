@@ -534,11 +534,19 @@ var global, exports; // NPM support [github#1]
                     var loop = spec[ looptype ];
                     if (!loop.loopname)
                         loop.loopname = '-- ' + name + '(' + (opt  ?  ' ' + Array.apply( null, opt )
-                                                              .map( function ( s ) { return '`' + (s.externcall  ||  s) + '`' ; })
+                                                              .map( s2origcodestring )
                                                               .join( ', ' ) + ' '  :  ''
                                                              ) + ') --'
                 }
                 return spec;
+
+                function s2origcodestring( s )
+                {
+                    var     x = (s.externcall  ||  s)
+                    , codestr = 'string' === typeof x  ?  x  :  JSON.stringify( x )
+                    ;
+                    return '`' + codestr + '`';
+                }
             }
 
             function get_default_loopname_wrapper( specgen )
