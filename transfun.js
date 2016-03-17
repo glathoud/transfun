@@ -230,9 +230,9 @@ var global, exports; // NPM support [github#1]
         arity : 1
         , specgen : function ( /*string*/action ) {
             return { looprightleft : {
-                beforeloop  : []
-                , bodyadd   : tfun.statement( action, 'current', 'v', 'k' )
-                , afterloop : []
+                morph                   : 'array'
+		, keep_current_instance : true
+		, bodyadd               : tfun.statement( action, 'current', 'v', 'k' )
             }};
         }
 
@@ -242,9 +242,9 @@ var global, exports; // NPM support [github#1]
         arity : 1
         , specgen : function ( /*string*/action ) {
             return { loopin : {
-                beforeloop  : []
-                , bodyadd   : tfun.statement( action, 'current', 'v', 'k' )
-                , afterloop : []
+                morph                   : 'object'
+		, keep_current_instance : true
+		, bodyadd               : tfun.statement( action, 'current', 'v', 'k' )
             }};
         }
 
@@ -987,7 +987,10 @@ var global, exports; // NPM support [github#1]
 		    if (morph !== ARRAY  &&  morph !== OBJECT)
                         throw new Error( 'Invalid morph value "' + morph + '".' );
 		    
-		    var optional = ARRAY === morph  &&  { conserve_array_length : 1, keep_current_instance : 1 };
+		    var optional = ARRAY === morph  ?  { keep_current_instance : 1, conserve_array_length : 1 }
+                    :  OBJECT === morph  ?  { keep_current_instance : 1 }
+                    :  null.bug
+                    ;
 		    check_exactly_has_properties( loop, { morph : 1, bodyadd : 1 }, optional );
                 }
 	    }

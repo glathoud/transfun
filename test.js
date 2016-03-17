@@ -282,6 +282,27 @@ function test()
     s_out === tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( { 'if' : '!/\\w/.test(v)', then : 'current[k] = \"-\"' } ).join( '\"\"' ) )  ||  null.bug;
     s_out === tval( 'some/string*\"@cha\xEEne$de_caract\xE8res' )( tfun.split( '\"\"' ).each( { 'if' : '!/\\w/.test(v)', then : { set_at : [ 'current', 'k', '\"-\"' ] } } ).join( '\"\"' ) )  ||  null.bug;
 
+    // `tfun.each`
+
+    var arr_in  = [ 10, 9, 8  ]
+    ,     v_out = (1 + ((1 + ((1 + 2.345) / 10)) / 9)) / 8
+    ;
+    1e-10 > Math.abs( v_out - tval( [ 10, 9, 8 ] )( tfun.decl( 'out', '2.345' ).each( 'out=(1+out)/v' ).next( 'out' )));
+
+    // `tfun.eachRight`
+
+    var arr_in  = [ 10, 9, 8  ]
+    ,     v_out = (1 + ((1 + ((1 + 2.345) / 8)) / 9)) / 10
+    ;
+    1e-10 > Math.abs( v_out - tval( [ 10, 9, 8 ] )( tfun.decl( 'out', '2.345' ).eachRight( 'out=(1+out)/v' ).next( 'out' )));
+
+    // `tfun.eachIn`
+
+    var obj_in = { a : 2, b : 3, c : 5, d : 7, e : 11 }
+    ,    v_out = 2 * 3 * 5 * 7 * 11
+    ;
+    1e-10 > Math.abs( v_out - tval( obj_in )( tfun.decl( 'out', '1' ).eachIn( 'out*=v' ).next( 'out' )));
+
     //
 
     "********" === tval( 'abcd\nefghijkl\nmnop' )( tfun.split( '"\\n"' ).redinit( '""', 'out.length > v.length ? out : v' ).next( '.replace( /[\\s\\S]/g, "*" )' ) )  ||  null.bug;
