@@ -727,7 +727,13 @@ var global, exports; // NPM support [github#1]
                 ;
                 if (!cached_appfun)
                 {
-		    // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
+                    // Do it now, so that we can have appfun==impl in
+                    // most cases -> performance.  This is okay
+                    // because we have cache: do it only once.
+                    // See also [github#2].
+                    ensure_appimpl();
+
+                    // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
 		    appfun._tf_chainspec = chainspec;
 		    
 		    // Necessary to support `tfun( <appfun> )`
@@ -743,7 +749,9 @@ var global, exports; // NPM support [github#1]
 		    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
                 }
                 return cached_appfun;
-                
+
+
+            
                 // --- Details
 
                 // steps for code & function generation
@@ -757,18 +765,14 @@ var global, exports; // NPM support [github#1]
                 ,   code_body      // actual implementation: body (string)
                 
                 ,   impl           // actual implementation (function)
+                ,   appfun         // function: `impl` or `extern_impl_wrapper`
                 ;
-                function appfun( /*an actual value, e.g. an array of numbers*/current )
+
+                function extern_impl_wrapper( current )
                 {
-		    if (!impl)  // Generated only on-demand, i.e. when calling the application function
-                        ensure_appimpl();
-
-		    return has_extern
-                        ?  impl.apply( this, extern_arr.concat( [ current ] ) )
-                        :  impl.call( this, current )
-		    ;
+                    return impl.apply( this, extern_arr.concat( [ current ] ) );
                 }
-
+            
                 function appfun_getBodyCode()
                 {
 		    ensure_appimpl();
@@ -806,6 +810,11 @@ var global, exports; // NPM support [github#1]
 
                         impl            = new Function( code_par_arr, code_body );
 
+                        // In most cases no wrapper because no
+                        // externs. Performance in mind. Okay because
+                        // of cache [github#2].
+                        appfun = has_extern  ?  extern_impl_wrapper  :  impl;
+                        
                         // For debugging
                         appfun._tf_dbg = {
 			    impl : impl
