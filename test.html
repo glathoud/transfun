@@ -127,6 +127,13 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                 'So this example here is currently a *bad* usage example, but at the same time a good way to measure the communication overhead with Web Workers.'
             ])
 
+            , hh.p([
+                'March 2016: Reduced the serialization overhead a lot (10-15 times) '
+                , ' using ', hh( 'code class="prettyprint lang-js"', 'JSON.stringify' )
+                , ' and ', hh( 'code class="prettyprint lang-js"', 'JSON.parse' )
+                , '. Still not fast enough to make parallel processing of complex objects interesting - i.e. objects other than Transferables/TypedArrays. '
+            ])
+
             , hh( 'button id ="parallel-speed-test-start" disabled="disabled"', 'Waiting for async unit tests to complete...' )
             , hh( 'div id="pspt-out-cont" style="display: none;"'
                   , hh.pre( hh( 'code id="parallel-speed-test-useragent"', navigator.userAgent ) ) + 
@@ -138,7 +145,7 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
             , section_title_with_anchor( 'example-parallel-speed-test-result', 'Parallel speed test: Example results' )
             , hh( 'div id="epstr-data-cont"'
                   , hh.pre( hh( 'code class="prettyprint lang-js"', [ 
-                      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/45.0.2454.101 Chrome/45.0.2454.101 Safari/537.36\n\n',
+                      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/48.0.2564.116 Chrome/48.0.2564.116 Safari/537.36\n\n',
                       JSON.stringify( [
                           {
                               "size": 1,
@@ -146,8 +153,8 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 0,
                                       "data_len": 1,
-                                      "dur_ms": 3,
-                                      "ops_per_sec": 333.3333333333333
+                                      "dur_ms": 1,
+                                      "ops_per_sec": 1000
                                   },
                                   {
                                       "n_worker": 1,
@@ -181,32 +188,32 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 0,
                                       "data_len": 10,
-                                      "dur_ms": 0,
-                                      "ops_per_sec": null
+                                      "dur_ms": 1,
+                                      "ops_per_sec": 1000
                                   },
                                   {
                                       "n_worker": 1,
                                       "data_len": 10,
-                                      "dur_ms": 1,
-                                      "ops_per_sec": 1000,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 1
+                                      "overhead_dur_ms": 2
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 10,
-                                      "dur_ms": 2,
-                                      "ops_per_sec": 500,
+                                      "dur_ms": 3,
+                                      "ops_per_sec": 333.3333333333333,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 2
+                                      "overhead_dur_ms": 3
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 10,
-                                      "dur_ms": 2,
-                                      "ops_per_sec": 500,
+                                      "dur_ms": 3,
+                                      "ops_per_sec": 333.3333333333333,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 2
+                                      "overhead_dur_ms": 3
                                   }
                               ]
                           },
@@ -222,26 +229,26 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 1,
                                       "data_len": 100,
-                                      "dur_ms": 6,
-                                      "ops_per_sec": 166.66666666666666,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 6
+                                      "overhead_dur_ms": 2
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 100,
-                                      "dur_ms": 4,
-                                      "ops_per_sec": 250,
+                                      "dur_ms": 3,
+                                      "ops_per_sec": 333.3333333333333,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 4
+                                      "overhead_dur_ms": 3
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 100,
-                                      "dur_ms": 7,
-                                      "ops_per_sec": 142.85714285714286,
+                                      "dur_ms": 1,
+                                      "ops_per_sec": 1000,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 7
+                                      "overhead_dur_ms": 1
                                   }
                               ]
                           },
@@ -251,32 +258,32 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 0,
                                       "data_len": 1000,
-                                      "dur_ms": 1,
-                                      "ops_per_sec": 1000
+                                      "dur_ms": 0,
+                                      "ops_per_sec": null
                                   },
                                   {
                                       "n_worker": 1,
                                       "data_len": 1000,
-                                      "dur_ms": 21,
-                                      "ops_per_sec": 47.61904761904762,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 21
+                                      "overhead_dur_ms": 2
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 1000,
-                                      "dur_ms": 13,
-                                      "ops_per_sec": 76.92307692307692,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 13
+                                      "overhead_dur_ms": 2
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 1000,
-                                      "dur_ms": 12,
-                                      "ops_per_sec": 83.33333333333333,
+                                      "dur_ms": 2,
+                                      "ops_per_sec": 500,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 12
+                                      "overhead_dur_ms": 2
                                   }
                               ]
                           },
@@ -292,26 +299,26 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 1,
                                       "data_len": 10000,
-                                      "dur_ms": 93,
-                                      "ops_per_sec": 10.75268817204301,
+                                      "dur_ms": 20,
+                                      "ops_per_sec": 50,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 93
+                                      "overhead_dur_ms": 20
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 10000,
-                                      "dur_ms": 70,
-                                      "ops_per_sec": 14.285714285714286,
+                                      "dur_ms": 15,
+                                      "ops_per_sec": 66.66666666666667,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 70
+                                      "overhead_dur_ms": 15
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 10000,
-                                      "dur_ms": 69,
-                                      "ops_per_sec": 14.492753623188406,
+                                      "dur_ms": 15,
+                                      "ops_per_sec": 66.66666666666667,
                                       "max_inw_dur_ms": 0,
-                                      "overhead_dur_ms": 69
+                                      "overhead_dur_ms": 15
                                   }
                               ]
                           },
@@ -321,32 +328,32 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 0,
                                       "data_len": 100000,
-                                      "dur_ms": 9,
-                                      "ops_per_sec": 111.11111111111111
+                                      "dur_ms": 3,
+                                      "ops_per_sec": 333.3333333333333
                                   },
                                   {
                                       "n_worker": 1,
                                       "data_len": 100000,
-                                      "dur_ms": 823,
-                                      "ops_per_sec": 1.2150668286755772,
+                                      "dur_ms": 75,
+                                      "ops_per_sec": 13.333333333333334,
                                       "max_inw_dur_ms": 3,
-                                      "overhead_dur_ms": 820
+                                      "overhead_dur_ms": 72
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 100000,
-                                      "dur_ms": 665,
-                                      "ops_per_sec": 1.5037593984962405,
-                                      "max_inw_dur_ms": 1,
-                                      "overhead_dur_ms": 664
+                                      "dur_ms": 67,
+                                      "ops_per_sec": 14.925373134328359,
+                                      "max_inw_dur_ms": 2,
+                                      "overhead_dur_ms": 65
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 100000,
-                                      "dur_ms": 634,
-                                      "ops_per_sec": 1.5772870662460567,
-                                      "max_inw_dur_ms": 1,
-                                      "overhead_dur_ms": 633
+                                      "dur_ms": 69,
+                                      "ops_per_sec": 14.492753623188406,
+                                      "max_inw_dur_ms": 2,
+                                      "overhead_dur_ms": 67
                                   }
                               ]
                           },
@@ -356,32 +363,32 @@ var code_impl_transfun_redinit = "tfun.map( '.p' ).filter( '!=null' ).redinit( '
                                   {
                                       "n_worker": 0,
                                       "data_len": 1000000,
-                                      "dur_ms": 8,
-                                      "ops_per_sec": 125
+                                      "dur_ms": 7,
+                                      "ops_per_sec": 142.85714285714286
                                   },
                                   {
                                       "n_worker": 1,
                                       "data_len": 1000000,
-                                      "dur_ms": 12101,
-                                      "ops_per_sec": 0.08263779852904718,
-                                      "max_inw_dur_ms": 8,
-                                      "overhead_dur_ms": 12093
+                                      "dur_ms": 571,
+                                      "ops_per_sec": 1.7513134851138354,
+                                      "max_inw_dur_ms": 7,
+                                      "overhead_dur_ms": 564
                                   },
                                   {
                                       "n_worker": 2,
                                       "data_len": 1000000,
-                                      "dur_ms": 7715,
-                                      "ops_per_sec": 0.12961762799740764,
-                                      "max_inw_dur_ms": 3,
-                                      "overhead_dur_ms": 7712
+                                      "dur_ms": 440,
+                                      "ops_per_sec": 2.272727272727273,
+                                      "max_inw_dur_ms": 5,
+                                      "overhead_dur_ms": 435
                                   },
                                   {
                                       "n_worker": 3,
                                       "data_len": 1000000,
-                                      "dur_ms": 6850,
-                                      "ops_per_sec": 0.145985401459854,
-                                      "max_inw_dur_ms": 3,
-                                      "overhead_dur_ms": 6847
+                                      "dur_ms": 516,
+                                      "ops_per_sec": 1.937984496124031,
+                                      "max_inw_dur_ms": 4,
+                                      "overhead_dur_ms": 512
                                   }
                               ]
                           }

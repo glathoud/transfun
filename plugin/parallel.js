@@ -389,7 +389,7 @@ var psingle, psplit;
                 
                 worker.addEventListener( 'message', _PS_receive_one_result );
 
-                worker.postMessage( message );
+                worker.postMessage( JSON.stringify( message ) );
                 
                 function _PS_receive_one_result( e )
                 {
@@ -462,7 +462,7 @@ var psingle, psplit;
                         "",
                         "  function ww_any_listener(e)",
                         "  {",
-                        "    var e_data   = e.data",
+                        "    var e_data   = JSON.parse( e.data )",
                         "    ,   w_codeid = e_data.w_codeid",
                         "    ;",
                         "    (w_codeid  ||  null).substring.call.a;",
