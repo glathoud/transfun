@@ -609,7 +609,7 @@ var global, exports; // NPM support [github#1]
         (leftvar   ||  null).substring.call.a;
         rightvar  &&  rightvar.substring.call.a;
         
-        var is_left_implicit  = /^\s*(?:[+*\/%&|\^\.=<>\?]|!=|$)/.test( code )
+        var is_left_implicit  = /^\s*(?:[+*\/%&|\^\.=<>\?]|!=|-=|$)/.test( code )
         ,   is_right_implicit = /[+\-*\/%&|\^\.=<>!]\s*$/        .test( code )  &&  !/(\+\+|\-\-)$/.test( code )
         ;
         if (is_left_implicit)
