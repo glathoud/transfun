@@ -52,10 +52,9 @@ function test()
     1e-10 > Math.abs( Math.pow(1*3*5*11*17,1/5) - geommean( [ 1, 3, 5, 11, 17 ] ))  ||  null.bug;
 
 
-    // Using the publicly declared `sum`. Note the *transfun* `sum`
-    // has arity 0, so in the *appfun* is in global namespace.
+    // Using the publicly declared `sum`.
     
-    10 === tfun.sum( [ 1, 2, 3, 4 ] )  ||  null.bug;
+    10 === tfun.sum()( [ 1, 2, 3, 4 ] )  ||  null.bug;
     
     var geommean2 = tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' )  // Only for positive numbers
 
@@ -234,14 +233,14 @@ function test()
 
     //
 
-    'great' === tfun.and( [ 1, true, 2, 'great' ] )  ||  null.bug;
-    1 === tfun.andRight( [ 1, true, 2, 'great' ] )  ||  null.bug;
-    true  === !!tfun.andIn( { a: 1, b : 'great', c : true })  ||  null.bug;
-    null  === tfun.andIn( { a: 1, b : 'great', d : null, c : true })  ||  null.bug;
+    'great' === tfun.and()( [ 1, true, 2, 'great' ] )  ||  null.bug;
+    1 === tfun.andRight()( [ 1, true, 2, 'great' ] )  ||  null.bug;
+    true  === !!tfun.andIn()( { a: 1, b : 'great', c : true })  ||  null.bug;
+    null  === tfun.andIn()( { a: 1, b : 'great', d : null, c : true })  ||  null.bug;
     
-    null === tfun.and( [ 1, true, 2, null, 'great' ] )  ||  null.bug;
-    null === tfun.and( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
-    0 === tfun.andRight( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
+    null === tfun.and()( [ 1, true, 2, null, 'great' ] )  ||  null.bug;
+    null === tfun.and()( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
+    0 === tfun.andRight()( [ 1, true, 2, null, 'great', 0, 3, 'bcd' ] )  ||  null.bug;
     
     true  === tval( [ 1, 4, 7, 10, 13, 16, 18 ] )( tfun.map( '>0' ).and() )  ||  null.bug;
     false === tval( [ 1, 4, -7, 10, 13, -16, 18 ] )( tfun.map( '>0' ).and() )  ||  null.bug;
@@ -254,22 +253,22 @@ function test()
     
     //
 
-    'great' === tfun.or( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
-    2 === tfun.orRight( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
-    111   === tfun.orIn( { a: null, b : false, c : 111 })  ||  null.bug;
-    false === !!tfun.orIn( { a: null, b : false, c : 0 })  ||  null.bug;
-    null  === tfun.orIn( { a: null, b : null, d : null, c : null })  ||  null.bug;
+    'great' === tfun.or()( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
+    2 === tfun.orRight()( [ 0, false, 'great', true, 2, null, 0 ] )  ||  null.bug;
+    111   === tfun.orIn()( { a: null, b : false, c : 111 })  ||  null.bug;
+    false === !!tfun.orIn()( { a: null, b : false, c : 0 })  ||  null.bug;
+    null  === tfun.orIn()( { a: null, b : null, d : null, c : null })  ||  null.bug;
     
 
     // Conversions
 
-    oEquals( [ 1, 'xyz', null ], tfun.o2values({ a:1, b:'xyz', c:null }) )  ||  null.bug;
+    oEquals( [ 1, 'xyz', null ], tfun.o2values()({ a:1, b:'xyz', c:null }) )  ||  null.bug;
     
-    oEquals( [ 'a', 'b', 'c'  ],         tfun.o2keys({ a:1, b:'xyz', c:null }) )  ||  null.bug;
-    oEquals( { a:true, b:true, c:true }, tfun.keys2o([ 'a', 'b', 'c' ]) )  ||  null.bug;
+    oEquals( [ 'a', 'b', 'c'  ],         tfun.o2keys()({ a:1, b:'xyz', c:null }) )  ||  null.bug;
+    oEquals( { a:true, b:true, c:true }, tfun.keys2o()([ 'a', 'b', 'c' ]) )  ||  null.bug;
 
-    oEquals( [ ['c', null], ['a', 1], ['b', 'xyz'] ].sort(), tfun.o2kv({ a:1, b:'xyz', c:null }).sort() )  ||  null.bug
-    oEquals( { a:1, b:'xyz', c:null }, tfun.kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ]) )   ||  null.bug;
+    oEquals( [ ['c', null], ['a', 1], ['b', 'xyz'] ].sort(), tfun.o2kv()({ a:1, b:'xyz', c:null }).sort() )  ||  null.bug
+    oEquals( { a:1, b:'xyz', c:null }, tfun.kv2o()([ ['b', 'xyz'], ['a', 1], ['c', null] ]) )   ||  null.bug;
 
     // `tfun.each` + various possibilities to pass a piece of code
 

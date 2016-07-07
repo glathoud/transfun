@@ -29,6 +29,7 @@
   map filter reduce redinit sum prod decl
   console global exports
   Map
+  JSON
 */
 
 var global, exports; // NPM support [github#1]
@@ -504,22 +505,13 @@ var global, exports; // NPM support [github#1]
             , with_default_loopname( Array.prototype.slice.call( arguments, 1 ) )
         );
         
-        // Also publish the function to the global namespace
-        //
-        // (1) through global variables
-        // (2) through `tfun.*` methods
-        //
-        // Note about arity & convenience:
-        // 
-        // if arity == 0 then create and publish the appfun,
-        // if arity  > 0 then publish the transfun.
-        // 
-        new Function( 'tf'
-                      , 'tfun["' + name + '"]=tf' + ( tf._tf_arity > 0  ?  ''  :  '()' )
-                    )( tf );
-
+        // Also publish the function to the global namespace through
+        // `tfun.*` methods (2) through `tfun.*` properties ==
+        
+        new Function( 'tf' , 'tfun["' + name + '"]=tf' )( tf );
+        
         return tf;
-
+        
         function with_default_loopname( arg )
         {
             var x = arg[ 0 ];
@@ -715,11 +707,10 @@ var global, exports; // NPM support [github#1]
 
         function tfun_from_objectdef( definition )
         {
-	    var arity = definition.arity
-	    ,   spec  = arity === 0  &&  definition.spec
-	    ,   specgen = arity > 0  &&  definition.specgen
-
-	    ,   tf_id = _transfun_id = 1 + ~~_transfun_id; // [github#2]
+	    var arity   = definition.arity
+            ,   spec    = arity === 0  &&  definition.spec
+            ,   specgen = arity > 0  &&  definition.specgen
+            ,   tf_id   = _transfun_id = 1 + ~~_transfun_id; // [github#2]
 	    ;
 	    transfun._is_transfun = true;
 	    transfun._tf_arity    = arity;
@@ -741,6 +732,8 @@ var global, exports; // NPM support [github#1]
                 ;
                 if (!cached_appfun)
                 {
+                    var appfun; // function: `impl` or `extern_impl_wrapper`
+
                     // Do it now, so that we can have appfun==impl in
                     // most cases -> performance.  This is okay
                     // because we have cache: do it only once.
@@ -779,7 +772,6 @@ var global, exports; // NPM support [github#1]
                 ,   code_body      // actual implementation: body (string)
                 
                 ,   impl           // actual implementation (function)
-                ,   appfun         // function: `impl` or `extern_impl_wrapper`
                 ;
 
                 function extern_impl_wrapper( current )
@@ -932,11 +924,11 @@ var global, exports; // NPM support [github#1]
 	    
 	    // determine the specification for this new step
 	    var spec;
-	    if (arity === 0)
-	    {
-                spec = spec_or_specgen;
-	    }
-	    else
+            if (arity === 0)
+            {
+                spec = spec_or_specgen;    
+            }
+            else
 	    {
                 // array of string
                 var spec_s_arg = [];
