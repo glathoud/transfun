@@ -433,6 +433,20 @@ var global, exports; // NPM support [github#1]
     tpub( 'join', '#s',  '.join(#s)' );
     tpub( 'split', '#s', '.split(#s)' );
     
+    tpub( 'sorted', {
+        arity : 1
+        , specgen : function( /*string | externcall object*/transform ) {
+            return {
+                stepadd : {
+                    set : [ 
+                        'current'
+                        , 'current.slice().sort((a,b)=>' + tfun.fullexpr( transform, 'a', 'b' ) + ')'
+                    ]
+                }
+            };
+        }
+    });
+
     // ---------- Public API implementation
 
     function tval( /*...args...*/ )

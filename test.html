@@ -534,12 +534,15 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                     (new Function('return ' + v)()) + '\n'
             })
                 .join( '"\\n\\n"' )
+                .next( '.replace( /</g, "&lt;" )' )
             ;
-
+            
             gEBI( 'gen-code-expl-code' ).innerHTML = f(
                 [
-                    "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
-
+                    "tfun.sorted('a-b').getBodyCode()"
+                    , "tfun.sorted( 'a[0]<b[0] ? -1 : +1' ).getBodyCode()"
+                    , "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
+                    
                     , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
                     , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"').getBodyCode()"
 
