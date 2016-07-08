@@ -529,27 +529,56 @@ dd { margin-bottom: 1em; }
             'Examples with ' + hh.code( 'and/or' ) + ':'
         ])
         , js_pre_code([
-            "tfun.and     ([])          // >>> true",
-            "tfun.and     ([ 1, 'a' ])  // >>> 'a'",
-            "tfun.andRight([ 1, 'a' ])  // >>> 1",
-            "tfun.and     ([ 1, 'a', false, 33, null, 17 ])  // >>> false",
-            "tfun.andRight([ 1, 'a', false, 33, null, 17 ])  // >>> null",
+            "tfun.and     // transformation function (arity 0)",
+            "tfun.and()   // application function",
             "",
-            "tfun.andIn({ p:1, q:'aa', r:'xyz' })  // >>> <one of: 1, 'aa' or 'xyz'>",
-            "tfun.andIn({ p:1, q:null, r:'xyz' })  // >>> null",
+            "tfun.and()     ([])          //>> true",
+            "tfun.and()     ([ 1, 'a' ])  //>> 'a'",
+            "tfun.andRight()([ 1, 'a' ])  //>> 1",
+            "tfun.and()     ([ 1, 'a', false, 33, null, 17 ])  //>> false",
+            "tfun.andRight()([ 1, 'a', false, 33, null, 17 ])  //>> null",
+            "",
+            "tfun.andIn()({ p:1, q:'aa', r:'xyz' })  //>> <one of: 1, 'aa' or 'xyz'>",
+            "tfun.andIn()({ p:1, q:null, r:'xyz' })  //>> null",
         ])
         , js_pre_code([
-            "tfun.or     ([])          // >>> false",
-            "tfun.or     ([ 1, 'a' ])  // >>> 1",
-            "tfun.orRight([ 1, 'a' ])  // >>> 'a'",
-            "tfun.or     ([ false, 0, null ])  // >>> null",
-            "tfun.orRight([ false, 0, null ])  // >>> false",
+            "tfun.or()     ([])          //>> false",
+            "tfun.or()     ([ 1, 'a' ])  //>> 1",
+            "tfun.orRight()([ 1, 'a' ])  //>> 'a'",
+            "tfun.or()     ([ false, 0, null ])  //>> null",
+            "tfun.orRight()([ false, 0, null ])  //>> false",
             "",
-            "tfun.orIn({ p:1, q:'aa', r:'' })  // >>> <one of: 1 or 'aa'>",
-            "tfun.orIn({ p:1, q:null, r:'' })  // >>> 1",
+            "tfun.orIn()({ p:1, q:'aa', r:'' })  //>> <one of: 1 or 'aa'>",
+            "tfun.orIn()({ p:1, q:null, r:'' })  //>> 1",
             "",
         ])
+
+        , highlight( 'Note about arity-0 transformations' )
+
+        , hh.p([
+            'Several transformation functions have arity 0 &mdash; i.e. need no parameter: '
+        ])
+        , js_pre_code([
+            "tfun.and()   // application function"
+        ])
+        , hh.p([ 'which leads to the usage:' ])
+        , js_pre_code([
+            "tfun.and()     ([ 1, 'a' ])  // result: 'a'"
+        ])
+        , hh.p([
+            , 'I chose '
+            , hh.em( 'not' )
+            , ' to permit shortcuts like '
+            , hh.code( 'tfun.and([ 1, \'a\' ])' )
+            , ' because it leads to inconsistencies as well as implementation issues, especially when '
+            , hh( 'a href="#chaining"', 'chaining' )
+            , '.'
+            , ' See also '
+            , hh( 'a href="https://github.com/glathoud/transfun/issues/4")', 'GitHub issue #4' )
+            , ' for more details.'            
+        ])
         
+
 
         , highlight([
             '"Values" extraction:'
@@ -563,7 +592,7 @@ dd { margin-bottom: 1em; }
                 , [
                     'converts an object to the array of its values:'
                     , js_pre_code([
-                        "tfun.o2values({ a:1, b:'xyz', c:null })",
+                        "tfun.o2values()({ a:1, b:'xyz', c:null })",
                         "// *may* return:",
                         "[ 'xyz', 1, null ]"
                     ])
@@ -588,7 +617,7 @@ dd { margin-bottom: 1em; }
                 , [
                     'converts an object to the array of its ' + hh.em( 'keys' ) + ' (it wraps ' + hh.code( 'Object.keys' ) + '): '
                     , js_pre_code([
-                        "tfun.o2keys({ a:1, b:'xyz', c:null })",
+                        "tfun.o2keys()({ a:1, b:'xyz', c:null })",
                         "// *may* return:",
                         "[ 'b', 'a', 'c' ]"
                     ])
@@ -605,7 +634,7 @@ dd { margin-bottom: 1em; }
                 , [
                     'converts an array to an object. For example:'
                     , js_pre_code([
-                        "tfun.keys2o([ 'a', 'b', 'c' ])",
+                        "tfun.keys2o()([ 'a', 'b', 'c' ])",
                         '// returns:',
                         "{ a:true, b:true, c:true }"
                     ])
@@ -623,7 +652,7 @@ dd { margin-bottom: 1em; }
                 , [
                     'converts an object to the array of its key-value pairs:'
                     , js_pre_code([
-                        "tfun.o2kv({ a:1, b:'xyz', c:null })",
+                        "tfun.o2kv()({ a:1, b:'xyz', c:null })",
                         '// *may* return:',
                         "[ ['c', null], ['a', 1], ['b', 'xyz'] ]"
                     ])
@@ -640,7 +669,7 @@ dd { margin-bottom: 1em; }
                 , [
                     'converts an array of key-value pairs to an object:'
                     , js_pre_code([
-                        "tfun.kv2o([ ['b', 'xyz'], ['a', 1], ['c', null] ])",
+                        "tfun.kv2o()([ ['b', 'xyz'], ['a', 1], ['c', null] ])",
                         '// returns:',
                         "{ a:1, b:'xyz', c:null }"
                     ])
