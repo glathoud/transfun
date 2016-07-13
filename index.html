@@ -66,6 +66,8 @@ dd { margin-bottom: 1em; }
     
     ,   c_tval      = hh.code( 'tval' )
 
+    ,   c_bind      = hh.code( 'bind' )
+
     ,   c_wu        = hh.code( 'wu.js' )
     
     ,   github_ref  = 'http://github.com/glathoud/transfun'
@@ -418,7 +420,8 @@ dd { margin-bottom: 1em; }
         ])
 
         , js_pre_code([
-            'var appfun = tfun.map((x)=>x.p).filter((x)=>x!=null).reduce((a,b)=>a+b);',
+            'var appfun = tfun.map((x)=>x.p).filter((x)=>x!=null)',
+            '             .reduce((a,b)=>a+b);',
             'var result = appfun( arr );'
         ])
         
@@ -458,6 +461,13 @@ dd { margin-bottom: 1em; }
         ])
         , js_pre_code([
              "var appfun = tfun.map(someFunction).filter('!=null').reduce('+');"
+        ])
+        , hh.p([
+            'Additionally, the flexibility provided by '
+            , hh( 'a href="#tval"', hh.code( 'tval' ) )
+            , ' and '
+            , hh( 'a href="#bind"', hh.code( 'bind' ) )
+            , ' permits to write code in the order that suits the context.'
         ])
         , hh.p([
             'If you like this type of topic, have a look at that article: <br> &rarr;'
@@ -779,12 +789,102 @@ dd { margin-bottom: 1em; }
         
 
 
+        , centered_pic( 'now_later' )
+        , section_title_with_anchor( 'bind', 'Hiding away complexity using ' + c_bind )
 
+        , hh.p([
+            'It is not realistic to write code strings that are too complex/too long. '
+        ])
 
+        , hh.p([
+            , 'One solution hides away complex processing of a piece of data using '
+            , hh( 'a href="#with-functions"', 'function arguments' )
+            , '. '
+        ])
 
+        , hh.p([
+            'Another solution sticks to '
+            , hh.em( 'short' )
+            , ' code strings, and uses ', hh.code( 'this' ) , ' and ', hh.code( 'bind' )
+            , ' to hide away complexity into an '
+            , ' object, as shown below.'
+        ])
 
+        , hh.p([
+            hh('small', [
+                ' Note: functions and RegExps are also objects in JavaScript. '
+            ])
+        ])
+        
 
+        , highlight( 'Example: ' + js_code( 'bind' ) + ' a function' )
+        , js_pre_code([
+            "// Split text lines and parse each line into an object"
+            , "data = tval("
+            , "  csv.split( /[\\r\\n]+/ )"
+            , ")("
+            , "  tfun.filter( '' )"
+            , "    .map( 'this(v.split(\",\"))' )"
+            , "    .bind( extract_one )"
+            , ");"
+            , ""
+            , "function extract_one( array_of_strings ) {"
+            , "  // Returns an object"
+            , "  // (too many steps to be reasonably coded in a code string)"
+            , "}"
+        ])
 
+        , highlight( 'Example: ' + js_code( 'bind' ) + ' a RegExp' )
+
+        , hh.p([
+            'Here is a ' + js_code( 'bind' ) + ' example with a RegExp outside of the code string  (goodbye&nbsp;double&nbsp;backslashes): '
+        ])
+        
+        , js_pre_code([
+            '// Parse the 3rd string into an object',
+            'transaction_a = tval(',
+            '  arr[ 3 ].split( /\s+/ )',
+            ')(',
+            "  tfun.filter( '' )",
+            "    .map( '(v=v.match(this)),' +",
+            "          '{name:v[1], delta:parseFloat(v[2])}' )",
+            "    .bind( /^([^\\+\\-]+)([\\+\\-]\\S+)$/ )",
+            ");"
+        ])
+        
+        , highlight( 'Example: ' + js_code( 'bind' ) + ' an object' )
+
+        , hh.p([
+            'Here is a ' + js_code( 'bind' ) + ' example with an object containing a parameter ' + js_code( 'v_in' ) + ':'
+        ])
+
+        , js_pre_code([
+            "// Convert an object to ready-to-print text"
+            ,"v_out = tval("
+            ,"  final_share"
+            ,")("
+            ,"  // Data extraction, sorted per key (name)"
+            ,"  tfun.o2kv()"
+            ,"    .sorted( 'a[0]<b[0] ? -1 : +1' )"
+            ,"     // Presentation"
+            ,"    .map( 'v[0] + \": \" + this.v_in * v[1]' )  // <<< here: this.v_in"
+            ,"    .bind( { v_in : v_in } ) // Parameter: v_in"
+            ,")"
+            ," .join( '\\n' )"
+            ,";"
+        ])
+        
+        , hh.p([
+            'Note: instead of: '
+            , js_pre_code( "    .map( 'v[0] + \": \" + this.v_in * v[1]' )  // <<< here: this.v_in" )
+            , '...we could put the '
+            , js_code( 'v_in' )
+            , ' value directly into the code string:'
+            , js_pre_code( "    .map( 'v[0] + \": \" + ' + v_in + ' * v[1]' )" )
+            , '...but then for each different value of '
+            , js_code( 'v_in' )
+            , ', a new code would be generated, which would be pretty inefficient.'
+        ])
 
         , centered_pic( 'mccreadygossamer' )
 
@@ -1681,6 +1781,13 @@ dd { margin-bottom: 1em; }
             }
 
             
+            , now_later : {
+                src     : 'rsrc_web/img/pic_now_later.jpg'
+                , title : 'Procrastinating'
+                , href  : 'https://www.theodysseyonline.com/story-of-procrastination'
+                , attr  : 'width="250px"'
+            }
+
             , pipechair : {
                 src     : 'rsrc_web/img/pic_pipechair.jpg'
                 , title : 'Sewer pipe chair'
