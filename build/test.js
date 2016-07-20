@@ -38,6 +38,10 @@ function create_pseudo_random_arr( /*?integer?*/n )
 function test()
 {
     console.time( 'transfun:test' );
+
+    var many_args_example = tfun.arg( 'a', 'b', 'c' ).next( 'a+b*c' );
+    17 === many_args_example( 2, 3, 5 )  ||  null.bug;
+    isNaN( many_args_example( 2, 3 ) )  ||  null.bug;
     
     var sum_local = tfun.reduce( '+' )
     ,  mean = sum_local.next( '/n' ) // after an array loop that conserves the length (e.g. no filtering), the value of `n` is available

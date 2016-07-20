@@ -64,6 +64,27 @@ var global, exports; // NPM support [github#1]
     // --- Publish a few common transfunctions, specifying an
     // internally imperative implementation for a functional.
 
+    tpub( 'arg', { // To extract multiple arguments (instead of the standard single argument `current`)
+
+        arity : +Infinity  // Means variable arity
+
+        , specgen : function ( /*...strings...*/ ) {
+
+            var add = [];
+            
+            for (var n = arguments.length, i = 0; i < n; i++)
+            {
+                var name = arguments[ i ];
+                (name  ||  null).substring.call.a;
+                
+                add.push( { decl : [ name, { get_at : [ 'arguments', ''+i ] } ] } );
+            }
+            
+            return { stepadd : add };
+        }
+        
+    });
+    
     tpub( 'map', {
         arity     : 1
         , specgen : function ( /*string | externcall object*/transform ) {
@@ -707,21 +728,27 @@ var global, exports; // NPM support [github#1]
 
         function tfun_from_objectdef( definition )
         {
-	    var arity   = definition.arity
-            ,   spec    = arity === 0  &&  definition.spec
-            ,   specgen = arity > 0  &&  definition.specgen
-            ,   tf_id   = _transfun_id = 1 + ~~_transfun_id; // [github#2]
+	    var def_arity          = definition.arity
+            ,   has_variable_arity = def_arity === +Infinity
+
+            ,   spec      = def_arity === 0  &&  definition.spec
+            ,   specgen   = def_arity > 0  &&  definition.specgen
+            ,   tf_id     = _transfun_id = 1 + ~~_transfun_id; // [github#2]
 	    ;
-	    transfun._is_transfun = true;
-	    transfun._tf_arity    = arity;
-	    transfun._tf_id       = tf_id;
+	    transfun._is_transfun           = true;
+	    transfun._tf_def_arity          = def_arity;
+            transfun._tf_has_variable_arity = has_variable_arity
+	    transfun._tf_id                 = tf_id;
 	    
 	    return transfun;
 	    
 	    function transfun( /*...`arity` arguments: array of (code string | non-string extern) ... */ )
 	    {
+                var arity = has_variable_arity  ?  arguments.length  :  def_arity;                
                 if (arity !== arguments.length)
+                {
 		    return missing_args_transfun.apply( { transfunThisObj : this, arg : [] }, arguments );
+                }
                 
                 var chainspec = (
 		    this instanceof _ChainSpec  ?  this  :  new _ChainSpec
@@ -740,6 +767,8 @@ var global, exports; // NPM support [github#1]
                     // See also [github#2].
                     ensure_appimpl();
 
+                    appfun._tf_actual_arity = arity;
+                    
                     // Necessary to support `next` (see `ChainSpec.concat_call_tf`)
 		    appfun._tf_chainspec = chainspec;
 		    
@@ -835,26 +864,27 @@ var global, exports; // NPM support [github#1]
 		    }
                 }
                 
-	    } // function transfun
-
-	    function missing_args_transfun( /*... more arguments ... */)
-	    {
-                var new_arg = this.arg.concat( Array.apply( null, arguments ) )
-                , n_missing = arity - new_arg.length
-                ;
-                if (n_missing < 0)
-		    throw new Error( 'Too many arguments.' );
+	        // function transfun
                 
-                if (n_missing > 0)
-                {
-		    var ret = missing_args_transfun.bind( { transfunThisObj : this.transfunThisObj, arg : new_arg } );
-		    ret._is_incomplete_transfun = true;
-		    ret._is_transfun = true;
-		    ret._tf_arity    = n_missing;
-		    return ret;
+	        function missing_args_transfun( /*... more arguments ... */)
+	        {
+                    var new_arg = this.arg.concat( Array.apply( null, arguments ) )
+                    , n_missing = arity - new_arg.length
+                    ;
+                    if (n_missing < 0)
+		        throw new Error( 'Too many arguments.' );
+                    
+                    if (n_missing > 0)
+                    {
+		        var ret = missing_args_transfun.bind( { transfunThisObj : this.transfunThisObj, arg : new_arg } );
+		        ret._is_incomplete_transfun = true;
+		        ret._is_transfun = true;
+		        ret._tf_arity    = n_missing;
+		        return ret;
+                    }
+                    
+                    return transfun.apply( this.transfunThisObj, new_arg );
                 }
-                
-                return transfun.apply( this.transfunThisObj, new_arg );
 	    }
 	    
         } // function tfun_from_objectdef( definition )
@@ -1446,17 +1476,24 @@ var global, exports; // NPM support [github#1]
     function one_expr_2_code( /*string | object*/expr )
     {
         var oe2c = one_expr_2_code
+        ,   toe  = typeof expr
         , x,y,z
         ;
-        return 'string' === typeof expr
+        return 'string' === toe
 	    ?  expr
 
+            :  'number' === toe  ||  'boolean' === toe
+            ?  null.unsupported
+        
         // many expression objects
         
 	    :  expr instanceof Array
 	    ?  expr.map( oe2c )
 
         // single expression object
+
+            :  (x = expr.get_at)
+            ?  x[ 0 ] + '[ ' + oe2c( x[ 1 ] ) + ' ]'
         
 	    :  (x = expr.decl )
 	    ?  'var ' + x[ 0 ] + ' = ' + oe2c( x[ 1 ] )
