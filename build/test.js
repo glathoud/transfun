@@ -39,7 +39,7 @@ function test()
 {
     console.time( 'transfun:test' );
 
-    var many_args_example = tfun.arg( 'a', 'b', 'c' ).next( 'a+b*c' );
+    var many_args_example = tfun.arg( 'a,b,c' ).next( 'a+b*c' );
     17 === many_args_example( 2, 3, 5 )  ||  null.bug;
     isNaN( many_args_example( 2, 3 ) )  ||  null.bug;
     
@@ -55,7 +55,28 @@ function test()
     (1+3+10+20)/4 === mean( [ 1, 3, 10, 20 ] )  ||  null.bug;
     1e-10 > Math.abs( Math.pow(1*3*5*11*17,1/5) - geommean( [ 1, 3, 5, 11, 17 ] ))  ||  null.bug;
 
+    // Ranges
 
+    oEquals( [ 3, 4, 5, 6 ], tfun.rangeOf( '3', '7' )() )  ||  null.bug;
+    oEquals( [ 3, 4, 5, 6 ], tfun.range()( 3, 7 ) )  ||  null.bug;
+
+    // Ranges: advanced use: pick a part of a sparse array
+
+    var sparse_arr = [];
+    sparse_arr[  0 ] = 'a';
+    sparse_arr[  1 ] = 'b';
+    sparse_arr[  2 ] = 'c';
+    sparse_arr[  5 ] = 'd';
+    sparse_arr[  6 ] = 'e';
+    sparse_arr[  9 ] = 'f';
+    sparse_arr[ 11 ] = 'g';
+    sparse_arr[ 13 ] = 'h';
+    sparse_arr[ 15 ] = 'i';
+    sparse_arr[ 16 ] = 'j';
+
+    var sparse_pick = tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' );
+    oEquals( [ 'd', 'e', 'f', 'g' ], sparse_pick( sparse_arr, 4, 12 ) );
+    
     // Using the publicly declared `sum`.
     
     10 === tfun.sum()( [ 1, 2, 3, 4 ] )  ||  null.bug;

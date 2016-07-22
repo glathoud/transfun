@@ -542,7 +542,11 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                     "tfun.sorted('a-b').getBodyCode()"
                     , "tfun.sorted( 'a[0]<b[0] ? -1 : +1' ).getBodyCode()"
                     , "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
-                    
+
+                    , "tfun.arg('a,b,c').next('a+b*c').getBodyCode()"
+
+                    , "tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' ).getBodyCode()"
+                                        
                     , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
                     , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"').getBodyCode()"
 

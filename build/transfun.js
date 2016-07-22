@@ -39,9 +39,12 @@ var global, exports; // NPM support [github#1]
     ,   L_RIGHT = 'looprightleft'
     ,   L_IN    = 'loopin'
 
+    ,   R_LEFT  = 'rangeleftright'
+    ,   R_RIGHT = 'rangerightleft'
+    
     ,   ARRAY   = 'array'
     ,   OBJECT  = 'object'
-
+    
     ,   _emptyObj = {}
     ;
     
@@ -66,21 +69,23 @@ var global, exports; // NPM support [github#1]
 
     tpub( 'arg', { // To extract multiple arguments (instead of the standard single argument `current`)
 
-        arity : +Infinity  // Means variable arity
+        arity : 1
 
-        , specgen : function ( /*...strings...*/ ) {
+        , specgen : function ( /*...comma-separated string, e.g. "a,b,c"...*/cs ) {
 
-            var add = [];
-            
-            for (var n = arguments.length, i = 0; i < n; i++)
+            var   arr = cs.split( ',' )
+            ,       n = arr.length
+            , stepadd = new Array( n )
+            ;
+            for (var i = 0; i < n; i++)
             {
-                var name = arguments[ i ];
+                var name = arr[ i ];
                 (name  ||  null).substring.call.a;
                 
-                add.push( { decl : [ name, { get_at : [ 'arguments', ''+i ] } ] } );
+                stepadd[ i ] = { decl : [ name, { get_at : [ 'arguments', ''+i ] } ] };
             }
             
-            return { stepadd : add };
+            return { stepadd : stepadd };
         }
         
     });
@@ -449,6 +454,23 @@ var global, exports; // NPM support [github#1]
         }
     });
 
+    // Ranges
+
+    tpub( 'rangeOf', {
+        arity : 2
+        , specgen : function ( begin, end ) {
+            return { rangeleftright : {
+                morph     : 'array'
+                , begin   : begin
+                , end     : end
+                , varname : 'v'
+            }};
+        }
+    });   
+
+    tpub( 'range', tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' ) );
+    
+    // Others
     
     tpub( 'sum', tfun.redinit( '0', '+' ) );
 
@@ -730,8 +752,25 @@ var global, exports; // NPM support [github#1]
         {
 	    var def_arity          = definition.arity
             ,   has_variable_arity = def_arity === +Infinity
+            ;
+            if (has_variable_arity)
+                throw new Error( 'variable arity is not supported.' );
 
-            ,   spec      = def_arity === 0  &&  definition.spec
+            // Note about variable `transfun` arity: whoever wants it,
+            // can remove the previous test. It should work.
+            // 
+            // Why forbid it? I prefer the *slightly* more cumbersome
+            // *explicit* distinction using different transfun names:
+            //
+            // `range` vs. `rangeOf`
+            //
+            // `reduce` vs. `redInit`
+            //
+            // ...so that one gets *right* away an error when giving
+            // the wrong number of transfun parameters. It can help
+            // knowing what one is doing and detecting mistakes early.
+            
+            var spec      = def_arity === 0  &&  definition.spec
             ,   specgen   = def_arity > 0  &&  definition.specgen
             ,   tf_id     = _transfun_id = 1 + ~~_transfun_id; // [github#2]
 	    ;
@@ -750,9 +789,9 @@ var global, exports; // NPM support [github#1]
 		    return missing_args_transfun.apply( { transfunThisObj : this, arg : [] }, arguments );
                 }
                 
-                var chainspec = (
-		    this instanceof _ChainSpec  ?  this  :  new _ChainSpec
-                )
+                var prev_chainspec = (this instanceof _ChainSpec  ?  this  :  new _ChainSpec)
+
+                ,        chainspec = prev_chainspec
 		    .add_step( arity, tf_id, spec  ||  specgen, transfun, arguments )
 
                 , cached_appfun = chainspec.appfun  // avoid duplicated work [github#2]
@@ -774,7 +813,7 @@ var global, exports; // NPM support [github#1]
 		    
 		    // Necessary to support `tfun( <appfun> )`
 		    var _tf_bound_arg = arguments;
-		    appfun._tf_bound = function () { return transfun.apply( this, _tf_bound_arg ); }
+		    appfun._tf_bound  = appfun__tf_bound;
 		    appfun._tf_bound._is_transfun = true;
 		    
 		    // For convenience: give access
@@ -785,9 +824,17 @@ var global, exports; // NPM support [github#1]
 		    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
                 }
                 return cached_appfun;
-
-
-            
+                
+                function appfun__tf_bound()
+                {
+                    // Fail early to help the user self-correcting
+                    // misuses.
+                    if (arguments.length !== 0)
+                        throw new Error( arguments.length + ' unexpected arguments: ' + Array.prototype.slice.call( arguments ) );
+                    
+                    return transfun.apply( prev_chainspec, _tf_bound_arg );
+                }
+                
                 // --- Details
 
                 // steps for code & function generation
@@ -807,7 +854,7 @@ var global, exports; // NPM support [github#1]
                 {
                     return impl.apply( this, extern_arr.concat( [ current ] ) );
                 }
-            
+                
                 function appfun_getBodyCode()
                 {
 		    ensure_appimpl();
@@ -1015,7 +1062,7 @@ var global, exports; // NPM support [github#1]
                         tmp[ k ] = loop[ k ];
 		    }}
 		    tmp.bodyadd = [ {}  // empty line to breathe a bit
-				    , { comment : loopname } ].concat( tmp.bodyadd );
+				    , { comment : loopname } ].concat( tmp.bodyadd  ||  [] );
 		    
 		    spec = {};
 		    spec[ looptype ] = tmp;
@@ -1039,12 +1086,8 @@ var global, exports; // NPM support [github#1]
                 {
 		    if (morph !== ARRAY  &&  morph !== OBJECT)
                         throw new Error( 'Invalid morph value "' + morph + '".' );
-		    
-		    var optional = ARRAY === morph  ?  { keep_current_instance : 1, conserve_array_length : 1 }
-                    :  OBJECT === morph  ?  { keep_current_instance : 1 }
-                    :  null.bug
-                    ;
-		    check_exactly_has_properties( loop, { morph : 1, bodyadd : 1 }, optional );
+
+		    check_exactly_has_properties_mand_opt( loop, get_mandatory_optional( looptype, morph ) );
                 }
 	    }
 	    else
@@ -1053,6 +1096,7 @@ var global, exports; // NPM support [github#1]
 	    }
 	    
 	    // append the step and return a new _ChainSpec instance
+            spec  ||  null.bug;
 	    spec_arr.push( spec );
 	    
 	    var opt = {};
@@ -1107,9 +1151,22 @@ var global, exports; // NPM support [github#1]
                 ,   one_loop  = one_looptype  &&  one[ one_looptype ]
                 ,   one_morph = one_loop  &&  one_loop.morph
 
+                ,   one_is_range = one_looptype === R_LEFT  ||  one_looptype === R_RIGHT
+
+                ,   one_is_left  = one_looptype === L_LEFT  ||  one_looptype === R_LEFT
+                ,   one_is_right = one_looptype === L_RIGHT  ||  one_looptype === R_RIGHT
+
+                ,   one_r_begin   = one_is_range  &&  one_loop.begin
+                ,   one_r_end     = one_is_range  &&  one_loop.end
+                ,   one_r_varname = one_is_range  &&  one_loop.varname
+                ,   one_r_step    = one_is_range  &&  one_loop.step
+                
                 // For an optimization to take place, both `one` and
                 // `next` must have the same looptype.
-                ,  next_loop   = next[ one_looptype ]  
+                ,  next_loop   = next[ one_is_left  ?  L_LEFT
+                                       :  one_is_right  ?  L_RIGHT
+                                       :  one_looptype
+                                     ]  
                 ,  next_morph  = next_loop  &&  next_loop.morph
 
                 ,  merged_spec = null
@@ -1125,9 +1182,9 @@ var global, exports; // NPM support [github#1]
 			one_morph .keep_current_instance  &&
 			next_morph.keep_current_instance
 		    
-		    ,  new_bodyadd = arrify(  one_loop.bodyadd )
-                        .concat( arrify( next_loop.bodyadd ) )
-
+		    ,  new_bodyadd = arrify(  one_loop.bodyadd  ||  [] )
+                        .concat( arrify( next_loop.bodyadd  ||  [] ) )
+                    
 		    ,  new_spec = {}
 		    ,  new_loop = {}
 		    ;
@@ -1140,6 +1197,16 @@ var global, exports; // NPM support [github#1]
 		    if (keep_current_instance)
 			new_loop.keep_current_instance = keep_current_instance;
 
+                    if (one_is_range)
+                    {
+                        new_loop.begin   =  one_r_begin;
+                        new_loop.end     =  one_r_end;
+                        new_loop.varname =  one_r_varname;
+
+                        if (one_r_step != null)
+                            new_loop.step = one_r_step;
+                    }
+
 		    new_loop.bodyadd         = new_bodyadd;
 
 		    merged_spec = new_spec;
@@ -1150,15 +1217,25 @@ var global, exports; // NPM support [github#1]
 		    var new_spec = {}
 		    ,   new_loop = Object.create( next_loop )  // e.g. `beforeloop`, `afterloop`
 
-		    ,   new_bodyadd = arrify( one_loop.bodyadd )
-                        .concat( arrify( next_loop.bodyadd ) )
+		    ,   new_bodyadd = arrify( one_loop.bodyadd  ||  [] )
+                        .concat( arrify( next_loop.bodyadd  ||  [] ) )
 		    ;
 		    new_spec[ one_looptype ] = new_loop;
 
 		    new_loop.beforeloop      = next_loop.beforeloop;
 		    new_loop.bodyadd         = new_bodyadd;
 		    new_loop.afterloop       = next_loop.afterloop;
-		    
+
+                    if (one_is_range)
+                    {
+                        new_loop.begin   =  one_r_begin;
+                        new_loop.end     =  one_r_end;
+                        new_loop.varname =  one_r_varname;
+                        
+                        if (one_r_step != null)
+                            new_loop.step = one_r_step;
+                    }
+                    
 		    merged_spec = new_spec;
                 }
 
@@ -1184,6 +1261,8 @@ var global, exports; // NPM support [github#1]
         ,   loop     = looptype  &&  spec[ looptype ]
         ,   morph    = loop  &&  loop.morph
 
+        ,   loop_is_range = loop  &&  (looptype === R_LEFT  ||  looptype === R_RIGHT)
+
         , new_spec   = spec;
         ;
         if (morph)
@@ -1205,7 +1284,7 @@ var global, exports; // NPM support [github#1]
 		     }
                    ]
 	    
-            :  [ { decl : [ 'out', '{}' ] } ]
+                :  [ { decl : [ 'out', '{}' ] } ]
 	    
 	    ,   afterloop = keep_current_instance
 	    
@@ -1214,7 +1293,7 @@ var global, exports; // NPM support [github#1]
 		:  [ { set : [ 'current', 'out' ] } ]
 	    
 	    ,   new_loop = {}
-	    ,   new_body = arrify( loop.bodyadd ).slice()  // copy
+	    ,   new_body = arrify( loop.bodyadd  ||  [] ).slice()  // copy
 	    
 	    , to_store = 'v'
 	    , tmp = new_body[ new_body.length - 1 ]
@@ -1239,6 +1318,17 @@ var global, exports; // NPM support [github#1]
 	    new_loop.bodyadd     = new_body;
 	    new_loop.afterloop   = afterloop;
 
+            if (loop_is_range)
+            {
+                new_loop.begin   = loop.begin;
+                new_loop.end     = loop.end;
+                new_loop.varname = loop.varname;
+
+                var loop_step = loop.step;
+                if (loop_step != null)
+                    new_loop.step = loop_step;
+            }
+            
 	    new_spec[ looptype ] = new_loop;
         }
         return new_spec;
@@ -1276,13 +1366,33 @@ var global, exports; // NPM support [github#1]
 	    {
                 check_exactly_has_properties( spec, looptype );
 
-                var loop       = spec[ looptype ];
+                var loop       = spec[ looptype ]
                 
-                check_exactly_has_properties( loop, { beforeloop : 1, bodyadd : 1, afterloop : 1 } );
-
-                var is_l_left  = L_LEFT  === looptype
+                ,   is_l_left  = L_LEFT  === looptype
                 ,   is_l_right = L_RIGHT === looptype
                 ,   is_l_in    = L_IN    === looptype
+
+                ,   is_r_left  = R_LEFT  === looptype
+                ,   is_r_right = R_RIGHT === looptype
+                ,   is_range   = is_r_left  ||  is_r_right
+
+                ,   mandatory  = { beforeloop : 1, bodyadd : 1, afterloop : 1 }
+                ,   optional   = {}
+                ;
+                if (is_range)
+                {
+                    mandatory.begin   = 1;
+                    mandatory.end     = 1;
+                    mandatory.varname = 1;
+                    optional .step    = 1;
+                }
+
+                check_exactly_has_properties( loop, mandatory, optional );
+
+                var r_begin    = is_range  &&  loop.begin
+                ,   r_end      = is_range  &&  loop.end
+                ,   r_step     = is_range  &&  loop.step
+                ,   r_varname  = is_range  &&  loop.varname
                 
                 ,   beforeloop = solve_restwrap( arrify( loop.beforeloop ) )
                 ,   bodyadd    = solve_restwrap( arrify( loop.bodyadd ) )
@@ -1301,16 +1411,27 @@ var global, exports; // NPM support [github#1]
                         :  is_l_in     ?  (needs_emptyObj = true
                                            , 'for (var k in current) { if (!(k in _emptyObj)) {'
                                           )
-                        :  null.bug
+
+                        :  is_range  ?  [ 'for (var ' + r_varname + ' = ' + r_begin + '; '
+                                          , r_varname + ' ' + (is_r_left  ?  '<'  :  '>') + ' ' + r_end + '; '
+                                          , r_varname + (r_step == null
+                                                         ?  (is_r_left  ?  '++'  :  '--')
+                                                         :  (is_r_left  ?  '+='  :  '-=') + r_step
+                                                        )
+                                          , ') {'
+                                        ].join( '' )
+                    
+                    :  null.bug
                 );
 
-                code.push( 'var v = current[ k ]' );
+                if (!is_range)
+                    code.push( 'var v = current[ k ]' );
 
                 bodyadd.forEach( push_codestep );
 
                 code.push
                 (
-		    is_l_left  ||  is_l_right  ?  '}'
+		    is_l_left  ||  is_l_right  ||  is_r_left  ||  is_r_right  ?  '}'
                         :  is_l_in  ?  '}}'
                         :  null.bug
                 );
@@ -1371,7 +1492,12 @@ var global, exports; // NPM support [github#1]
         :  []
         ;
     }
-
+    
+    function check_exactly_has_properties_mand_opt( /*object*/o, /*wrapper object: with `mandatory` and `optional`*/mand_opt )
+    {
+        check_exactly_has_properties( o, mand_opt.mandatory, mand_opt.optional );
+    }
+    
     function check_exactly_has_properties( /*object*/o, /*object: mandatory set of properties*/pset, /*?object?*/opt )
     {
         if ('string' === typeof pset)
@@ -1414,8 +1540,35 @@ var global, exports; // NPM support [github#1]
         return L_LEFT  in o  ?  L_LEFT
 	    :  L_RIGHT in o  ?  L_RIGHT
 	    :  L_IN    in o  ?  L_IN
+            :  R_LEFT  in o  ?  R_LEFT
+            :  R_RIGHT in o  ?  R_RIGHT
 	    :  null
         ;
+    }
+
+    function get_mandatory_optional( looptype, morph )
+    {
+        var mandatory, optional;
+        if (looptype === R_LEFT  ||  looptype === R_RIGHT)
+        {
+            ARRAY === morph  ||  null.unsupported;
+            
+            mandatory = { morph : 1, begin : 1, end : 1, varname : 1 };
+            optional  = { step : 1, bodyadd : 1 };
+        }
+        else
+        {
+            looptype === L_LEFT  ||  looptype === L_RIGHT  ||  looptype === L_IN  ||  null.unsupported;
+            
+            mandatory = { morph : 1, bodyadd : 1 };
+            optional  =
+                ARRAY === morph  ?  { keep_current_instance : 1, conserve_array_length : 1 }
+            :  OBJECT === morph  ?  { keep_current_instance : 1 }
+            :  null.bug
+            ;
+        }
+
+        return { mandatory : mandatory, optional : optional };
     }
 
     function mix_published_tfun_methods_into_appfun( chainspec, appfun )
@@ -1482,7 +1635,7 @@ var global, exports; // NPM support [github#1]
         return 'string' === toe
 	    ?  expr
 
-            :  'number' === toe  ||  'boolean' === toe
+            :  'number' === toe  ||  'boolean' === toe  ||  'undefined' === toe
             ?  null.unsupported
         
         // many expression objects
