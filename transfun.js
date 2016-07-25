@@ -45,6 +45,8 @@ var global, exports; // NPM support [github#1]
     ,   ARRAY   = 'array'
     ,   OBJECT  = 'object'
     
+    ,   CURRENT = 'current'
+    
     ,   _emptyObj = {}
     ;
     
@@ -843,6 +845,7 @@ var global, exports; // NPM support [github#1]
                 
                 ,   spec_arr_optim          // after merging compatible `morph` loops + one extra loop
                 ,   spec_arr_optim_solved   // after expliciting the last `store` step of `morph` loops
+                ,   spec_arr_optim_multiarg // after optimizing some multiple arguments use cases
                 
                 ,   code_par_arr   // actual implementation: parameters (array of string: parameter names, `n_extern` extern names, if any, + `current`)
                 ,   code_body      // actual implementation: body (string)
@@ -885,12 +888,13 @@ var global, exports; // NPM support [github#1]
                         
                         code_par_arr    = chainspec.externname_arr.concat( [ 'current' ] );
                         
-                        spec_arr_optim        = optimize_spec_arr_merging_morphs( chainspec.spec_arr );
-                        spec_arr_optim_solved = explicit_and_optimize_morph_store( spec_arr_optim );
+                        spec_arr_optim          = optimize_spec_arr_merging_morphs( chainspec.spec_arr );
+                        spec_arr_optim_solved   = explicit_and_optimize_morph_store( spec_arr_optim );
 
-                        code_body       = generate_code_body( spec_arr_optim_solved );
+                        var gcb_o = optimize_some_multiarg_cases( code_par_arr, spec_arr_optim_solved );
 
-                        impl            = new Function( code_par_arr, code_body );
+                        code_body = generate_code_body( gcb_o.spec_arr );
+                        impl      = new Function( gcb_o.code_par_arr, code_body );
 
                         // In most cases no wrapper because no
                         // externs. Performance in mind. Okay because
@@ -907,6 +911,7 @@ var global, exports; // NPM support [github#1]
 			    , has_extern : has_extern
 			    , extern_arr : extern_arr
 			    , chainspec : chainspec
+                            , gcb_o     : gcb_o
                         };
 		    }
                 }
@@ -1334,6 +1339,103 @@ var global, exports; // NPM support [github#1]
         return new_spec;
     }
 
+    function optimize_some_multiarg_cases( code_par_arr, spec_arr )
+    {
+        if (window.xxx_sparse_pick)
+            'xxx';
+
+        var c = code_par_arr.slice( -1 )[ 0 ];
+        if (c === CURRENT)
+        {
+            // When (2) multiple arguments are used, and read at the very
+            // beginning, then can implement a simpler "reading" by adding
+            // the parameter names to `code_par_arr`
+            // 
+            // Example use case:
+            //
+            // var sparse_pick = tfun.arg( 'arr,begin,end' )
+            //   .rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' );
+            var s0 = spec_arr[ 0 ];
+            if (s0.stepadd)
+            {
+                check_exactly_has_properties( s0, { stepadd : 1 } );
+
+                var iarg_all = s0.stepadd instanceof Array
+                ,   name_arr = iarg_all  &&  s0.stepadd.map( osmc_check_and_extract_one )
+                ;
+                if (iarg_all  &&  name_arr)
+                {
+                    var rest_spec_arr = spec_arr.slice( 1 );
+                    
+                    spec_arr = (
+                        word_is_used( CURRENT, rest_spec_arr )
+                            ?  [
+                                { stepadd : { decl : [ c, name_arr[ 0 ] ] } }
+                            ]
+                        :  []
+                    )
+                        .concat( rest_spec_arr )
+                    ;
+                    code_par_arr = code_par_arr.slice( 0, -1 ).concat( name_arr );
+                }
+            }
+        }
+        
+        return { code_par_arr : code_par_arr, spec_arr : spec_arr };
+
+        // --- Details
+
+        function osmc_check_and_extract_one( one, ind )
+        {
+            var decl;
+            if (iarg_all  &&  (decl = one.decl))
+            {
+                check_exactly_has_properties( one, { decl : 1 } );
+
+                var name = decl[ 0 ];
+                (decl.length === 2  &&  name  ||  null).substring.call.a;
+
+                var spec   = decl[ 1 ]
+                ,   get_at = spec.get_at
+                ;
+                if (get_at)
+                {
+                    check_exactly_has_properties( get_at, { '0' : 1, '1' : 1 } );
+                    if (get_at[ 0 ] === 'arguments'  &&  get_at[ 1 ] === '' + ind)
+                    {
+                        // Success at this step, too
+                        return name;
+                    }
+                }
+            }
+
+            // ...in all other cases, fail:
+            iarg_all = false;
+        }
+    }
+
+    function word_is_not_used( /*string*/word, /*object | array | string*/spec )
+    {
+        return !word_is_used( word, spec );
+    }
+
+    function word_is_used( /*string*/word, /*object | array | string*/spec )
+    {
+        if ('string' === typeof spec)
+            return word === spec;
+
+        if ('object' === typeof spec)
+        {
+            for (var k in spec) { if (!(k in _emptyObj)) {   // More flexible than hasOwnProperty
+
+                if (word === k  ||  word_is_used( word, spec[ k ] ))
+                    return true;
+            }}
+        }
+
+        return false;
+    }
+    
     function generate_code_body( /*array*/spec_arr_optim_solved )
     {
         var code = []
@@ -1354,6 +1456,19 @@ var global, exports; // NPM support [github#1]
         {
 	    code.push( 'return current;' );
         }
+
+        if (window.xxx_sparse_pick)
+            'xxx';
+        
+        // Detect a case where a first line with a `current` declaration is useless
+        if (/^\s*var\s+current\s*=\s*[a-zA-Z]+\s*(?:;\s*)?$/.test( code[ 0 ] )
+            &&
+            !/\bcurrent\b/.test( code.slice( 1 ).join( '' ) )
+           )
+        {
+            code.shift();
+        }
+
         
         return code.map( indent_and_terminate_code_line, { indent : 0 } ).join( '\n' );
 

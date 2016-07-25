@@ -539,31 +539,31 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
             
             gEBI( 'gen-code-expl-code' ).innerHTML = f(
                 [
-                    "tfun.sorted('a-b').getBodyCode()"
-                    , "tfun.sorted( 'a[0]<b[0] ? -1 : +1' ).getBodyCode()"
-                    , "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' ).getBodyCode()"
+                    "tfun.sorted('a-b')"
+                    , "tfun.sorted( 'a[0]<b[0] ? -1 : +1' )"
+                    , "tfun.map( '.p' ).filter( '!=null' ).redinit( '0', '+' )"
 
-                    , "tfun.arg('a,b,c').next('a+b*c').getBodyCode()"
+                    , "tfun.arg('a,b,c').next('a+b*c')"
 
-                    , "tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' ).getBodyCode()"
+                    , "tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' )"
                                         
-                    , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"').getBodyCode()"
-                    , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"').getBodyCode()"
+                    , "tfun.split( '\"&\"' ).filter( '' ).map( '.split(\"=\")').filter( 'v[0]!=\"xyz\"' ).map( '.join(\"=\")' ).join( '\"&\"')"
+                    , "tfun.split( '\"&\"' ).filter( '.split(\"=\")[0]!=\"xyz\"' ).join( '\"&\"')"
 
-                    , "tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"').getBodyCode()"
+                    , "tfun.split( '\"&\"' ).filter( '!/^xyz=/.test(v)' ).join( '\"&\"')"
 
-                    , "tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' ).getBodyCode()"
-                    , "tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' ).getBodyCode()"
+                    , "tfun.map( 'Math.log(v)' ).sum().next( 'Math.exp(current/n)' )"
+                    , "tfun.decl( '_count', '0' ).filter( '!=null' ).map( '.age' ).redinit( '0', '_count++, out+v' ).next( '/_count' )"
 
 
                     , "tval( 'abcd\\nefghijkl\\nmnop' )( tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ) )"
-                    , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ).getBodyCode()"                   
+                    , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' )"                   
 
                     , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )\n  ( tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ) )\n, null\n, 2 )"
-                    , "tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ).getBodyCode()"
+                    , "tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' )"
                     
                     , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )( tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b }' ) ), null, 2)"
-                    , "tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b }' ).getBodyCode()"
+                    , "tfun.reduce( '{ a : out.a + v.a, b : out.b + v.b }' )"
                     
                     , "JSON.stringify(  [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ].reduce( function (a,b) { return tval.call( a, b )( tfun.mapIn( 'v+this[k]' ) ); } ), null, 2)"
                     , "tfun.mapIn( 'v+this[k]' ).getBodyCode() // xxx think about zip-like stuff and/or loop-in-loop... or not"
@@ -582,10 +582,10 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
                     , "'abc=123&xyz=456&def=qq'.replace( /(?:^|&)xyz=[^&]*/g, '' )"
 
 
-                    , "tfun.split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' ).getBodyCode()"
-                    , "tfun.split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' ).getBodyCode()"
-                    , "tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : 'current[k] = \"-\"' } ).join( '\"\"' ).getBodyCode()"
-                    , "tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : { set_at : [ 'current', 'k', '\"-\"' ] } } ).join( '\"\"' ).getBodyCode()"
+                    , "tfun.split( '\"\"' ).map( 'v.match(/\\\\w/) ? v : \"-\"' ).join( '\"\"' )"
+                    , "tfun.split( '\"\"' ).each( 'if (!/\\\\w/.test(v)) current[k] = \"-\"' ).join( '\"\"' )"
+                    , "tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : 'current[k] = \"-\"' } ).join( '\"\"' )"
+                    , "tfun.split( '\"\"' ).each( { 'if' : '!/\\\\w/.test(v)', then : { set_at : [ 'current', 'k', '\"-\"' ] } } ).join( '\"\"' )"
 
                 ]
             );
