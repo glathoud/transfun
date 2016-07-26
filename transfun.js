@@ -463,6 +463,7 @@ var global, exports; // NPM support [github#1]
         , specgen : function ( begin, end ) {
             return { rangeleftright : {
                 morph     : 'array'
+                , conserve_array_length : true
                 , begin   : begin
                 , end     : end
                 , varname : 'v'
@@ -1267,7 +1268,12 @@ var global, exports; // NPM support [github#1]
         ,   morph    = loop  &&  loop.morph
 
         ,   loop_is_range = loop  &&  (looptype === R_LEFT  ||  looptype === R_RIGHT)
-
+        ,   r_is_left = loop_is_range  &&  looptype === R_LEFT
+        ,   r_begin   = loop_is_range  &&  loop.begin
+        ,   r_end     = loop_is_range  &&  loop.end
+        ,   r_step    = loop_is_range  &&  loop.step
+        ,   r_varname = loop_is_range  &&  loop.varname
+        
         , new_spec   = spec;
         ;
         if (morph)
@@ -1311,12 +1317,19 @@ var global, exports; // NPM support [github#1]
 	    }
             if (!keep_current_instance)
             {
-	        new_body.push( morph === OBJECT  ||  conserve_array_length
-                               
-                               ?  { set_at : [ 'out', 'k', to_store ] }
-                               
-                               :  { push : [ 'out', to_store ] }
-                             );
+	        new_body.push(
+                    morph === OBJECT  ||  conserve_array_length
+                    
+                        ?  { set_at : [
+
+                            'out'
+
+                            , 'k'
+                            
+                            , to_store ] }
+                    
+                    :  { push : [ 'out', to_store ] }
+                );
             }
 
 	    new_loop.beforeloop  = beforeloop;
@@ -1341,9 +1354,6 @@ var global, exports; // NPM support [github#1]
 
     function optimize_some_multiarg_cases( code_par_arr, spec_arr )
     {
-        if (window.xxx_sparse_pick)
-            'xxx';
-
         var c = code_par_arr.slice( -1 )[ 0 ];
         if (c === CURRENT)
         {
@@ -1506,7 +1516,7 @@ var global, exports; // NPM support [github#1]
 
                 var r_begin    = is_range  &&  loop.begin
                 ,   r_end      = is_range  &&  loop.end
-                ,   r_step     = is_range  &&  loop.step
+                ,   r_step     = is_range  &&  loop.step  ||  1
                 ,   r_varname  = is_range  &&  loop.varname
                 
                 ,   beforeloop = solve_restwrap( arrify( loop.beforeloop ) )
@@ -1515,7 +1525,20 @@ var global, exports; // NPM support [github#1]
                 ;
 
                 if (is_l_left  ||  is_l_right)
+                {
 		    code.push( 'var n = current.length' );
+                }
+                else if (is_range)
+                {
+                    var tmp = is_r_left   ?  r_end + '-' + r_begin
+                        :     is_r_right  ?  r_begin + '-' + r_end
+                        :     null.bug
+                    ;
+                    code.push( 'var n = ' + (
+                        r_step === '1'  ||  r_step === 1  ?  tmp
+                            :  '((' + tmp + ') / ' + r_step + ') | 0'
+                    ));
+                }
                 
                 beforeloop.forEach( push_codestep );
 
@@ -1527,12 +1550,12 @@ var global, exports; // NPM support [github#1]
                                            , 'for (var k in current) { if (!(k in _emptyObj)) {'
                                           )
 
-                        :  is_range  ?  [ 'for (var ' + r_varname + ' = ' + r_begin + '; '
+                        :  is_range  ?  [ 'for (var ' + r_varname + ' = ' + r_begin + ', k = 0; '
                                           , r_varname + ' ' + (is_r_left  ?  '<'  :  '>') + ' ' + r_end + '; '
                                           , r_varname + (r_step == null
                                                          ?  (is_r_left  ?  '++'  :  '--')
                                                          :  (is_r_left  ?  '+='  :  '-=') + r_step
-                                                        )
+                                                        ) + ', k++'
                                           , ') {'
                                         ].join( '' )
                     
@@ -1669,7 +1692,7 @@ var global, exports; // NPM support [github#1]
             ARRAY === morph  ||  null.unsupported;
             
             mandatory = { morph : 1, begin : 1, end : 1, varname : 1 };
-            optional  = { step : 1, bodyadd : 1 };
+            optional  = { step : 1, bodyadd : 1, conserve_array_length : 1 };
         }
         else
         {
