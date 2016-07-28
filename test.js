@@ -60,6 +60,18 @@ function test()
     oEquals( [ 3, 4, 5, 6 ], tfun.rangeOf( '3', '7' )() )  ||  null.bug;
     oEquals( [ 3, 4, 5, 6 ], tfun.range()( 3, 7 ) )  ||  null.bug;
 
+    oEquals( [ 7, 6, 5, 4 ], tfun.rangeRightOf( '7', '3' )() )  ||  null.bug;
+    oEquals( [ 7, 6, 5, 4 ], tfun.rangeRight()( 7, 3 ) )  ||  null.bug;
+
+    oEquals( [ 3, 5, 7, 9, 11 ], tfun.rangeStepOf( '3', '12', '2' )() )  ||  null.bug;
+    oEquals( [ 3, 5, 7, 9, 11 ], tfun.rangeStep()( 3, 12, 2 ) )  ||  null.bug;
+
+    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStepRightOf( '4', '-8', '3' )() )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStepRight()( 4, -8, 3 ) )  ||  null.bug;
+
+    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRightOf( '4', '-9', '3' )() )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRight()( 4, -9, 3 ) )  ||  null.bug;
+    
     // Ranges: advanced use: pick a part of a sparse array
 
     var sparse_arr = [];

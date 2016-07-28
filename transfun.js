@@ -471,7 +471,53 @@ var global, exports; // NPM support [github#1]
         }
     });   
 
-    tpub( 'range', tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' ) );
+    tpub( 'rangeRightOf', {
+        arity : 2
+        , specgen : function ( begin, end ) {
+            return { rangerightleft : {
+                morph     : 'array'
+                , conserve_array_length : true
+                , begin   : begin
+                , end     : end
+                , varname : 'v'
+            }};
+        }
+    });   
+
+
+    tpub( 'rangeStepOf', {
+        arity : 3
+        , specgen : function ( begin, end, step ) {
+            return { rangeleftright : {
+                morph     : 'array'
+                , conserve_array_length : true
+                , begin   : begin
+                , end     : end
+                , step    : step
+                , varname : 'v'
+            }};
+        }
+    });   
+
+    tpub( 'rangeStepRightOf', {
+        arity : 3
+        , specgen : function ( begin, end, step ) {
+            return { rangerightleft : {
+                morph     : 'array'
+                , conserve_array_length : true
+                , begin   : begin
+                , end     : end
+                , step    : step
+                , varname : 'v'
+            }};
+        }
+    });   
+
+    tpub( 'range',      tfun.arg( 'begin,end' )     .rangeOf     ( 'begin', 'end' ) );
+    tpub( 'rangeRight', tfun.arg( 'begin,end' )     .rangeRightOf( 'begin', 'end' ) );
+
+    tpub( 'rangeStep',      tfun.arg( 'begin,end,step' ).rangeStepOf     ( 'begin', 'end', 'step' ) );
+    tpub( 'rangeStepRight', tfun.arg( 'begin,end,step' ).rangeStepRightOf( 'begin', 'end', 'step' ) );
     
     // Others
     
@@ -1530,9 +1576,11 @@ var global, exports; // NPM support [github#1]
                 }
                 else if (is_range)
                 {
-                    var tmp = is_r_left   ?  r_end + '-' + r_begin
-                        :     is_r_right  ?  r_begin + '-' + r_end
-                        :     null.bug
+                    is_r_right  ||  is_r_left  ||  null.bug;
+                    
+                    var tmp = is_r_left
+                        ?  r_end + '-(' + r_begin + ')'
+                        :  r_begin + '-(' + r_end + ')'
                     ;
                     code.push( 'var n = ' + (
                         r_step === '1'  ||  r_step === 1  ?  tmp
