@@ -60,6 +60,13 @@ dd { margin-bottom: 1em; }
 
     ,   c_o2arr_conv    = hh.code( 'o2values, o2keys, keys2o' ) + ' and ' + hh.code( 'o2kv, kv2o' )
 
+    ,   c_current       = hh.code( 'current' )
+    ,   c_arg           = hh.code( 'arg' )
+
+    ,   c_range_direct  = hh.code( 'range, rangeStep, rangeRight, rangeRightStep' )
+    ,   c_range_of      = hh.code( 'rangeOf, rangeStepOf, rangeRightOf, rangeRightStepOf' )
+    ,   c_range         = c_range_direct + ' &amp;&nbsp;parameterized&nbsp;variants ' + c_range_of
+
     ,   c_next      = hh.code( 'next' )
 
     ,   c_parallel  = hh.code( 'parallel.js' )
@@ -533,6 +540,20 @@ dd { margin-bottom: 1em; }
                     'convert objects to arrays and vice-versa (examples further below).' 
                 ]
             )
+            
+            , dl_describe(
+                c_arg
+                , [
+                    'permits to define multiple arguments, instead of the standard single argument ' + c_current + '.'
+                ]
+            )
+
+            , dl_describe(
+                c_range
+                , [
+                    'permit to loop on numerical ranges.'
+                ]
+            )
         ])
 
         , highlight([
@@ -687,6 +708,81 @@ dd { margin-bottom: 1em; }
             )
              
         ])
+
+        , highlight( 'Multiple arguments:' )
+
+        , hh.dl([
+            dl_describe(
+                hh.code( 'arg' )
+                , [
+                    'defines multiple arguments:'
+                    , js_pre_code([                       
+                        "tfun.arg( 'a,b,c' ).next( 'a+b*c' )"
+                        , "// function (a,b,c) { return a+b*c; }"
+                    ])
+                ]
+            )
+        ])
+
+        , highlight( 'Ranges:' )
+
+        , hh.dl([
+            dl_describe(
+                c_range_direct
+                , [
+                    'define numerical ranges:'
+                    , js_pre_code([
+                        "tfun.range()( 3, 7 )             // " + JSON.stringify( tfun.range()( 3, 7 ) )
+                        , "tfun.rangeRight()( 7, 3 )        // " + JSON.stringify( tfun.rangeRight()( 7, 3 ) )
+                        , ""
+                        , "tfun.rangeStep()( 3, 7, 2 )      // " + JSON.stringify( tfun.rangeStep()( 3, 7, 2 ) )
+                        , "tfun.rangeStepRight()( 7, 3, 2 ) // " + JSON.stringify( tfun.rangeStepRight()( 7, 3, 2 ) )
+                    ])
+                ]
+            )
+
+            , dl_describe(
+                c_range_of
+                , [
+                    'define parameterized numerical ranges. '
+                    , 'Example with constants:'
+                    , js_pre_code([
+                        "tfun.rangeOf( '3', '7' )()  // [" + tfun.rangeOf( '3', '7' )() + "]"
+                    ])
+                    , 'Example with variables:'
+                    , js_pre_code([
+                        "var appfun = tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' )"
+                        , ""
+                        , "// Generated code:"
+                        , "" + tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' )
+                        , ""
+                        , '// Example use:'
+                        , "appfun( 3, 7 ) // " + JSON.stringify( tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' )( 3, 7 ) )
+                    ])
+                    , 'similarly:'
+                    , js_pre_code([
+                        "tfun.rangeRightOf( 'begin', 'end' )"
+                        , ""
+                        , "tfun.rangeStepOf( 'begin', 'end', 'step' )"
+                        , "tfun.rangeStepRightOf( 'begin', 'end', 'step' )"
+                    ])
+                    , 'Ranges can be combined with other transformations.'
+                    , hh.p( 'Example: pick a subset of a sparse array and modify it:' )
+                    , js_pre_code([
+                        "var appfun = tfun.arg( 'arr,begin,end' )"
+                        , "  .range( 'begin', 'end')"
+                        , "  .filter( 'v in arr')"
+                        , "  .map( 'arr[v]-k')"
+                        , ""
+                        , "// Generated code:"
+                        , "" + tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[v]-k' )
+                    ])
+                ]
+            )
+            
+            
+        ])
+        
 
         , highlight( 'Published transformations and namespaces' )
 

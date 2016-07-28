@@ -1526,7 +1526,7 @@ var global, exports; // NPM support [github#1]
         }
 
         
-        return code.map( indent_and_terminate_code_line, { indent : 0 } ).join( '\n' );
+        return code.map( indent_and_terminate_code_line, { indent : 1 } ).join( '\n' );
 
         // --- Details
 
