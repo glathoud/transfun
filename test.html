@@ -562,6 +562,11 @@ Internet Explorer 11:  Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .
 
                     , "tval( 'abcd\\nefghijkl\\nmnop' )( tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' ) )"
                     , "tfun.split( '\"\\\\n\"' ).redinit( '\"\"', 'out.length > v.length ? out : v' ).next( '.replace( /[\\\\s\\\\S]/g, \"*\" )' )"                   
+                                        
+                    , "tfun.declIn({target  : 'current[current.length-1]'\n             , delta : '0'\n           })\n    .filterRight( '(delta = v - target)' +\n                  ',(-1 < delta && delta <= 0  ?  (target--,true)  :  false)'\n                )"
+
+                    , "tfun.declIn({target  : 'current[current.length-1]'\n             , delta : '0'\n           })\n    .filterRight( '(delta = v - target)' +\n                  ',(-1 < delta && delta <= 0  ?  (target--,true)  :  false)'\n                )\n    .breakWhenRight( 'delta <= -1' )  // optimization assuming sorted array"
+
 
                     , "JSON.stringify( tval( [ { a: 1, b : 2 }, { a: 500, b : 600 }, { a : 30, b : 40 } ] )\n  ( tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' ) )\n, null\n, 2 )"
                     , "tfun.declIn( { _a : '0', _b : '0' } ).each( '_a += v.a, _b += v.b' ).next( '{ a : _a, b : _b }' )"

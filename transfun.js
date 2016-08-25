@@ -287,6 +287,13 @@ var global, exports; // NPM support [github#1]
         }
     });
 
+    tpub( 'breakWhenRight', {
+        arity     : 1
+        , specgen : function ( /*string | externcall object*/test ) {
+            return { looprightleft : { bodyadd : { 'if' : tfun.fullexpr( test, 'v', 'k' ), 'then' : 'break' } }};
+        }
+    });
+
     tpub( 'takeWhile', {
         arity : 1
         , specgen : function ( /* string | externcall object*/test ) {
