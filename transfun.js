@@ -1132,7 +1132,7 @@ var global, exports; // NPM support [github#1]
                 ;
                 if (!morph)
                 {
-		    check_exactly_has_properties( loop, { beforeloop : 1, bodyadd : 1, afterloop : 1 } );
+		    check_exactly_has_properties_mand_opt( loop, get_mandatory_optional( looptype, morph ) );
                 }
                 else
                 {
@@ -1547,27 +1547,20 @@ var global, exports; // NPM support [github#1]
                 ,   is_r_right = R_RIGHT === looptype
                 ,   is_range   = is_r_left  ||  is_r_right
 
-                ,   mandatory  = { beforeloop : 1, bodyadd : 1, afterloop : 1 }
-                ,   optional   = {}
+                ,   mand_opt   = get_mandatory_optional( looptype, is_range  ?  ARRAY  :  spec.morph )
                 ;
-                if (is_range)
-                {
-                    mandatory.begin   = 1;
-                    mandatory.end     = 1;
-                    mandatory.varname = 1;
-                    optional .step    = 1;
-                }
-
-                check_exactly_has_properties( loop, mandatory, optional );
-
+                delete mand_opt.mandatory.morph;
+                
+                check_exactly_has_properties_mand_opt( loop, mand_opt );
+                
                 var r_begin    = is_range  &&  loop.begin
                 ,   r_end      = is_range  &&  loop.end
                 ,   r_step     = is_range  &&  loop.step  ||  1
                 ,   r_varname  = is_range  &&  loop.varname
                 
-                ,   beforeloop = solve_restwrap( arrify( loop.beforeloop ) )
+                ,   beforeloop = solve_restwrap( arrify( loop.beforeloop  ||  [] ) )
                 ,   bodyadd    = solve_restwrap( arrify( loop.bodyadd ) )
-                ,   afterloop  = solve_restwrap( arrify( loop.afterloop ) )
+                ,   afterloop  = solve_restwrap( arrify( loop.afterloop  ||  [] ) )
                 ;
 
                 if (is_l_left  ||  is_l_right)
@@ -1740,17 +1733,19 @@ var global, exports; // NPM support [github#1]
             ARRAY === morph  ||  null.unsupported;
             
             mandatory = { morph : 1, begin : 1, end : 1, varname : 1 };
-            optional  = { step : 1, bodyadd : 1, conserve_array_length : 1 };
+            optional  = { step : 1, bodyadd : 1, conserve_array_length : 1,
+                          beforeloop : 1, afterloop : 1
+                        };
         }
         else
         {
             looptype === L_LEFT  ||  looptype === L_RIGHT  ||  looptype === L_IN  ||  null.unsupported;
             
-            mandatory = { morph : 1, bodyadd : 1 };
+            mandatory = morph  ?  { morph : 1, bodyadd : 1 }  :  { bodyadd : 1 };
             optional  =
                 ARRAY === morph  ?  { keep_current_instance : 1, conserve_array_length : 1 }
             :  OBJECT === morph  ?  { keep_current_instance : 1 }
-            :  null.bug
+            :  { beforeloop : 1, afterloop : 1 }
             ;
         }
 
