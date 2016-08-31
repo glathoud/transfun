@@ -249,7 +249,7 @@ var global, exports; // NPM support [github#1]
             return { loopleftright : {
                 morph                   : 'array'
 		, keep_current_instance : true
-		, bodyadd               : tfun.statement( action, 'current', 'v', 'k' )
+		, bodyadd               : tfun.statement( action, 'v', 'k', 'current' )
             }};
         }
 	
@@ -261,7 +261,7 @@ var global, exports; // NPM support [github#1]
             return { looprightleft : {
                 morph                   : 'array'
 		, keep_current_instance : true
-		, bodyadd               : tfun.statement( action, 'current', 'v', 'k' )
+		, bodyadd               : tfun.statement( action, 'v', 'k', 'current' )
             }};
         }
 
@@ -273,7 +273,7 @@ var global, exports; // NPM support [github#1]
             return { loopin : {
                 morph                   : 'object'
 		, keep_current_instance : true
-		, bodyadd               : tfun.statement( action, 'current', 'v', 'k' )
+		, bodyadd               : tfun.statement( action, 'v', 'k', 'current' )
             }};
         }
 

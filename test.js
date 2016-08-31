@@ -339,7 +339,17 @@ function test()
     ;
     1e-10 > Math.abs( v_out - tval( obj_in )( tfun.decl( 'out', '1' ).eachIn( 'out*=v' ).next( 'out' )));
 
-    //
+    // `tfun.each` with function
+
+    var arr_in_out = [ 1, 2, 3, 4, 5 ];
+    tval( arr_in_out )( tfun.each( (v,k,arr) => arr[ k ] = v + k * 100 + arr.length * 10000 ) );
+    oEquals( arr_in_out, [50001, 50102, 50203, 50304, 50405] );
+
+    // `tfun.each` with code string
+
+    var arr_in_out2 = [ 1, 2, 3, 4, 5 ];
+    tval( arr_in_out2 )( tfun.each( 'current[ k ] = v + k * 100 + current.length * 10000' ) );
+    oEquals( arr_in_out2, [50001, 50102, 50203, 50304, 50405] );
 
     "********" === tval( 'abcd\nefghijkl\nmnop' )( tfun.split( '"\\n"' ).redinit( '""', 'out.length > v.length ? out : v' ).next( '.replace( /[\\s\\S]/g, "*" )' ) )  ||  null.bug;
     
