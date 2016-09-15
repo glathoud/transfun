@@ -88,6 +88,19 @@ function test()
 
     var sparse_pick = tfun.arg( 'arr,begin,end' ).rangeOf( 'begin', 'end' ).filter( 'v in arr' ).map( 'arr[ v ]' );
     oEquals( [ 'd', 'e', 'f', 'g' ], sparse_pick( sparse_arr, 4, 12 ) );
+
+    // Ranges (actually "several args" use case): make sure works
+    // properly with function arguments as well
+
+    var tata = tfun.range().map( '*2' )
+    ,   toto = tfun.range().map( x => x*2 )
+    , expected = [ 0, 2, 4, 6, 8 ]
+    ;
+    oEquals( expected, tata( 0, 5 ) )  ||  null.bug;
+    oEquals( expected, toto( 0, 5 ) )  ||  null.bug;
+    // Also make sure tval transmits both arguments
+    oEquals( expected, tval( 0, 5 )( tata ) )  ||  null.bug;
+    oEquals( expected, tval( 0, 5 )( toto ) )  ||  null.bug;
     
     // Using the publicly declared `sum`.
     

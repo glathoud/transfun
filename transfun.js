@@ -907,11 +907,6 @@ var global, exports; // NPM support [github#1]
                 ,   impl           // actual implementation (function)
                 ;
 
-                function extern_impl_wrapper( current )
-                {
-                    return impl.apply( this, extern_arr.concat( [ current ] ) );
-                }
-                
                 function appfun_getBodyCode()
                 {
 		    ensure_appimpl();
@@ -953,7 +948,13 @@ var global, exports; // NPM support [github#1]
                         // In most cases no wrapper because no
                         // externs. Performance in mind. Okay because
                         // of cache [github#2].
-                        appfun = has_extern  ?  extern_impl_wrapper  :  impl;
+                        appfun = has_extern
+                            ?  (gcb_o.code_par_arr.length - chainspec.externname_arr.length > 1  // optimization for that case
+                                ?  extern_impl_wrapper_many_args
+                                :  extern_impl_wrapper_one_arg 
+                               )
+                        :  impl
+                        ;
                         
                         // For debugging
                         appfun._tf_dbg = {
@@ -968,6 +969,16 @@ var global, exports; // NPM support [github#1]
                             , gcb_o     : gcb_o
                         };
 		    }
+
+                    function extern_impl_wrapper_one_arg( current )
+                    {
+                        return impl.apply( this, extern_arr.concat( [ current ] ) );
+                    }
+
+                    function extern_impl_wrapper_many_args( /* ...several arguments... */ )
+                    {
+                        return impl.apply( this, extern_arr.concat( Array.prototype.slice.call( arguments ) ) );
+                    }
                 }
                 
 	        // function transfun
@@ -1520,9 +1531,6 @@ var global, exports; // NPM support [github#1]
 	    code.push( 'return current;' );
         }
 
-        if (window.xxx_sparse_pick)
-            'xxx';
-        
         // Detect a case where a first line with a `current` declaration is useless
         if (/^\s*var\s+current\s*=\s*[a-zA-Z]+\s*(?:;\s*)?$/.test( code[ 0 ] )
             &&
