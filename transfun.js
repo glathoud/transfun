@@ -1095,7 +1095,10 @@ var global, exports; // NPM support [github#1]
 		    {
                         // extern function
                         var e_i    = e_arr.length
-                        ,   e_name = '__extern$' + e_i + (one.name  ?  '_' + one.name : '' ) + '__'
+                        ,   e_name = ( 
+                            '__extern$' + e_i + (one.name  ?  '_' + one.name : '' ) + '__'
+                        )
+                            .replace( /\W/g, '_' )
                         ;
                         e_arr .push( one );
                         en_arr.push( e_name );
