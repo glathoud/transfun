@@ -478,20 +478,6 @@ var global, exports; // NPM support [github#1]
         }
     });   
 
-    tpub( 'rangeRightOf', {
-        arity : 2
-        , specgen : function ( begin, end ) {
-            return { rangerightleft : {
-                morph     : 'array'
-                , conserve_array_length : true
-                , begin   : begin
-                , end     : end
-                , varname : 'v'
-            }};
-        }
-    });   
-
-
     tpub( 'rangeStepOf', {
         arity : 3
         , specgen : function ( begin, end, step ) {
@@ -506,25 +492,9 @@ var global, exports; // NPM support [github#1]
         }
     });   
 
-    tpub( 'rangeStepRightOf', {
-        arity : 3
-        , specgen : function ( begin, end, step ) {
-            return { rangerightleft : {
-                morph     : 'array'
-                , conserve_array_length : true
-                , begin   : begin
-                , end     : end
-                , step    : step
-                , varname : 'v'
-            }};
-        }
-    });   
+    tpub( 'range',      tfun.arg( 'begin,end' )     .rangeOf    ( 'begin', 'end' ) );
 
-    tpub( 'range',      tfun.arg( 'begin,end' )     .rangeOf     ( 'begin', 'end' ) );
-    tpub( 'rangeRight', tfun.arg( 'begin,end' )     .rangeRightOf( 'begin', 'end' ) );
-
-    tpub( 'rangeStep',      tfun.arg( 'begin,end,step' ).rangeStepOf     ( 'begin', 'end', 'step' ) );
-    tpub( 'rangeStepRight', tfun.arg( 'begin,end,step' ).rangeStepRightOf( 'begin', 'end', 'step' ) );
+    tpub( 'rangeStep',  tfun.arg( 'begin,end,step' ).rangeStepOf( 'begin', 'end', 'step' ) );
     
     // Others
     
@@ -1596,11 +1566,12 @@ var global, exports; // NPM support [github#1]
                     code.push( 'var n = ' +
                                (
                                    r_step === '1'  ||  r_step === 1  ?  tmp
-                                       :  '1 + (((' + tmp + ' - 1) / ' + r_step + ') | 0)'
+                                       :  r_step === '-1'  ||  r_step === -1  ?  '-(' + tmp + ')'
+                                       :  'Math.ceil( 1e-10 * Math.round( 1e10 * (' + tmp + ') / (' + r_step + ') ))'
                                ) 
                              );
                 }
-                
+
                 beforeloop.forEach( push_codestep );
 
                 code.push

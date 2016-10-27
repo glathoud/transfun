@@ -55,39 +55,69 @@ function test()
     (1+3+10+20)/4 === mean( [ 1, 3, 10, 20 ] )  ||  null.bug;
     1e-10 > Math.abs( Math.pow(1*3*5*11*17,1/5) - geommean( [ 1, 3, 5, 11, 17 ] ))  ||  null.bug;
 
+    function cut_eps( x )
+    {
+        return Math.round( 1e10 * x ) / 1e10;  // and not `* 1e-10` :)
+    }
+    
     // Ranges
 
+    oEquals( [ 1, 2, 3, 4 ], tfun.range()( 1, 5 )  )  ||  null.bug;
+    oEquals( [ 1, 4 ], tfun.rangeStep()( 1, 5, 3 )  )  ||  null.bug;
+    oEquals( [ 1, 4, 7 ], tfun.rangeStep()( 1, 10, 3 )  )  ||  null.bug;
+    oEquals( [ 1, 4, 7, 10 ], tfun.rangeStep()( 1, 11, 3 )  )  ||  null.bug;
+    oEquals( [ 1.2, 3.9, 6.6 ], tfun.rangeStep()( 1.2, 9.1, 2.7 ).map( cut_eps )  )  ||  null.bug;
+    oEquals( [ 1.2, 3.9, 6.6 ], tfun.rangeStep()( 1.2, 9.3, 2.7 ).map( cut_eps )  )  ||  null.bug;
+    oEquals( [ 1.2, 3.9, 6.6, 9.3 ], tfun.rangeStep()( 1.2, 9.31, 2.7 ).map( cut_eps )  )  ||  null.bug;
+    
     oEquals( [ 3, 4, 5, 6 ], tfun.rangeOf( '3', '7' )() )  ||  null.bug;
     oEquals( [ 3, 4, 5, 6 ], tfun.range()( 3, 7 ) )  ||  null.bug;
 
-    oEquals( [ 7, 6, 5, 4 ], tfun.rangeRightOf( '7', '3' )() )  ||  null.bug;
-    oEquals( [ 7, 6, 5, 4 ], tfun.rangeRight()( 7, 3 ) )  ||  null.bug;
+    oEquals( [ 7, 6, 5, 4 ], tfun.rangeStepOf( '7', '3', '-1' )() )  ||  null.bug;
+    oEquals( [ 7, 6, 5, 4 ], tfun.rangeStep()( 7, 3, -1 ) )  ||  null.bug;
 
     oEquals( [ 3, 5, 7, 9, 11 ], tfun.rangeStepOf( '3', '12', '2' )() )  ||  null.bug;
     oEquals( [ 3, 5, 7, 9, 11 ], tfun.rangeStep()( 3, 12, 2 ) )  ||  null.bug;
 
-    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStepRightOf( '4', '-8', '3' )() )  ||  null.bug;
-    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStepRight()( 4, -8, 3 ) )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStepOf( '4', '-8', '-3' )() )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5 ], tfun.rangeStep()( 4, -8, -3 ) )  ||  null.bug;
 
-    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRightOf( '4', '-9', '3' )() )  ||  null.bug;
-    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRight()( 4, -9, 3 ) )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepOf( '4', '-9', '-3' )() )  ||  null.bug;
+    oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStep()( 4, -9, -3 ) )  ||  null.bug;
     
     oEquals( [ 9, 15 ], tfun.rangeOf( '3', '7' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
     oEquals( [ 9, 15 ], tval( 3, 7 )( tfun.range().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
 
-    oEquals( [ 21, 15 ], tfun.rangeRightOf( '7', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
-    oEquals( [ 21, 15 ], tval( 7, 3 )( tfun.rangeRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+    oEquals( [ 21, 15 ], tfun.rangeStepOf( '7', '3', '-1' ).map( '*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 21, 15 ], tval( 7, 3, -1 )( tfun.rangeStep().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
 
     oEquals( [ 9, 27 ], tfun.rangeStepOf( '3', '12', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
-    oEquals( [ 9, 27 ], tval( 3, 12, 3 )( tfun.rangeStep().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+    oEquals( [ 9, 27 ], tval( 3, 12, 3 )( tfun.rangeStep().map( '*3' ).filter( 'v%2' ) ) )  ||  null.bug;
 
-    oEquals( [ 3, -15 ], tfun.rangeStepRightOf( '4', '-8', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
-    oEquals( [ 3, -15 ], tval( 4, -8, 3 )( tfun.rangeStepRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+    oEquals( [ 3, -15 ], tfun.rangeStepOf( '4', '-8', '-3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 3, -15 ], tval( 4, -8, -3 )( tfun.rangeStep().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
 
-    oEquals( [ 3, -15 ], tfun.rangeStepRightOf( '4', '-9', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
-    oEquals( [ 3, -15 ], tval( 4, -9, 3 )( tfun.rangeStepRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+    oEquals( [ 3, -15 ], tfun.rangeStepOf( '4', '-9', '-3' ).map( '*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 3, -15 ], tval( 4, -9, -3 )( tfun.rangeStep().map( '*3' ).filter( 'v%2' ) ) )  ||  null.bug;
 
+    // Ranges: with map and more
 
+    true === tval.call( { 0: 9, 1: 12, 2: 15, 3: 18 }
+                        , 3, 7 )
+    (
+        tfun.range().map( '*3').map( 'this[k]===v' ).and()
+    )
+        ||  null.bug
+    ;
+    
+    true === tval.call( [ 9, 12, 15, 18 ]
+                        , 3, 7 )
+    (
+        tfun.range().map( '*3').map( 'this[k]===v' ).and()
+    )
+        ||  null.bug
+    ;
+    
     // Ranges: advanced use: pick a part of a sparse array
 
     var sparse_arr = [];

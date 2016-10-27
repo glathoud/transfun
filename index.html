@@ -63,8 +63,8 @@ dd { margin-bottom: 1em; }
     ,   c_current       = hh.code( 'current' )
     ,   c_arg           = hh.code( 'arg' )
 
-    ,   c_range_direct  = hh.code( 'range, rangeStep, rangeRight, rangeRightStep' )
-    ,   c_range_of      = hh.code( 'rangeOf, rangeStepOf, rangeRightOf, rangeRightStepOf' )
+    ,   c_range_direct  = hh.code( 'range, rangeStep' )
+    ,   c_range_of      = hh.code( 'rangeOf, rangeStepOf' )
     ,   c_range         = c_range_direct + ' &amp;&nbsp;parameterized&nbsp;variants ' + c_range_of
 
     ,   c_next      = hh.code( 'next' )
@@ -732,11 +732,13 @@ dd { margin-bottom: 1em; }
                 , [
                     'define numerical ranges:'
                     , js_pre_code([
-                        "tfun.range()( 3, 7 )             // " + JSON.stringify( tfun.range()( 3, 7 ) )
-                        , "tfun.rangeRight()( 7, 3 )        // " + JSON.stringify( tfun.rangeRight()( 7, 3 ) )
+                        "tfun.range()( 3, 7 )              // " + JSON.stringify( tfun.range()( 3, 7 ) )
+                        , "tfun.rangeStep()( 7, 3, -1 )      // " + JSON.stringify( tfun.rangeStep()( 7, 3, -1 ) )
                         , ""
-                        , "tfun.rangeStep()( 3, 7, 2 )      // " + JSON.stringify( tfun.rangeStep()( 3, 7, 2 ) )
-                        , "tfun.rangeStepRight()( 7, 3, 2 ) // " + JSON.stringify( tfun.rangeStepRight()( 7, 3, 2 ) )
+                        , "tfun.rangeStep()( 3, 7, 2 )       // " + JSON.stringify( tfun.rangeStep()( 3, 7, 2 ) )
+                        , "tfun.rangeStep()( 7, 3, -2 )      // " + JSON.stringify( tfun.rangeStep()( 7, 3, -2 ) )
+                        , ""
+                        , "tfun.rangeStep()( 1.2, 9.1, 2.8 ) // " + JSON.stringify( tfun.rangeStep()( 1.2, 9.1, 2.8 ) )
                     ])
                 ]
             )
@@ -744,7 +746,11 @@ dd { margin-bottom: 1em; }
             , dl_describe(
                 c_range_of
                 , [
-                    'define parameterized numerical ranges. '
+                    'define parameterized numerical ranges: '
+                    , js_pre_code([
+                        "tfun.rangeOf( 'begin', 'end' )"
+                        , "tfun.rangeStepOf( 'begin', 'end', 'step' )"
+                    ])
                     , 'Example with constants:'
                     , js_pre_code([
                         "tfun.rangeOf( '3', '7' )()  // [" + tfun.rangeOf( '3', '7' )() + "]"
@@ -759,15 +765,12 @@ dd { margin-bottom: 1em; }
                         , '// Example use:'
                         , "appfun( 3, 7 ) // " + JSON.stringify( tfun.arg( 'begin,end' ).rangeOf( 'begin', 'end' )( 3, 7 ) )
                     ])
-                    , 'similarly:'
-                    , js_pre_code([
-                        "tfun.rangeRightOf( 'begin', 'end' )"
-                        , ""
-                        , "tfun.rangeStepOf( 'begin', 'end', 'step' )"
-                        , "tfun.rangeStepRightOf( 'begin', 'end', 'step' )"
-                    ])
-                    , 'Ranges can be combined with other transformations.'
-                    , hh.p( 'Example: pick a subset of a sparse array and modify it:' )
+                ])
+
+            , dl_describe(
+                'Ranges can be combined with other transformations.'
+                , [
+                    hh.p( 'Example: pick a subset of a sparse array and modify it:' )
                     , js_pre_code([
                         "var appfun = tfun.arg( 'arr,begin,end' )"
                         , "  .range( 'begin', 'end')"
