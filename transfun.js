@@ -1593,10 +1593,12 @@ var global, exports; // NPM support [github#1]
                         ?  r_end + '-(' + r_begin + ')'
                         :  r_begin + '-(' + r_end + ')'
                     ;
-                    code.push( 'var n = ' + (
-                        r_step === '1'  ||  r_step === 1  ?  tmp
-                            :  '((' + tmp + ') / ' + r_step + ') | 0'
-                    ));
+                    code.push( 'var n = ' +
+                               (
+                                   r_step === '1'  ||  r_step === 1  ?  tmp
+                                       :  '1 + (((' + tmp + ' - 1) / ' + r_step + ') | 0)'
+                               ) 
+                             );
                 }
                 
                 beforeloop.forEach( push_codestep );
@@ -1609,13 +1611,13 @@ var global, exports; // NPM support [github#1]
                                            , 'for (var k in current) { if (!(k in _emptyObj)) {'
                                           )
 
-                        :  is_range  ?  [ 'for (var ' + r_varname + ' = ' + r_begin + ', k = 0; '
-                                          , r_varname + ' ' + (is_r_left  ?  '<'  :  '>') + ' ' + r_end + '; '
-                                          , r_varname + (r_step == null
-                                                         ?  (is_r_left  ?  '++'  :  '--')
-                                                         :  (is_r_left  ?  '+='  :  '-=') + r_step
-                                                        ) + ', k++'
-                                          , ') {'
+                    // Have to implement this way, recalculating `v`
+                    // each time because of use cases with following
+                    // transformations of `v` (e.g. `map(v % 2)`).
+                        :  is_range  ?  [ 'for (var k = 0; k < n; k++) {'
+                                          , ' var ' + r_varname + ' = ' + r_begin
+                                          , (is_r_left  ?  ' + '  :  ' - ')
+                                          , r_step === 1  ?  'k'  :  'k * ' + r_step
                                         ].join( '' )
                     
                     :  null.bug

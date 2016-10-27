@@ -72,6 +72,22 @@ function test()
     oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRightOf( '4', '-9', '3' )() )  ||  null.bug;
     oEquals( [ 4, 1, -2, -5, -8 ], tfun.rangeStepRight()( 4, -9, 3 ) )  ||  null.bug;
     
+    oEquals( [ 9, 15 ], tfun.rangeOf( '3', '7' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 9, 15 ], tval( 3, 7 )( tfun.range().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+
+    oEquals( [ 21, 15 ], tfun.rangeRightOf( '7', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 21, 15 ], tval( 7, 3 )( tfun.rangeRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+
+    oEquals( [ 9, 27 ], tfun.rangeStepOf( '3', '12', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 9, 27 ], tval( 3, 12, 3 )( tfun.rangeStep().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+
+    oEquals( [ 3, -15 ], tfun.rangeStepRightOf( '4', '-8', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 3, -15 ], tval( 4, -8, 3 )( tfun.rangeStepRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+
+    oEquals( [ 3, -15 ], tfun.rangeStepRightOf( '4', '-9', '3' ).map( 'v*3' ).filter( 'v%2' )() )  ||  null.bug;
+    oEquals( [ 3, -15 ], tval( 4, -9, 3 )( tfun.rangeStepRight().map( 'v*3' ).filter( 'v%2' ) ) )  ||  null.bug;
+
+
     // Ranges: advanced use: pick a part of a sparse array
 
     var sparse_arr = [];
