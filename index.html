@@ -63,9 +63,9 @@ dd { margin-bottom: 1em; }
     ,   c_current       = hh.code( 'current' )
     ,   c_arg           = hh.code( 'arg' )
 
-    ,   c_range_direct  = hh.code( 'range, rangeStep' )
-    ,   c_range_of      = hh.code( 'rangeOf, rangeStepOf' )
-    ,   c_range         = c_range_direct + ' &amp;&nbsp;parameterized&nbsp;variants ' + c_range_of
+    ,   c_range_direct  = hh.code( 'range' )
+    ,   c_range_of      = hh.code( 'rangeOf' )
+    ,   c_range         = c_range_direct + ' &amp; ' + c_range_of
 
     ,   c_next      = hh.code( 'next' )
 
@@ -732,13 +732,13 @@ dd { margin-bottom: 1em; }
                 , [
                     'define numerical ranges:'
                     , js_pre_code([
-                        "tfun.range()( 3, 7 )              // " + JSON.stringify( tfun.range()( 3, 7 ) )
-                        , "tfun.rangeStep()( 7, 3, -1 )      // " + JSON.stringify( tfun.rangeStep()( 7, 3, -1 ) )
+                        "tfun.range()( 3, 7 )          // " + JSON.stringify( tfun.range()( 3, 7 ) )
+                        , "tfun.range()( 7, 3, -1 )      // " + JSON.stringify( tfun.range()( 7, 3, -1 ) )
                         , ""
-                        , "tfun.rangeStep()( 3, 7, 2 )       // " + JSON.stringify( tfun.rangeStep()( 3, 7, 2 ) )
-                        , "tfun.rangeStep()( 7, 3, -2 )      // " + JSON.stringify( tfun.rangeStep()( 7, 3, -2 ) )
+                        , "tfun.range()( 3, 7, 2 )       // " + JSON.stringify( tfun.range()( 3, 7, 2 ) )
+                        , "tfun.range()( 7, 3, -2 )      // " + JSON.stringify( tfun.range()( 7, 3, -2 ) )
                         , ""
-                        , "tfun.rangeStep()( 1.2, 9.1, 2.8 ) // " + JSON.stringify( tfun.rangeStep()( 1.2, 9.1, 2.8 ) )
+                        , "tfun.range()( 1.2, 9.1, 2.8 ) // " + JSON.stringify( tfun.range()( 1.2, 9.1, 2.8 ) )
                     ])
                 ]
             )
@@ -749,7 +749,7 @@ dd { margin-bottom: 1em; }
                     'define parameterized numerical ranges: '
                     , js_pre_code([
                         "tfun.rangeOf( 'begin', 'end' )"
-                        , "tfun.rangeStepOf( 'begin', 'end', 'step' )"
+                        , "tfun.rangeOf( 'begin', 'end', 'step' )"
                     ])
                     , 'Example with constants:'
                     , js_pre_code([

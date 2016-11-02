@@ -466,35 +466,23 @@ var global, exports; // NPM support [github#1]
     // Ranges
 
     tpub( 'rangeOf', {
-        arity : 2
-        , specgen : function ( begin, end ) {
+        arity : +Infinity  // xxx maybe restrict to {2:true or 3:true} (not supported yet). Maybe. Maybe leave it as is.
+        , specgen : function ( begin, end, maybe_step ) {
+
+            arguments.length in {2:true,3:true}  ||  null.invalid_arity;
+            
             return { rangeleftright : {
                 morph     : 'array'
                 , conserve_array_length : true
                 , begin   : begin
                 , end     : end
+                , step    : maybe_step
                 , varname : 'v'
             }};
         }
     });   
 
-    tpub( 'rangeStepOf', {
-        arity : 3
-        , specgen : function ( begin, end, step ) {
-            return { rangeleftright : {
-                morph     : 'array'
-                , conserve_array_length : true
-                , begin   : begin
-                , end     : end
-                , step    : step
-                , varname : 'v'
-            }};
-        }
-    });   
-
-    tpub( 'range',      tfun.arg( 'begin,end' )     .rangeOf    ( 'begin', 'end' ) );
-
-    tpub( 'rangeStep',  tfun.arg( 'begin,end,step' ).rangeStepOf( 'begin', 'end', 'step' ) );
+    tpub( 'range', tfun.arg( 'begin,end,maybe_step' ).rangeOf( 'begin', 'end', 'maybe_step' ) );
     
     // Others
     
@@ -777,27 +765,11 @@ var global, exports; // NPM support [github#1]
         function tfun_from_objectdef( definition )
         {
 	    var def_arity          = definition.arity
-            ,   has_variable_arity = def_arity === +Infinity
+            ,   has_variable_arity = def_arity === +Infinity  // xxx Maybe: more restrictive def_arity, e.g. set: {2:true,3:true}
             ;
-            if (has_variable_arity)
-                throw new Error( 'variable arity is not supported.' );
-
-            // Note about variable `transfun` arity: whoever wants it,
-            // can remove the previous test. It should work.
-            // 
-            // Why forbid it? I prefer the *slightly* more cumbersome
-            // *explicit* distinction using different transfun names:
-            //
-            // `range` vs. `rangeOf`
-            //
-            // `reduce` vs. `redInit`
-            //
-            // ...so that one gets *right* away an error when giving
-            // the wrong number of transfun parameters. It can help
-            // knowing what one is doing and detecting mistakes early.
             
             var spec      = def_arity === 0  &&  definition.spec
-            ,   specgen   = def_arity > 0  &&  definition.specgen
+            ,   specgen   = def_arity !== 0  &&  definition.specgen
             ,   tf_id     = _transfun_id = 1 + ~~_transfun_id; // [github#2]
 	    ;
 	    transfun._is_transfun           = true;
@@ -1562,14 +1534,33 @@ var global, exports; // NPM support [github#1]
                     var tmp = is_r_left
                         ?  r_end + '-(' + r_begin + ')'
                         :  r_begin + '-(' + r_end + ')'
+
+                    ,  tmp_a = tmp
+                    ,  tmp_b = '-(' + tmp + ')'
+                    ,  tmp_c = 'Math.ceil( 1e-10 * Math.round( 1e10 * (' + tmp + ') / (' + r_step + ') ) )'
                     ;
-                    code.push( 'var n = ' +
-                               (
-                                   r_step === '1'  ||  r_step === 1  ?  tmp
-                                       :  r_step === '-1'  ||  r_step === -1  ?  '-(' + tmp + ')'
-                                       :  'Math.ceil( 1e-10 * Math.round( 1e10 * (' + tmp + ') / (' + r_step + ') ))'
-                               ) 
-                             );
+
+                    if (isFinite( r_step ))  // e.g. `1` or `"1"` or `-123.45` or `"-123.45"`
+                    {
+                        // We decide now: at code generation time
+                        
+                        code.push( 'var n = ' + ( 1 == r_step  ?  tmp_a
+                                                  :  -1 == r_step  ?  tmp_b
+                                                  :  tmp_c
+                                                )
+                                 );
+                    }
+                    else
+                    {
+                        // We decide later: at execution time
+                        
+                        code.push( r_step + ' != null  ||  (' + r_step + ' = 1)' );
+                        
+                        code.push( 'var n = ' + r_step + ' === 1  ?  ' + tmp_a + '\n' +
+                                   '    :  ' + r_step + ' === -1  ?  ' + tmp_b + '\n' +  
+                                   '    :  ' + tmp_c
+                                 );
+                    }
                 }
 
                 beforeloop.forEach( push_codestep );
