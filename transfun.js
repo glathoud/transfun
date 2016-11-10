@@ -486,7 +486,8 @@ var global, exports; // NPM support [github#1]
     
     // Others
     
-    tpub( 'sum', tfun.redinit( '0', '+' ) );
+    tpub( 'prod', tfun.redinit( '1', '*' ) );
+    tpub( 'sum',  tfun.redinit( '0', '+' ) );
 
     tpub( 'join', '#s',  '.join(#s)' );
     tpub( 'split', '#s', '.split(#s)' );
