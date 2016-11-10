@@ -81,7 +81,7 @@ var global, exports; // NPM support [github#1]
             ;
             for (var i = 0; i < n; i++)
             {
-                var name = arr[ i ];
+                var name = arr[ i ].replace( /^\s+|\s+$/i, '' );
                 (name  ||  null).substring.call.a;
                 
                 stepadd[ i ] = { decl : [ name, { get_at : [ 'arguments', ''+i ] } ] };
