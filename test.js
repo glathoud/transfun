@@ -349,6 +349,12 @@ function test()
     111   === tfun.orIn()( { a: null, b : false, c : 111 })  ||  null.bug;
     false === !!tfun.orIn()( { a: null, b : false, c : 0 })  ||  null.bug;
     null  === tfun.orIn()( { a: null, b : null, d : null, c : null })  ||  null.bug;
+
+
+    // Chaining "aliases"
+    // e.g. .sum() alias for .redinit('0','+')
+    1e-10 > Math.abs( 6.123 - tval( [ { a:1.1 }, { a:2.02 }, { a:3.003 } ] )( tfun.map( '.a' ).redinit( '0', '+' ) ) )  ||  null.bug;
+    1e-10 > Math.abs( 6.123 - tval( [ { a:1.1 }, { a:2.02 }, { a:3.003 } ] )( tfun.map( '.a' ).sum() ) )  ||  null.bug;
     
 
     // Conversions

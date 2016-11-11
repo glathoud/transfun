@@ -486,7 +486,8 @@ var global, exports; // NPM support [github#1]
     
     // Others
     
-    tpub( 'sum', tfun.redinit( '0', '+' ) );
+    tpub( 'prod', tfun.redinit( '1', '*' ) );
+    tpub( 'sum',  tfun.redinit( '0', '+' ) );
 
     tpub( 'join', '#s',  '.join(#s)' );
     tpub( 'split', '#s', '.split(#s)' );
@@ -830,7 +831,9 @@ var global, exports; // NPM support [github#1]
                     if (arguments.length !== 0)
                         throw new Error( arguments.length + ' unexpected arguments: ' + Array.prototype.slice.call( arguments ) );
                     
-                    return transfun.apply( prev_chainspec, _tf_bound_arg );
+                    return transfun.apply( this instanceof _ChainSpec  ?  this  :  prev_chainspec
+                                           , _tf_bound_arg
+                                         );
                 }
                 
                 // --- Details

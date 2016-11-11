@@ -831,7 +831,9 @@ var global, exports; // NPM support [github#1]
                     if (arguments.length !== 0)
                         throw new Error( arguments.length + ' unexpected arguments: ' + Array.prototype.slice.call( arguments ) );
                     
-                    return transfun.apply( prev_chainspec, _tf_bound_arg );
+                    return transfun.apply( this instanceof _ChainSpec  ?  this  :  prev_chainspec
+                                           , _tf_bound_arg
+                                         );
                 }
                 
                 // --- Details
