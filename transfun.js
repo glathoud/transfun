@@ -1841,7 +1841,7 @@ var global, exports; // NPM support [github#1]
 
 	    :  (x = expr.comment)  ?  '/* ' + x + ' */'
 
-            :  (x = expr.call)  ?  x.fun + '(' + x.arg.join( ',' ) + ')'
+            :  (x = expr.call)  ?  x.fun + '.call(' + ([ 'this' ].concat( x.arg )).join( ',' ) + ')'
         
 	    :  hasNoKey( expr )  ?  ''
 
