@@ -498,8 +498,8 @@ var global, exports; // NPM support [github#1]
             return {
                 stepadd : {
                     set : [ 
-                        'current'
-                        , 'current.slice().sort((a,b)=>' + tfun.fullexpr( transform, 'a', 'b' ) + ')'
+                        CURRENT
+                        , CURRENT + '.slice().sort((a,b)=>' + tfun.fullexpr( transform, 'a', 'b' ) + ')'
                     ]
                 }
             };
@@ -758,7 +758,7 @@ var global, exports; // NPM support [github#1]
 	    for (var i = shortcut_par_rx.length; i--;)
                 ret = ret.replace( shortcut_par_rx[ i ], arguments[ i ] );
 
-	    return { stepadd : { set : [ 'current', fullexpr( ret, 'current' ) ] } };
+	    return { stepadd : { set : [ CURRENT, fullexpr( ret, CURRENT ) ] } };
         }
 
         // --- Details for the object definition variant
@@ -880,7 +880,7 @@ var global, exports; // NPM support [github#1]
                         extern_arr    = chainspec.extern_arr;
                         has_extern    = extern_arr.length > 0;
                         
-                        code_par_arr    = chainspec.externname_arr.concat( [ 'current' ] );
+                        code_par_arr    = chainspec.externname_arr.concat( [ CURRENT ] );
                         
                         spec_arr_optim          = optimize_spec_arr_merging_morphs( chainspec.spec_arr );
                         spec_arr_optim_solved   = explicit_and_optimize_morph_store( spec_arr_optim );
@@ -1313,7 +1313,7 @@ var global, exports; // NPM support [github#1]
 	    
 		?  []
 
-		:  [ { set : [ 'current', 'out' ] } ]
+		:  [ { set : [ CURRENT, 'out' ] } ]
 	    
 	    ,   new_loop = {}
 	    ,   new_body = arrify( loop.bodyadd  ||  [] ).slice()  // copy
@@ -1448,6 +1448,12 @@ var global, exports; // NPM support [github#1]
 
         if ('object' === typeof spec)
         {
+            var current_looptype = word === CURRENT  &&  get_looptype( spec );
+            if (current_looptype  &&
+                (current_looptype === L_LEFT  ||  current_looptype === L_RIGHT)
+               )
+                return true;  // because of "var n = current.length;" insertion
+            
             for (var k in spec) { if (!(k in _emptyObj)) {   // More flexible than hasOwnProperty
 
                 if (word === k  ||  word_is_used( word, spec[ k ] ))
@@ -1476,7 +1482,7 @@ var global, exports; // NPM support [github#1]
         }
         else
         {
-	    code.push( 'return current;' );
+	    code.push( 'return ' + CURRENT + ';' );
         }
 
         // Detect a case where a first line with a `current` declaration is useless
@@ -1528,7 +1534,7 @@ var global, exports; // NPM support [github#1]
 
                 if (is_l_left  ||  is_l_right)
                 {
-		    code.push( 'var n = current.length' );
+		    code.push( 'var n = ' + CURRENT + '.length' );
                 }
                 else if (is_range)
                 {
@@ -1573,7 +1579,7 @@ var global, exports; // NPM support [github#1]
 		    is_l_left  ?  'for (var k = 0; k < n; k++ ) {'
                         :  is_l_right  ?  'for (var k = n; k--;) {'
                         :  is_l_in     ?  (needs_emptyObj = true
-                                           , 'for (var k in current) { if (!(k in _emptyObj)) {'
+                                           , 'for (var k in ' + CURRENT + ') { if (!(k in _emptyObj)) {'
                                           )
 
                     // Have to implement this way, recalculating `v`
@@ -1582,14 +1588,14 @@ var global, exports; // NPM support [github#1]
                         :  is_range  ?  [ 'for (var k = 0; k < n; k++) {'
                                           , ' var ' + r_varname + ' = ' + r_begin
                                           , (is_r_left  ?  ' + '  :  ' - ')
-                                          , r_step === 1  ?  'k'  :  'k * ' + r_step
+                                          , r_step === 1  ||  r_step === '1'  ?  'k'  :  'k * ' + r_step
                                         ].join( '' )
                     
                     :  null.bug
                 );
 
                 if (!is_range)
-                    code.push( 'var v = current[ k ]' );
+                    code.push( 'var v = ' + CURRENT + '[ k ]' );
 
                 bodyadd.forEach( push_codestep );
 
@@ -1769,7 +1775,7 @@ var global, exports; // NPM support [github#1]
                 tf = tfun({
 		    arity : 1
 		    , specgen : function ( /*string | externcall object*/transform ) {
-                        return { stepadd : { set : [ 'current', fullexpr( transform, 'current' ) ] } };
+                        return { stepadd : { set : [ CURRENT, fullexpr( transform, CURRENT ) ] } };
 		    }
                 });
                 arg = [ s_f ];

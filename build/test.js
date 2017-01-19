@@ -59,6 +59,35 @@ function test()
     {
         return Math.round( 1e10 * x ) / 1e10;  // and not `* 1e-10` :)
     }
+
+    // multiple args & `current` & loops
+
+    var inplace_add = tfun.arg( 'a,b' ).each( 'a[k]+=b[k]' );
+    var a = [ 1, 2, 3 ];
+    var b = [ 40, 50, 60 ];
+    var retval = inplace_add( a, b );
+
+    retval === a  ||  null.bug;
+    oEquals( [ 41, 52, 63 ], retval )  ||  null.bug;
+    oEquals( [ 41, 52, 63 ], a )       ||  null.bug;
+    a !== b  ||  null.bug;
+    !oEquals( a, b )  ||  null.bug;
+
+    // 
+    
+    var inplace_add_map = tfun.arg( 'a,b' ).map( 'a[k]+=b[k]' );
+    var a = [ 1, 2, 3 ];
+    var b = [ 40, 50, 60 ];
+    var retval = inplace_add_map( a, b );
+
+    retval !== a  ||  null.bug;
+    oEquals( retval, a )  ||  null.bug;
+    oEquals( [ 41, 52, 63 ], retval )  ||  null.bug;
+    oEquals( [ 41, 52, 63 ], a )       ||  null.bug;
+    a !== b  ||  null.bug;
+    !oEquals( a, b )  ||  null.bug;
+
+    
     
     // Ranges
 
