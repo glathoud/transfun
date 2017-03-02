@@ -60,6 +60,23 @@ function test()
         return Math.round( 1e10 * x ) / 1e10;  // and not `* 1e-10` :)
     }
 
+    // tfun.arg() must be the first of a chain
+
+    var msg_part_rx = /\bcan only be the first of a chain\b/;
+
+    try {
+        tfun.map('+1').arg('a,b')
+    } catch ( e ) {
+        msg_part_rx.test( ''+e ) ||  null.bug;
+    }
+    
+    try {
+        tfun.map('*2').range();
+    } catch ( e ) {
+        msg_part_rx.test( ''+e ) ||  null.bug;
+    }
+    
+
     // multiple args & `current` & loops
 
     var inplace_add = tfun.arg( 'a,b' ).each( 'a[k]+=b[k]' );
@@ -73,6 +90,16 @@ function test()
     a !== b  ||  null.bug;
     !oEquals( a, b )  ||  null.bug;
 
+    // Make sure that `conserve_array_length` propagates
+
+    var aa = tfun.map( '+1' )
+    ,   bb = aa.map( '*3' )
+    ,   cc = tfun.map( '+1' ).map( '*3' )
+    ;
+        /\bnew Array\b/.test ( ''+aa )  &&  !/\bpush\b/.test( ''+aa )  ||  null.bug;
+        /\bnew Array\b/.test ( ''+bb )  &&  !/\bpush\b/.test( ''+bb )  ||  null.bug;
+        /\bnew Array\b/.test ( ''+cc )  &&  !/\bpush\b/.test( ''+cc )  ||  null.bug;
+    
     // 
     
     var inplace_add_map = tfun.arg( 'a,b' ).map( 'a[k]+=b[k]' );

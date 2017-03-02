@@ -87,7 +87,7 @@ var global, exports; // NPM support [github#1]
                 stepadd[ i ] = { decl : [ name, { get_at : [ 'arguments', ''+i ] } ] };
             }
             
-            return { stepadd : stepadd };
+            return { stepadd : stepadd, first_only : true };
         }
         
     });
@@ -579,12 +579,14 @@ var global, exports; // NPM support [github#1]
                 {
                     x = Object.create( x );
                     x.spec = try_to_add_default_loopname( x.spec );
+                    x._tf_tpub_name = name;  // Not mandatory, only for better logging
                     arg[ 0 ] = x;
                 }
                 else if (x.specgen)
                 {
                     x = Object.create( x );
                     x.specgen = get_default_loopname_wrapper( x.specgen );
+                    x._tf_tpub_name = name;  // Not mandatory, only for better logging
                     arg[ 0 ] = x;
                 }
             }
@@ -777,7 +779,11 @@ var global, exports; // NPM support [github#1]
 	    transfun._tf_def_arity          = def_arity;
             transfun._tf_has_variable_arity = has_variable_arity
 	    transfun._tf_id                 = tf_id;
-	    
+
+            var tpub_name = definition._tf_tpub_name;
+            if (tpub_name)
+                transfun._tf_tpub_name = tpub_name;
+            
 	    return transfun;
 	    
 	    function transfun( /*...`arity` arguments: array of (code string | non-string extern) ... */ )
@@ -811,7 +817,7 @@ var global, exports; // NPM support [github#1]
 		    appfun._tf_chainspec = chainspec;
 		    
 		    // Necessary to support `tfun( <appfun> )`
-		    var _tf_bound_arg = arguments;
+		    var _tf_bound_arg = [].slice.call( arguments );
 		    appfun._tf_bound  = appfun__tf_bound;
 		    appfun._tf_bound._is_transfun = true;
 		    
@@ -831,7 +837,10 @@ var global, exports; // NPM support [github#1]
                     if (arguments.length !== 0)
                         throw new Error( arguments.length + ' unexpected arguments: ' + Array.prototype.slice.call( arguments ) );
                     
-                    return transfun.apply( this instanceof _ChainSpec  ?  this  :  prev_chainspec
+                    return transfun.apply( this instanceof _ChainSpec
+                                           ?  this.concat_call( prev_chainspec )
+                                           :  prev_chainspec
+
                                            , _tf_bound_arg
                                          );
                 }
@@ -881,15 +890,23 @@ var global, exports; // NPM support [github#1]
                         has_extern    = extern_arr.length > 0;
                         
                         code_par_arr    = chainspec.externname_arr.concat( [ CURRENT ] );
+
+                        var first_only  = is_first_only( chainspec.spec_arr );
                         
                         spec_arr_optim          = optimize_spec_arr_merging_morphs( chainspec.spec_arr );
                         spec_arr_optim_solved   = explicit_and_optimize_morph_store( spec_arr_optim );
 
+                        if (first_only)
+                            mark_first_only( spec_arr_optim_solved );
+                        
                         var gcb_o = optimize_some_multiarg_cases( code_par_arr, spec_arr_optim_solved );
-
+                        
+                        if (first_only)
+                            mark_first_only( gcb_o.spec_arr );
+                        
                         code_body = generate_code_body( gcb_o.spec_arr );
                         impl      = new Function( gcb_o.code_par_arr, code_body );
-
+                        
                         // In most cases no wrapper because no
                         // externs. Performance in mind. Okay because
                         // of cache [github#2].
@@ -985,6 +1002,7 @@ var global, exports; // NPM support [github#1]
 
         this.add_step       = _CS_add_step;
         this.concat_call_tf = _CS_concat_call_tf;
+        this.concat_call    = _CS_concat_call;
         
         function _CS_add_step( arity, tf_id, spec_or_specgen, transfun, args )
         // Returns a new _ChainSpec instance that includes the new step.
@@ -1009,7 +1027,9 @@ var global, exports; // NPM support [github#1]
 	    ,    en_arr   = this[ EXTERNNAME_ARR ].slice()
 	    ,    i2en     = Object.create( this[ I_2_EXTERN_NAME ] )
 	    ,    en2e     = Object.create( this[ EXTERN_NAME_2_EXTERN ] )
-	    ;
+
+            ,    spec_arr_first_only = spec_arr.length > 0  &&  is_first_only( spec_arr )
+            ;
 
 	    // remember who called me and how, for `.concat_call_tf` (and `next`)
 	    tfarg_arr.push( { tf : transfun, arg : args } );
@@ -1061,10 +1081,13 @@ var global, exports; // NPM support [github#1]
                         spec_s_arg.push( one );
                     }
                 }
+                
                 spec = spec_or_specgen.apply( null, spec_s_arg );
 	    }
 
-	    // Optional: add some loopname comment (useful if looking
+            var first_only = is_first_only( [ spec ] );
+
+            // Optional: add some loopname comment (useful if looking
 	    // at the code produced for merged loops, to trace back).
 	    
 	    var looptype = get_looptype( spec );
@@ -1110,13 +1133,27 @@ var global, exports; // NPM support [github#1]
 	    }
 	    else
 	    {
-                check_exactly_has_properties( spec, { stepadd : 1 } );
+                check_exactly_has_properties( spec, { stepadd : 1 }, { first_only : 1 } );
 	    }
-	    
+
+            // Optional: `first_only` (mainly for `tfun.arg()`)
+
+            if (first_only  &&  spec_arr.length)
+            {
+                var tmp_tf_tpub_name  = transfun  &&  transfun._tf_tpub_name
+                ,   tmp_error_begin = tmp_tf_tpub_name  ?  '`' + tmp_tf_tpub_name + '`'  :  'This one'
+                ;
+                throw new Error( tmp_error_begin + ' can only be the first of a chain, e.g. `tfun.'
+                                 + (tmp_tf_tpub_name  ||  'arg') + '(...)`.' );
+            }
+            
 	    // append the step and return a new _ChainSpec instance
             spec  ||  null.bug;
 	    spec_arr.push( spec );
-	    
+
+            if (spec_arr_first_only)
+                mark_first_only( spec_arr );
+            
 	    var opt = {};
 
 	    opt[ CACHE_KEY ]            = _CS_cache_key;
@@ -1154,6 +1191,19 @@ var global, exports; // NPM support [github#1]
 	    }
 	    return ret;
         }
+
+        function _CS_concat_call( other )
+        {
+            if (!(other instanceof _ChainSpec)  ||  other.spec_arr.length === 0)
+                return this;
+
+            if (this.spec_arr.length === 0)
+                return other;
+            
+	    var tmp = this.concat_call_tf( other );
+            return tmp._tf_chainspec;
+        }
+        
     }
     
     function optimize_spec_arr_merging_morphs( spec_arr )
@@ -1162,6 +1212,10 @@ var global, exports; // NPM support [github#1]
         for (var i = spec_arr_optim.length, next = null; i--;)
         {
 	    var one = spec_arr_optim[ i ];
+
+            if (i > 0  &&  one.first_only)
+                null.bug;
+            
 	    if (next)
 	    {               
                 var one_looptype = get_looptype( one )  ||  null
@@ -1193,12 +1247,12 @@ var global, exports; // NPM support [github#1]
                 {
 		    // Continue morphing (e.g. map, filter)
 		    var conserve_array_length = one_morph === ARRAY  &&
-                        one_morph .conserve_array_length  &&
-                        next_morph.conserve_array_length
+                        one_loop .conserve_array_length  &&
+                        next_loop.conserve_array_length
 
 		    ,  keep_current_instance = 
-			one_morph .keep_current_instance  &&
-			next_morph.keep_current_instance
+			one_loop .keep_current_instance  &&
+			next_loop.keep_current_instance
 		    
 		    ,  new_bodyadd = arrify(  one_loop.bodyadd  ||  [] )
                         .concat( arrify( next_loop.bodyadd  ||  [] ) )
@@ -1266,13 +1320,14 @@ var global, exports; // NPM support [github#1]
 	    next = spec_arr_optim[ i ];
 	    
         } // for loop (last to first)
+
         return spec_arr_optim;
     }
 
     function explicit_and_optimize_morph_store( spec_arr_optim__or__spec )
     {
         if (spec_arr_optim__or__spec instanceof Array)
-	    return spec_arr_optim__or__spec.map( explicit_and_optimize_morph_store );
+            return spec_arr_optim__or__spec.map( explicit_and_optimize_morph_store );
 
         var spec     = spec_arr_optim__or__spec
         ,   looptype = get_looptype( spec )
@@ -1380,7 +1435,7 @@ var global, exports; // NPM support [github#1]
             var s0 = spec_arr[ 0 ];
             if (s0.stepadd)
             {
-                check_exactly_has_properties( s0, { stepadd : 1 } );
+                check_exactly_has_properties( s0, { stepadd : 1 }, { first_only : 1 } );
 
                 var iarg_all = s0.stepadd instanceof Array
                 ,   name_arr = iarg_all  &&  s0.stepadd.map( osmc_check_and_extract_one )
@@ -1394,11 +1449,12 @@ var global, exports; // NPM support [github#1]
                             ?  [
                                 { stepadd : { decl : [ c, name_arr[ 0 ] ] } }
                             ]
-                        :  []
+                        :  [ { nope : 1 } ]  // To be able to mark `first_only` in all cases (e.g. tpub( 'arg', ... ))
                     )
                         .concat( rest_spec_arr )
                     ;
                     code_par_arr = code_par_arr.slice( 0, -1 ).concat( name_arr );
+
                 }
             }
         }
@@ -1434,6 +1490,17 @@ var global, exports; // NPM support [github#1]
             // ...in all other cases, fail:
             iarg_all = false;
         }
+    }
+
+    function is_first_only( spec_arr )
+    {
+        return spec_arr[ 0 ].first_only;
+    }
+    
+    function mark_first_only( spec_arr )
+    {
+        if (!is_first_only( spec_arr ))
+            spec_arr[ 0 ].first_only = true;
     }
 
     function word_is_not_used( /*string*/word, /*object | array | string*/spec )
@@ -1608,9 +1675,14 @@ var global, exports; // NPM support [github#1]
                 
                 afterloop.forEach( push_codestep );
 	    }
-	    else
+	    else if (spec.nope)
+            {
+                // Do nothing :)
+                check_exactly_has_properties( spec, { nope : 1 }, { first_only : 1 } );
+            }
+            else
 	    {
-                check_exactly_has_properties( spec, { stepadd : 1 } );
+                check_exactly_has_properties( spec, { stepadd : 1 }, { first_only : 1 } );
 
                 solve_restwrap( arrify( spec.stepadd ) )
 		    .forEach( push_codestep )
