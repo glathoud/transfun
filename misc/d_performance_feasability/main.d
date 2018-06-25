@@ -18,11 +18,13 @@ $ ./main.d
 N:  200000
 BN: 100
 
-1 sec, 63 ms, 481 μs, and 3 hnsecs
-1 sec, 314 ms, 784 μs, and 1 hnsec
-159 ms and 4 hnsecs
-121 ms, 364 μs, and 9 hnsecs
-290 ms, 80 μs, and 1 hnsec
+1 sec, 80 ms, and 594 μs
+1 sec, 389 ms, 751 μs, and 4 hnsecs
+152 ms, 188 μs, and 1 hnsec
+126 ms, 478 μs, and 5 hnsecs
+283 ms, 427 μs, and 5 hnsecs
+192 ms, 43 μs, and 6 hnsecs
+342 ms, 349 μs, and 8 hnsecs
 
 ---
 
@@ -32,15 +34,17 @@ LDC - the LLVM D compiler (1.10.0):
   built with LDC - the LLVM D compiler (1.10.0)
   Default target: x86_64-unknown-linux-gnu
 
-$ main.bin 
+$ ldc2  -ofmain.bin main.d ; main.bin
 N:  200000
 BN: 100
 
-1 sec, 22 ms, 548 μs, and 3 hnsecs
-1 sec, 426 ms, 381 μs, and 3 hnsecs
-176 ms, 828 μs, and 2 hnsecs
-150 ms, 536 μs, and 2 hnsecs
-250 ms, 973 μs, and 2 hnsecs
+1 sec, 28 ms, and 536 μs
+1 sec, 408 ms, 192 μs, and 7 hnsecs
+162 ms, 944 μs, and 6 hnsecs
+158 ms, 897 μs, and 4 hnsecs
+326 ms, 268 μs, and 5 hnsecs
+236 ms, 584 μs, and 6 hnsecs
+352 ms, 594 μs, and 2 hnsecs
 
 */
 
@@ -57,6 +61,8 @@ auto r = benchmark!
       , () => direct_impl( data )
       , () => direct_impl2( data )
       , () => direct_impl2_parallel( data )
+      , () => direct_impl2_external!( a => a.p, isFinite, (a,b) => a+b)( data )
+      , () => direct_impl2_external_parallel!( a => a.p, isFinite, (a,b) => a+b)( data )
       )( BN );
 writeln;
 foreach (o; r)
@@ -120,6 +126,33 @@ alias current_0 = v;
 auto current_1 = current_0.p;
 if (isFinite( current_1 ))
   ret += current_1;
+}
+return ret;
+}
+
+double direct_impl2_external( alias fa, alias fb, alias fc )( in ref S[] data )
+{
+double ret = 0;
+foreach (k, ref v; data )
+  {
+alias current_0 = v;
+auto current_1 = fa( current_0 );
+if (fb( current_1 ))
+  ret = fc( ret, current_1 );
+}
+return ret;
+}
+
+
+double direct_impl2_external_parallel( alias fa, alias fb, alias fc )( in ref S[] data )
+{
+double ret = 0;
+foreach (k, ref v; data.parallel ) // okay in this particular case
+  {
+alias current_0 = v;
+auto current_1 = fa( current_0 );
+if (fb( current_1 ))
+  ret = fc( ret, current_1 );
 }
 return ret;
 }
