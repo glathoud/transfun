@@ -566,7 +566,8 @@ var global, exports; // NPM support [github#1]
         // Also publish the function to the global namespace through
         // `tfun.*` methods (2) through `tfun.*` properties ==
         
-        new Function( 'tf' , 'tfun["' + name + '"]=tf' )( tf );
+        new Function( 'tf' , 'this.tfun["' + name + '"]=tf' )
+            .call( global, tf );
         
         return tf;
         

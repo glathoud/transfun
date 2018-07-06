@@ -1,0 +1,35 @@
+{
+  "name": "transfun",
+  "version": "1.0.0",
+  "description": "Write very fast map/filter/reduce code",
+  "main": "transfun.js",
+  "directories": {   
+      "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glathoud/transfun.git"
+  },
+  "keywords": [
+    "loop",
+    "javascript",
+    "merging-loops",
+    "language",
+    "optimization",
+    "performance",
+    "code-generation"
+  ],
+  "author": "Guillaume Lathoud <glat@glat.info> (http://glat.info)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/glathoud/transfun/issues"
+  },
+  "homepage": "https://github.com/glathoud/transfun#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
+  }
+}

@@ -1,0 +1,32 @@
+// thanks to: https://hackernoon.com/a-crash-course-on-testing-with-node-js-6c7428d3da02
+
+npm init
+
+npm install --save-dev mocha chai
+
+edit ./test/test.js
+
+edit ./package.json, for example:
+
+{
+  "name": "testing",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+
+// this
+"directories": {   
+    "test": "test"
+  },
+
+// and that
+  "scripts": {   
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0"
+  }
+}
