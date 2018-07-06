@@ -43,6 +43,10 @@ A domain-specific language is used to define `map/filter/reduce`. With this lang
 
 http://glat.info/transfun/
 
+# Node.js package
+
+https://www.npmjs.com/package/transfun
+
 # License
 
 The Boost License apply, as described in the file [LICENSE](./LICENSE).
