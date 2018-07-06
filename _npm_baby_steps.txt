@@ -1,5 +1,8 @@
 // thanks to: https://hackernoon.com/a-crash-course-on-testing-with-node-js-6c7428d3da02
 
+add the following line to .gitignore:
+node_modules
+
 npm init
 
 npm install --save-dev mocha chai
