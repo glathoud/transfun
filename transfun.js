@@ -644,6 +644,12 @@ var global, exports; // NPM support [github#1]
         return _stmt_expr_common.apply( { statement : false }, arguments );
     }
 
+    var _TF_GET_ARGNAME_ARR = '_tf_get_argname_arr'
+    ,   _TF_GET_BODYCODE    = '_tf_get_bodycode'
+    ,   _TF_POUND_OUT_TMPL  = '#__tf_out__#'
+    ,   _TF_TOP_LOOP        = '__tf_top_loop__'
+    ,   _TF_TOP_LOOP_I      = 0
+    ;
     function _stmt_expr_common( /* string | externcall object*/code, /*string*/leftvar, /*?string?*/rightvar /*...more variables (for [extern]call)...*/ )
     {
         var         opt = this
@@ -658,12 +664,84 @@ var global, exports; // NPM support [github#1]
             {
 	        var externcall = code.externcall;
 	        (externcall  ||  null).substring.call.a;
-	        return { 'call' : { fun : externcall, arg : Array.apply( 0, arguments ).slice( 1 ) } };
+
+                var arg = Array.apply( 0, arguments ).slice( 1 );
+
+                // Optional API for inlining
+                var one = code.one;
+                'function' === typeof one  ||  null.bug;
+
+                var tmp_has_0 = _TF_GET_ARGNAME_ARR in one
+                ,   tmp_has_1 = _TF_GET_BODYCODE    in one
+                ;
+                if (tmp_has_0  ^  tmp_has_1)
+                {
+                    throw new Error( 'transfun: optional inlineable function: please provide either both or none of the'
+                                     + ' function object method ' + _TF_GET_ARGNAME_ARR + ' and ' + _TF_GET_BODYCODE + '.'
+                                     + ' See also: https://github.com/glathoud/transfun/issues/7'
+                                   );
+                }
+                else if (tmp_has_0  &&  tmp_has_1)
+                {
+                    var top_loop = _TF_TOP_LOOP + (_TF_TOP_LOOP_I++);
+
+                    var f_argname_arr = one[ _TF_GET_ARGNAME_ARR ]()
+                    ,   f_bodycode    = get_transformed_bodycode( one[ _TF_GET_BODYCODE ]() )
+                    ;
+                    if ('string' === typeof f_argname_arr)
+                        f_argname_arr = f_argname_arr.split( ',' );
+
+                    var homonyms = f_argname_arr.map( function ( s, i ) {
+                        return s === arg[ i ]  &&  'let ' + tmp_homonym( s ) + ' = ' + s + ';'
+                            ||  ''
+                        ;
+                    }).join( '' )
+                    ,   assigns = !f_argname_arr.length
+                        ?  ''
+                        :  'let ' +
+                        f_argname_arr.map( function ( s, i ) {
+                            return !arg[ i ]
+                                ?  ''
+                                :  s + ' = ' + (s === arg[ i ]  ?  tmp_homonym( s )  :  arg[ i ])
+                            ;
+                        }).join( ', ') + ';';
+                    ;
+                    
+                    return [
+                        '{'
+                        , homonyms
+                        , '{'
+                        , assigns
+                        , top_loop + ': for(;;) {'
+                        , f_bodycode
+                        , exiter()
+                        , '}'
+                        , '}'
+                        , '}'
+                    ].join( '\n' );
+                }
+                
+	        return { 'call' : { fun : externcall, arg : arg } };
             }
 
             // object: definition piece => as is.
             return code;
         }
+
+        function tmp_homonym( s ) { (s  ||  null).substring.call.a; return '__tf_homonym_' + s + '__'; }
+
+        function get_transformed_bodycode( /*string*/bodycode )
+        {
+            bodycode.substring.call.a;
+            return bodycode.replace( /\breturn([^;]+);/, replace_exit );
+
+            function replace_exit( s0, s1 )
+            {
+                return exiter( s1 );
+            }
+        }
+        
+        function exiter( expr ) { return _TF_POUND_OUT_TMPL + ' = ' + expr + '; break ' + top_loop + ';' }
         
 	// string: statement => as is (no completion).
 
@@ -1071,7 +1149,9 @@ var global, exports; // NPM support [github#1]
                         i2en[ e_i ]    = e_name;
                         en2e[ e_name ] = one;
                         
-                        spec_s_arg.push( { externcall : e_name } )
+                        spec_s_arg.push( { externcall : e_name
+                                           , one      : one
+                                         } );
 		    }
                     else
                     {
@@ -1894,7 +1974,7 @@ var global, exports; // NPM support [github#1]
             ?  x[ 0 ] + '[ ' + oe2c( x[ 1 ] ) + ' ]'
         
 	    :  (x = expr.decl )
-	    ?  'var ' + x[ 0 ] + ' = ' + oe2c( x[ 1 ] )
+	    ?  'var ' + x[ 0 ] + '; ' + setter_code( x[ 0 ], oe2c( x[ 1 ] ) )
 
 	    :  (x = expr.dotcall)
 	    ?   x[ 0 ] + '.' + x[ 1 ] + '(' + oe2c( x[ 2 ] ) + ')'
@@ -1903,10 +1983,10 @@ var global, exports; // NPM support [github#1]
 	    ?  x[ 0 ] + '.push(' + oe2c( x[ 1 ] ) + ')'
         
 	    :  (x = expr.set)
-	    ?  x[ 0 ] + ' = ' + oe2c( x[ 1 ] )
+	    ?  setter_code( x[ 0 ], oe2c( x[ 1 ] ) )
 
 	    :  (x = expr.set_at)
-	    ?  x[ 0 ] + '[' + oe2c( x[ 1 ] ) + '] = ' + oe2c( x[ 2 ] )
+	    ?  setter_code( x[ 0 ] + '[' + oe2c( x[ 1 ] ) + ']', oe2c( x[ 2 ] ) )
         
 	    :  ((x = expr['if'])  &&
                 (y = expr[ 'then' ], z = expr[ 'else' ], true)
@@ -1932,6 +2012,13 @@ var global, exports; // NPM support [github#1]
                 return false;
 	    }}
 	    return true;
+        }
+        function setter_code( target, source )
+        {
+            return 0 > source.indexOf( _TF_POUND_OUT_TMPL )
+                ?  target + ' = ' + source
+                :  source.replace( new RegExp( _TF_POUND_OUT_TMPL, 'g' ), target )
+            ;            
         }
     }
     

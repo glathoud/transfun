@@ -34,6 +34,9 @@ var global, exports;
         tfun = global.tfun;
         tpub = global.tpub;
         tval = global.tval;
+        and  = global.and;
+        oEquals = global.oEquals;
+        or      = global.or;
     }
 
     // API: main entry point
@@ -541,6 +544,22 @@ var global, exports;
         expected === obtained3  ||  null.bug;
         expected === obtained4  ||  null.bug;
 
+        // Optional inlining of external function when they support
+        // a given API, see:
+        // https://github.com/glathoud/transfun/issues/7
+
+        function f_ext( a, b ) { null.should_not_be_called; return a * 10 + b; }
+
+        f_ext._tf_get_argname_arr = function () { return 'a,b'.split( ',' ); };
+        f_ext._tf_get_bodycode    = function () { return ('' + f_ext).match( /return\s[^;]+;/ )[ 0 ]; };
+
+        var quite_protracted_and_synthetic_example_1 = tfun.map( f_ext )
+        
+        var expected = [ 50, 61 ]
+        ,   obtained = quite_protracted_and_synthetic_example_1( [ 5, 6 ] )
+        ;
+        oEquals( expected, obtained )  ||  null.bug;
+        
         // 
         
         console.timeEnd( 'transfun:test' );
