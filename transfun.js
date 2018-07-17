@@ -1919,12 +1919,15 @@ var global, exports; // NPM support [github#1]
 	    }
         }
 
-        function appfun_next( /*string | appfun | transfun*/s_f)
+        function appfun_next( /*string | appfun | normal function with arguments*/s_f
+            /*...optional arguments in the "normal function" case, else default: `current`...*/
+        )
         {
-	    var tf, arg;
+	    var tf, arg, other, tof_s_f = typeof s_f;
 	    
-	    if ('string' === typeof s_f)
+	    if ('string' === tof_s_f)
 	    {
+                // codestring
                 tf = tfun({
 		    arity : 1
 		    , specgen : function ( /*string | externcall object*/transform ) {
@@ -1934,14 +1937,41 @@ var global, exports; // NPM support [github#1]
                 arg = [ s_f ];
                 return tf.apply( chainspec, arg );
 	    }
-	    else
+	    else if ((other = s_f._tf_chainspec)  &&  other instanceof _ChainSpec)
 	    {
-                var other = s_f._tf_chainspec;
-                if (!(other  &&  other instanceof _ChainSpec))
-		    throw new Error( 'next(s_or_f): s_or_f must be either a codestring or an appfun!' );
-
+                // appfun
                 return chainspec.concat_call_tf( other );
 	    }
+            else if (s_f._is_transfun)
+            {
+                // transfun
+                throw new Error( 'tfun.next does not accept a transfun, only an appfun, codestring or normal function'
+                                 + ' (the latter optionally inlineable #7).'
+                               );
+            }
+            else if ('function' === tof_s_f)
+            {
+                // External function, optionally inlineable
+                // https://github.com/glathoud/transfun/issues/7
+                
+                // Optional arguments, default: `current`
+                var transform_arg = arguments.length > 1
+                    ?  [].slice.call( arguments, 1 )
+                    :  [ CURRENT ]
+                ;
+                tf = tfun({
+		    arity : 1
+		    , specgen : function ( /*string | externcall object*/transform ) {
+                        return { stepadd : { set : [ CURRENT, fullexpr.apply( null, [ transform ].concat( transform_arg ) ) ] } };
+		    }
+                });
+                arg = [ s_f ];
+                return tf.apply( chainspec, arg );
+            }
+            else
+            {
+                null.invalid_next_arguments;
+            }
         }
         
     }

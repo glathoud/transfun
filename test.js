@@ -560,6 +560,40 @@ var global, exports;
         ;
         oEquals( expected, obtained )  ||  null.bug;
         
+        // Optional inlining of external function when they support
+        // a given API, see:
+        // https://github.com/glathoud/transfun/issues/7
+
+        function f_ext_2( a, b ) { null.should_not_be_called; return a * 20 + b; }
+
+        f_ext_2._tf_get_argname_arr = function () { return 'a,b'.split( ',' ); };
+        f_ext_2._tf_get_bodycode    = function () { return ('' + f_ext_2).match( /return\s[^;]+;/ )[ 0 ]; };
+
+        var quite_protracted_and_synthetic_example_2 = tfun.arg('x,y').next( f_ext_2, 'x', 'y' )
+        
+        var expected = 64
+        ,   obtained = quite_protracted_and_synthetic_example_2( 3, 4 )
+        ;
+        expected === obtained  ||  null.bug;
+        
+        // Optional inlining of external function when they support
+        // a given API, see:
+        // https://github.com/glathoud/transfun/issues/7
+        //
+        // Homonym use case, somewhat perverse, but we should deal with it
+        
+        function f_ext_3( a, b ) { null.should_not_be_called; return (a++) * 30 + (b++); }
+
+        f_ext_3._tf_get_argname_arr = function () { return 'a,b'.split( ',' ); };
+        f_ext_3._tf_get_bodycode    = function () { return ('' + f_ext_3).match( /return\s[^;]+;/ )[ 0 ]; };
+
+        var quite_protracted_and_synthetic_example_3 = tfun.arg('a,b').next( f_ext_3, 'a', 'b' ).next( '+a*b' )
+        
+        var expected = 218 + 7*8
+        ,   obtained = quite_protracted_and_synthetic_example_3( 7, 8 )
+        ;
+        expected === obtained  ||  null.bug;
+        
         // 
         
         console.timeEnd( 'transfun:test' );
