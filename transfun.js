@@ -983,7 +983,8 @@ var global, exports; // NPM support [github#1]
                         if (first_only)
                             mark_first_only( gcb_o.spec_arr );
                         
-                        code_body = generate_code_body( gcb_o.spec_arr );
+                        code_body = '    "use strict";\n' // https://github.com/glathoud/transfun/issues/11
+                            + generate_code_body( gcb_o.spec_arr );
                         impl      = new Function( gcb_o.code_par_arr, code_body );
                         
                         // In most cases no wrapper because no
