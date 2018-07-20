@@ -79,7 +79,7 @@ var global, exports; // NPM support [github#1]
             ,       n = arr.length
             , stepadd = new Array( n )
             ;
-            for (var i = 0; i < n; i++)
+            for (var i = 0; i < n; i+=1)
             {
                 var name = arr[ i ].replace( /^\s+|\s+$/i, '' );
                 (name  ||  null).substring.call.a;
@@ -541,7 +541,7 @@ var global, exports; // NPM support [github#1]
             ,   n   = arr.length
             ,   v   = arr[ 0 ].apply( thisObj, args )
             ;
-            for (var i = 1; i < n; i++)
+            for (var i = 1; i < n; i+=1)
                 v = arr[ i ].call( thisObj, v );
             
             return v;
@@ -1123,7 +1123,7 @@ var global, exports; // NPM support [github#1]
 	    {
                 // array of string
                 var spec_s_arg = [];
-                for (var n = args.length, i = 0; i < n; i++)
+                for (var n = args.length, i = 0; i < n; i+=1)
                 {
 		    var one  = args[ i ]
                     ,   tone = typeof one
@@ -1264,7 +1264,7 @@ var global, exports; // NPM support [github#1]
 	    ,   tfarg_arr = other[ TFARG_ARR ]
 	    ,   ret
 	    ;
-	    for (var n = tfarg_arr.length, i = 0; i < n; i++)
+	    for (var n = tfarg_arr.length, i = 0; i < n; i+=1)
 	    {
                 var tfarg = tfarg_arr[ i ];
                 ret       = tfarg.tf.apply( chainspec, tfarg.arg );
@@ -1724,7 +1724,7 @@ var global, exports; // NPM support [github#1]
 
                 code.push
                 (
-		    is_l_left  ?  'for (var k = 0; k < n; k++ ) {'
+		    is_l_left  ?  'for (var k = 0; k < n; k+=1 ) {'
                         :  is_l_right  ?  'for (var k = n; k--;) {'
                         :  is_l_in     ?  (needs_emptyObj = true
                                            , 'for (var k in ' + CURRENT + ') { if (!(k in _emptyObj)) {'
@@ -1733,7 +1733,7 @@ var global, exports; // NPM support [github#1]
                     // Have to implement this way, recalculating `v`
                     // each time because of use cases with following
                     // transformations of `v` (e.g. `map(v % 2)`).
-                        :  is_range  ?  [ 'for (var k = 0; k < n; k++) {'
+                        :  is_range  ?  [ 'for (var k = 0; k < n; k+=1) {'
                                           , ' var ' + r_varname + ' = ' + r_begin
                                           , (is_r_left  ?  ' + '  :  ' - ')
                                           , r_step === 1  ||  r_step === '1'  ?  'k'  :  'k * ' + r_step
@@ -2155,7 +2155,7 @@ var global, exports; // NPM support [github#1]
 	    var  n = arr.length
 	    , last = n - 1
 	    ;
-	    for (var i = 0; i < n; i++)
+	    for (var i = 0; i < n; i+=1)
 	    {
                 var    x = arr[ i ]
                 ,    map = cs_map.map
@@ -2254,7 +2254,7 @@ var global, exports; // NPM support [github#1]
 	    if (other_store)
 	    {
                 var x_found;
-                for (var n = other_store.length, i = 0; i < n; i++)
+                for (var n = other_store.length, i = 0; i < n; i+=1)
                 {
 		    var x = other_store[ i ];
 		    if (x[ 0 ] === k)

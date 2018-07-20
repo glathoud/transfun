@@ -10,6 +10,10 @@ import std.stdio;
 import std.traits;
 
 /*
+ldc2 --version
+LDC - the LLVM D compiler (1.10.0):
+  based on DMD v2.080.1 and LLVM 6.0.0
+
 ldc2 -ofmain.bin -O main.d ; main.bin
 
 N:  100000000
@@ -22,6 +26,9 @@ BN: 5
 629 ms, 515 μs, and 8 hnsecs
 
 --
+dmd --version
+DMD64 D Compiler v2.080.1
+
 dmd -ofmain.bin -O -inline main.d ; main.bin
 
 N:  100000000
