@@ -906,6 +906,11 @@ var global, exports; // NPM support [github#1]
                     appfun.getNExternal = appfun_getNExternal;
 		    
 		    cached_appfun = chainspec.appfun = mix_published_tfun_methods_into_appfun( chainspec, appfun );
+
+                    // API for inlining when appfun are used as externals
+                    // https://github.com/glathoud/transfun/issues/12
+                    appfun[ _TF_GET_BODYCODE ]    = appfun_getBodyCode;
+                    appfun[ _TF_GET_ARGNAME_ARR ] = function () { return code_par_arr.slice( extern_arr.length ); };
                 }
                 return cached_appfun;
                 

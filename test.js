@@ -593,7 +593,36 @@ var global, exports;
         ,   obtained = quite_protracted_and_synthetic_example_3( 7, 8 )
         ;
         expected === obtained  ||  null.bug;
+
+        // Inlining of generated appfun when used as external
+        // functions, see:
+        // https://github.com/glathoud/transfun/issues/12
+
+        var get_mean = tfun.redinit( '0', '+' ).next( '/n' )
+        ,  get_stddev = tfun
+            .decl( 'mean_value', get_mean )
+            .map( 'v-mean_value' )
+            .map( 'v*v' )
+            .sum()
+            .next( 'Math.sqrt(current/(n-1))' )  // unbiased std dev estimation
         
+        // compute both mean and stddev at once
+        , get_mean_stddev = get_stddev
+            .next( '{stddev:current, mean:mean_value}')
+        ;
+
+        var arr = [ 0.1, 0.2, 0.345, 0.456, 0.42342, 0.12 ]
+        ,   arr_mean = arr.reduce( function ( a, b ) { return a+b; }, 0 ) / arr.length
+        ,   arr_std  = Math.sqrt( arr.reduce( function ( a, b ) { return a+(b-arr_mean)*(b-arr_mean); }, 0 ) / (arr.length - 1) )
+
+        ,   o = get_mean_stddev( arr )
+        ;
+        1e-10 > Math.abs( o.mean   - arr_mean )  ||  null.bug;
+        1e-10 > Math.abs( o.stddev - arr_std )  ||  null.bug;
+        
+        !/extern/.test( get_mean_stddev.getBodyCode() )  ||  null.bug;
+        // xxx !/\bvar\b/.test( get_mean_stddev.getBodyCode() )  ||  null.bug;
+
         // 
         
         console.timeEnd( 'transfun:test' );
